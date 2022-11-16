@@ -1,14 +1,14 @@
 <script setup lang="ts">
-import BoardPiece from "@/components/BoardPiece.vue";
+import BoardPiece from '@/components/BoardPiece.vue';
 
-const squares = Array(80).fill("");
+const squares = Array(80).fill('');
 const pieces = [
   {
-    type: "p1",
+    type: 'p1',
     position: [1, 3],
   },
   {
-    type: "p2",
+    type: 'p2',
     position: [4, 4],
   },
 ];
