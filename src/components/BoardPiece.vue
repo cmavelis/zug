@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { reactive } from "vue";
+import { reactive } from 'vue';
 
 interface PieceProps {
   type: string;
@@ -14,8 +14,8 @@ const translateX = `${(props.position[0] - 1) * squareSize}px`;
 const translateY = `${(props.position[1] - 1) * squareSize}px`;
 const styleObject = reactive({
   transform: `translate(${translateX}, ${translateY})`,
-  width: squareSize + "px",
-  height: squareSize + "px",
+  width: squareSize + 'px',
+  height: squareSize + 'px',
 });
 </script>
 
