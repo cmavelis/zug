@@ -1,6 +1,12 @@
 <script setup lang="ts">
 import BoardPiece from '@/components/BoardPiece.vue';
 
+interface BoardProps {
+  state: any;
+}
+
+const props = defineProps<BoardProps>();
+
 const squares = Array(80).fill('');
 const pieces = [
   {
@@ -21,6 +27,7 @@ const pieces = [
       <BoardPiece v-for="piece in pieces" :key="piece.type" v-bind="piece" />
     </div>
   </div>
+  <p>{{ props.state.G }}</p>
 </template>
 
 <style scoped>
