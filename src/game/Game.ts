@@ -1,7 +1,15 @@
 import { INVALID_MOVE } from 'boardgame.io/core';
 
+interface IGameState {
+  cells: [any];
+  pieces: [any];
+}
+
 export const SimulChess = {
-  setup: () => ({ cells: Array(9).fill(null) }),
+  setup: () => ({
+    cells: Array(9).fill(null),
+    pieces: [],
+  }),
 
   turn: {
     minMoves: 1,
@@ -9,7 +17,10 @@ export const SimulChess = {
   },
 
   moves: {
-    clickCell: ({ G, playerID }, id) => {
+    clickCell: (
+      { G, playerID }: { G: IGameState; playerID: number },
+      id: number
+    ) => {
       if (G.cells[id] !== null) {
         return INVALID_MOVE;
       }

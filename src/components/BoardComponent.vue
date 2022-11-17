@@ -7,17 +7,17 @@ interface BoardProps {
 
 const props = defineProps<BoardProps>();
 
-const squares = Array(80).fill('');
-const pieces = [
-  {
-    type: 'p1',
-    position: [1, 3],
-  },
-  {
-    type: 'p2',
-    position: [4, 4],
-  },
-];
+const squares = Array(9).fill('');
+// const pieces = [
+//   {
+//     type: 'p1',
+//     position: [1, 3],
+//   },
+//   {
+//     type: 'p2',
+//     position: [4, 4],
+//   },
+// ];
 </script>
 
 <template>
@@ -38,8 +38,8 @@ const pieces = [
 
 .board-container {
   display: grid;
-  grid-template-columns: repeat(10, var(--square-size));
-  grid-template-rows: repeat(8, var(--square-size));
+  grid-template-columns: repeat(3, var(--square-size));
+  grid-template-rows: repeat(3, var(--square-size));
   border: 1px solid blanchedalmond;
   width: fit-content;
   margin: auto;
