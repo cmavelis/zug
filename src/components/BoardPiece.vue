@@ -1,17 +1,13 @@
 <script setup lang="ts">
 import { reactive } from 'vue';
+import { type IPiece } from '@/game/pieces';
 
-interface PieceProps {
-  type: string;
-  position: [number, number];
-}
-
-const props = defineProps<PieceProps>();
+const props = defineProps<IPiece>();
 
 const squareSize = 50;
 
-const translateX = `${(props.position[0] - 1) * squareSize}px`;
-const translateY = `${(props.position[1] - 1) * squareSize}px`;
+const translateX = `${(props.position.x - 1) * squareSize}px`;
+const translateY = `${(props.position.y - 1) * squareSize}px`;
 const styleObject = reactive({
   transform: `translate(${translateX}, ${translateY})`,
   width: squareSize + 'px',
@@ -20,7 +16,7 @@ const styleObject = reactive({
 </script>
 
 <template>
-  <div class="piece" :style="styleObject">{{ props.type }}</div>
+  <div class="piece" :style="styleObject">{{ props.owner.toString() }}</div>
 </template>
 
 <style scoped>

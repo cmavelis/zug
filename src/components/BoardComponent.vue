@@ -1,30 +1,26 @@
 <script setup lang="ts">
 import BoardPiece from '@/components/BoardPiece.vue';
+import type { IGameState } from '@/game/Game';
 
 interface BoardProps {
-  state: any;
+  state: IGameState;
 }
 
 const props = defineProps<BoardProps>();
-
-const squares = Array(9).fill('');
-// const pieces = [
-//   {
-//     type: 'p1',
-//     position: [1, 3],
-//   },
-//   {
-//     type: 'p2',
-//     position: [4, 4],
-//   },
-// ];
+const cells = Array(9).fill(null);
 </script>
 
 <template>
   <div class="board-wrapper">
     <div class="board-container">
-      <div v-for="square in squares" :key="square" class="board-square"></div>
-      <BoardPiece v-for="piece in pieces" :key="piece.type" v-bind="piece" />
+      <div v-for="(cell, index) in cells" :key="index" class="board-square">
+        {{ cell }}
+      </div>
+      <BoardPiece
+        v-for="piece in props.state.pieces"
+        :key="piece.position"
+        v-bind="piece"
+      />
     </div>
   </div>
   <p>{{ props.state.G }}</p>
