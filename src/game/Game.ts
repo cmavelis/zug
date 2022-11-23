@@ -15,11 +15,11 @@ export const SimulChess = {
 
     createPiece({
       G: initialGame,
-      pieceToCreate: { owner: 0, position: { x: 2, y: 0 } },
+      pieceToCreate: { owner: 0, position: { x: 1, y: 1 } },
     });
     createPiece({
       G: initialGame,
-      pieceToCreate: { owner: 1, position: { x: 4, y: 0 } },
+      pieceToCreate: { owner: 1, position: { x: 3, y: 1 } },
     });
 
     return initialGame;

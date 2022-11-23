@@ -3,21 +3,24 @@ import BoardPiece from '@/components/BoardPiece.vue';
 import type { IGameState } from '@/game/Game';
 
 interface BoardProps {
-  state: IGameState;
+  state: { G: IGameState };
 }
 
 const props = defineProps<BoardProps>();
-const cells = Array(9).fill(null);
 </script>
 
 <template>
   <div class="board-wrapper">
     <div class="board-container">
-      <div v-for="(cell, index) in cells" :key="index" class="board-square">
+      <div
+        v-for="(cell, index) in props.state.G.cells"
+        :key="index"
+        class="board-square"
+      >
         {{ cell }}
       </div>
       <BoardPiece
-        v-for="piece in props.state.pieces"
+        v-for="piece in props.state.G.pieces"
         :key="piece.position"
         v-bind="piece"
       />
