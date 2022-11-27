@@ -1,8 +1,10 @@
 import { INVALID_MOVE } from 'boardgame.io/core';
 import { createPiece, type IPiece } from '@/game/pieces';
+import type { IOrder, Orders } from '@/game/orders';
 
 export interface IGameState {
   cells: any[];
+  orders: { [playerID: number]: Orders };
   pieces: IPiece[];
 }
 
@@ -11,6 +13,7 @@ export const SimulChess = {
     const initialGame = {
       cells: Array(9).fill(null),
       pieces: [],
+      orders: { 0: [], 1: [] },
     };
 
     createPiece({
@@ -39,6 +42,12 @@ export const SimulChess = {
         return INVALID_MOVE;
       }
       G.cells[id] = playerID;
+    },
+    addOrder: (
+      { G, playerID }: { G: IGameState; playerID: number },
+      order: IOrder
+    ) => {
+      G.orders[playerID].push(order);
     },
   },
 
