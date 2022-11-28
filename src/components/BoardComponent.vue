@@ -1,12 +1,21 @@
 <script setup lang="ts">
 import BoardPiece from '@/components/BoardPiece.vue';
 import type { IGameState } from '@/game/Game';
+import { chessClient } from '@/game/App';
 
 interface BoardProps {
   state: { G: IGameState };
 }
 
 const props = defineProps<BoardProps>();
+
+const handleClick = (a: string | number) => {
+  // chessClient.client.moves.clickCell(a);
+  chessClient.client.moves.addOrder({
+    pieceID: 99,
+    moveTo: { x: 100, y: 100 },
+  });
+};
 </script>
 
 <template>
@@ -16,13 +25,12 @@ const props = defineProps<BoardProps>();
         v-for="(cell, index) in props.state.G.cells"
         :key="index"
         class="board-square"
-      >
-        {{ cell }}
-      </div>
+      />
       <BoardPiece
         v-for="piece in props.state.G.pieces"
         :key="piece.position"
         v-bind="piece"
+        @click="() => handleClick(piece.owner)"
       />
     </div>
   </div>
