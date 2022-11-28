@@ -9,10 +9,10 @@ interface BoardProps {
 
 const props = defineProps<BoardProps>();
 
-const handleClick = (a: string | number) => {
+const handleClick = (id: string) => {
   // chessClient.client.moves.clickCell(a);
   chessClient.client.moves.addOrder({
-    pieceID: 99,
+    pieceID: id,
     moveTo: { x: 100, y: 100 },
   });
 };
@@ -30,7 +30,7 @@ const handleClick = (a: string | number) => {
         v-for="piece in props.state.G.pieces"
         :key="piece.position"
         v-bind="piece"
-        @click="() => handleClick(piece.owner)"
+        @click="() => handleClick(piece.id)"
       />
     </div>
   </div>

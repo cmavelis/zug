@@ -1,4 +1,5 @@
 import type { IGameState } from '@/game/Game';
+import { randomUUID } from 'crypto';
 
 export interface IPiece {
   id?: string;
@@ -18,5 +19,6 @@ export const createPiece = ({
     throw new Error('cell occupied');
   }
   G.cells[x] = pieceToCreate.owner;
+  pieceToCreate.id = G.pieces.length.toString();
   G.pieces.push(pieceToCreate);
 };
