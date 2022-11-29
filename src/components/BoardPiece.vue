@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { reactive } from 'vue';
-import { type IPiece } from '@/game/pieces';
+import { type Piece } from '@/game/pieces';
 
-const props = defineProps<IPiece>();
+const props = defineProps<Piece>();
 
 const squareSize = 50;
 

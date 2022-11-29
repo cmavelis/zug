@@ -1,11 +1,11 @@
 import { INVALID_MOVE } from 'boardgame.io/core';
-import { createPiece, type IPiece } from '@/game/pieces';
-import type { IOrder, Orders } from '@/game/orders';
+import { createPiece, type Piece } from '@/game/pieces';
+import type { Order, Orders } from '@/game/orders';
 
-export interface IGameState {
+export interface GameState {
   cells: any[];
   orders: { [playerID: number]: Orders };
-  pieces: IPiece[];
+  pieces: Piece[];
 }
 
 export const SimulChess = {
@@ -35,7 +35,7 @@ export const SimulChess = {
 
   moves: {
     clickCell: (
-      { G, playerID }: { G: IGameState; playerID: number },
+      { G, playerID }: { G: GameState; playerID: number },
       id: number
     ) => {
       if (G.cells[id] !== null) {
@@ -44,8 +44,8 @@ export const SimulChess = {
       G.cells[id] = playerID;
     },
     addOrder: (
-      { G, playerID }: { G: IGameState; playerID: number },
-      order: IOrder
+      { G, playerID }: { G: GameState; playerID: number },
+      order: Order
     ) => {
       G.orders[playerID].push(order);
     },

@@ -1,10 +1,10 @@
 <script setup lang="ts">
 import BoardPiece from '@/components/BoardPiece.vue';
-import type { IGameState } from '@/game/Game';
+import type { GameState } from '@/game/Game';
 import { chessClient } from '@/game/App';
 
 interface BoardProps {
-  state: { G: IGameState };
+  state: { G: GameState };
 }
 
 const props = defineProps<BoardProps>();

@@ -1,6 +1,6 @@
-import type { IGameState } from '@/game/Game';
+import type { GameState } from '@/game/Game';
 
-export interface IPiece {
+export interface Piece {
   id?: string;
   position: { x: number; y: number };
   owner: number;
@@ -10,8 +10,8 @@ export const createPiece = ({
   G,
   pieceToCreate,
 }: {
-  G: IGameState;
-  pieceToCreate: IPiece;
+  G: GameState;
+  pieceToCreate: Piece;
 }) => {
   const { x } = pieceToCreate.position;
   if (G.cells[x]) {

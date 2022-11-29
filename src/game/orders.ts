@@ -1,18 +1,18 @@
-import type { ICoordinates } from '@/game/common';
+import type { Coordinates } from '@/game/common';
 
-export interface IOrderBase {
+export interface OrderBase {
   pieceID: any;
 }
 
-export interface IMoveOrder extends IOrderBase {
+export interface MoveOrder extends OrderBase {
   type: 'move';
-  moveTo: ICoordinates;
+  moveTo: Coordinates;
 }
 
-export interface IAttackOrder extends IOrderBase {
+export interface AttackOrder extends OrderBase {
   type: 'attack';
 }
 
-export type IOrder = IMoveOrder | IAttackOrder;
+export type Order = MoveOrder | AttackOrder;
 
-export type Orders = IOrder[];
+export type Orders = Order[];
