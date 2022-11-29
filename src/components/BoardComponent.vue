@@ -13,7 +13,7 @@ const handleClick = (id: string) => {
   // chessClient.client.moves.clickCell(a);
   chessClient.client.moves.addOrder({
     pieceID: id,
-    moveTo: { x: 100, y: 100 },
+    type: 'attack',
   });
 };
 </script>

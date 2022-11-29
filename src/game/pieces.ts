@@ -1,5 +1,4 @@
 import type { IGameState } from '@/game/Game';
-import { randomUUID } from 'crypto';
 
 export interface IPiece {
   id?: string;
