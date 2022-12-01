@@ -7,14 +7,19 @@ interface BoardProps {
   state: { G: GameState };
 }
 
+let selectedPiece: null | string = null;
+
 const props = defineProps<BoardProps>();
 
 const handleClick = (id: string) => {
   // chessClient.client.moves.clickCell(a);
-  chessClient.client.moves.addOrder({
-    pieceID: id,
-    type: 'attack',
-  });
+  // chessClient.client.moves.addOrder({
+  //   pieceID: id,
+  //   type: 'attack',
+  // });
+  if (!selectedPiece) {
+    selectedPiece = id;
+  }
 };
 </script>
 
@@ -22,7 +27,7 @@ const handleClick = (id: string) => {
   <div class="board-wrapper">
     <div class="board-container">
       <div
-        v-for="(cell, index) in props.state.G.cells"
+        v-for="index in props.state.G.cells"
         :key="index"
         class="board-square"
       />

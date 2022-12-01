@@ -1,7 +1,7 @@
 import type { GameState } from '@/game/Game';
 
 export interface Piece {
-  id?: string;
+  id: string;
   position: { x: number; y: number };
   owner: number;
 }
@@ -11,13 +11,13 @@ export const createPiece = ({
   pieceToCreate,
 }: {
   G: GameState;
-  pieceToCreate: Piece;
+  pieceToCreate: Omit<Piece, 'id'>;
 }) => {
   const { x } = pieceToCreate.position;
   if (G.cells[x]) {
     throw new Error('cell occupied');
   }
   G.cells[x] = pieceToCreate.owner;
-  pieceToCreate.id = G.pieces.length.toString();
-  G.pieces.push(pieceToCreate);
+  const pieceWithId = { ...pieceToCreate, id: G.pieces.length.toString() };
+  G.pieces.push(pieceWithId);
 };

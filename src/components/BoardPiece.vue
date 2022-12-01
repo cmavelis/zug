@@ -16,7 +16,7 @@ const styleObject = reactive({
 </script>
 
 <template>
-  <div class="piece" :style="styleObject">{{ props.owner.toString() }}</div>
+  <div class="piece" :style="styleObject">{{ props.id.toString() }}</div>
 </template>
 
 <style scoped>

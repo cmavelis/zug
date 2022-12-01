@@ -24,13 +24,44 @@ export const SimulChess = {
       G: initialGame,
       pieceToCreate: { owner: 1, position: { x: 3, y: 1 } },
     });
+    createPiece({
+      G: initialGame,
+      pieceToCreate: { owner: 1, position: { x: 2, y: 2 } },
+    });
 
     return initialGame;
   },
 
   turn: {
-    minMoves: 1,
-    maxMoves: 1,
+    // @ts-ignore-line
+    onBegin: ({ events }) => {
+      events.setActivePlayers({
+        all: 'planning',
+      });
+    },
+    stages: {
+      planning: {
+        moves: {
+          addOrder: {
+            move: (
+              { G, playerID }: { G: GameState; playerID: number },
+              order: Order
+            ) => {
+              if (
+                G.orders[playerID].find(
+                  (currentOrders) => currentOrders.pieceID === order.pieceID
+                )
+              ) {
+                return INVALID_MOVE;
+              }
+              G.orders[playerID].push(order);
+            },
+            // Prevents the move counting towards a player’s number of moves.
+            noLimit: true,
+          },
+        },
+      },
+    },
   },
 
   moves: {
@@ -42,12 +73,6 @@ export const SimulChess = {
         return INVALID_MOVE;
       }
       G.cells[id] = playerID;
-    },
-    addOrder: (
-      { G, playerID }: { G: GameState; playerID: number },
-      order: Order
-    ) => {
-      G.orders[playerID].push(order);
     },
   },
 
