@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { ref } from 'vue';
+import type { Ref } from 'vue';
 import BoardPiece from '@/components/BoardPiece.vue';
 import type { GameState } from '@/game/Game';
 import { chessClient } from '@/game/App';
@@ -7,19 +9,26 @@ interface BoardProps {
   state: { G: GameState };
 }
 
-let selectedPiece: null | string = null;
+const selectedPiece: Ref<null | string> = ref(null);
+const cellHover: Ref<null | number> = ref(null);
 
 const props = defineProps<BoardProps>();
 
-const handleClick = (id: string) => {
+const handlePieceClick = (id: string) => {
   // chessClient.client.moves.clickCell(a);
-  // chessClient.client.moves.addOrder({
-  //   pieceID: id,
-  //   type: 'attack',
-  // });
-  if (!selectedPiece) {
-    selectedPiece = id;
+  if (!selectedPiece.value) {
+    selectedPiece.value = id;
+  } else {
+    selectedPiece.value = null;
+    chessClient.client.moves.addOrder({
+      pieceID: id,
+      type: 'attack',
+    });
   }
+};
+
+const handleCellHover = (cellId: number) => {
+  cellHover.value = cellId;
 };
 </script>
 
@@ -27,15 +36,18 @@ const handleClick = (id: string) => {
   <div class="board-wrapper">
     <div class="board-container">
       <div
-        v-for="index in props.state.G.cells"
+        v-for="(cell, index) in props.state.G.cells"
         :key="index"
         class="board-square"
+        :class="{ hoveredCell: cellHover === index }"
+        @mouseover="handleCellHover(index)"
       />
       <BoardPiece
         v-for="piece in props.state.G.pieces"
         :key="piece.position"
+        :class="{ selected: selectedPiece === piece.id }"
         v-bind="piece"
-        @click="() => handleClick(piece.id)"
+        @click="handlePieceClick(piece.id)"
       />
     </div>
   </div>
@@ -59,5 +71,13 @@ const handleClick = (id: string) => {
 
 .board-square {
   border: 1px solid blanchedalmond;
+}
+
+.hoveredCell {
+  box-shadow: inset 0 0 5px cyan;
+}
+
+.selected {
+  box-shadow: 0 0 10px coral;
 }
 </style>
