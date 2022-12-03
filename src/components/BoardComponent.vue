@@ -28,8 +28,7 @@ const handlePieceClick = (id: string) => {
 };
 
 const handleCellClick = (pieceID?: number) => {
-  console.log(pieceID);
-  if (!pieceID) {
+  if (typeof pieceID !== 'number') {
     return;
   }
   handlePieceClick(pieceID.toString());
