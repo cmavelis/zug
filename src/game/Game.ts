@@ -51,9 +51,14 @@ export const SimulChess = {
               { G, playerID }: { G: GameState; playerID: number },
               order: Order
             ) => {
+              const movedPiece = G.pieces[order.sourcePieceId];
+              if (movedPiece.owner !== playerID) {
+                return INVALID_MOVE;
+              }
               if (
                 G.orders[playerID].find(
-                  (currentOrders) => currentOrders.pieceID === order.pieceID
+                  (currentOrders) =>
+                    currentOrders.sourcePieceId === order.sourcePieceId
                 )
               ) {
                 return INVALID_MOVE;

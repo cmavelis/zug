@@ -2,7 +2,7 @@ import type { GameState } from '@/game/Game';
 import { coordinatesToArray } from '@/game/common';
 
 export interface Piece {
-  id: string;
+  id: number;
   position: { x: number; y: number };
   owner: number;
 }
@@ -21,6 +21,6 @@ export const createPiece = ({
 
   const pieceId = G.pieces.length;
   G.cells[cellIndex] = pieceId;
-  const pieceWithId = { ...pieceToCreate, id: pieceId.toString() };
+  const pieceWithId = { ...pieceToCreate, id: pieceId };
   G.pieces.push(pieceWithId);
 };

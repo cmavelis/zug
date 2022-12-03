@@ -3,27 +3,29 @@ import { ref } from 'vue';
 import type { Ref } from 'vue';
 import BoardPiece from '@/components/BoardPiece.vue';
 import type { GameState } from '@/game/Game';
+import type { Order } from '@/game/orders';
 import { chessClient } from '@/game/App';
 
 interface BoardProps {
   state: { G: GameState };
 }
 
-const selectedPiece: Ref<null | string> = ref(null);
+const selectedPiece: Ref<null | number> = ref(null);
 const cellHover: Ref<null | number> = ref(null);
 
 const props = defineProps<BoardProps>();
 
-const handlePieceClick = (id: string) => {
-  // chessClient.client.moves.clickCell(a);
+const handlePieceClick = (id: number) => {
   if (!selectedPiece.value) {
     selectedPiece.value = id;
   } else {
-    selectedPiece.value = null;
-    chessClient.client.moves.addOrder({
-      pieceID: id,
+    const order: Order = {
+      sourcePieceId: selectedPiece.value,
+      targetPieceId: id,
       type: 'attack',
-    });
+    };
+    chessClient.client.moves.addOrder(order);
+    selectedPiece.value = null;
   }
 };
 
@@ -31,7 +33,7 @@ const handleCellClick = (pieceID?: number) => {
   if (typeof pieceID !== 'number') {
     return;
   }
-  handlePieceClick(pieceID.toString());
+  handlePieceClick(pieceID);
 };
 
 const handleCellHover = (cellId: number) => {
