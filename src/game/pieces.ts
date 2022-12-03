@@ -1,4 +1,5 @@
 import type { GameState } from '@/game/Game';
+import { coordinatesToArray } from '@/game/common';
 
 export interface Piece {
   id: string;
@@ -13,13 +14,13 @@ export const createPiece = ({
   G: GameState;
   pieceToCreate: Omit<Piece, 'id'>;
 }) => {
-  const { x } = pieceToCreate.position;
-  if (G.cells[x]) {
+  const cellIndex = coordinatesToArray(pieceToCreate.position, G.board);
+  if (G.cells[cellIndex]) {
     throw new Error('cell occupied');
   }
 
   const pieceId = G.pieces.length;
-  G.cells[x] = pieceId;
+  G.cells[cellIndex] = pieceId;
   const pieceWithId = { ...pieceToCreate, id: pieceId.toString() };
   G.pieces.push(pieceWithId);
 };

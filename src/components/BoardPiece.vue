@@ -6,8 +6,8 @@ const props = defineProps<Piece>();
 
 const squareSize = 50;
 
-const translateX = `${(props.position.x - 1) * squareSize}px`;
-const translateY = `${(props.position.y - 1) * squareSize}px`;
+const translateX = `${props.position.x * squareSize}px`;
+const translateY = `${props.position.y * squareSize}px`;
 const styleObject = reactive({
   transform: `translate(${translateX}, ${translateY})`,
   width: squareSize + 'px',

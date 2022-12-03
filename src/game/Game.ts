@@ -26,7 +26,7 @@ export const SimulChess = {
     });
     createPiece({
       G: initialGame,
-      pieceToCreate: { owner: 1, position: { x: 3, y: 1 } },
+      pieceToCreate: { owner: 1, position: { x: 2, y: 3 } },
     });
     createPiece({
       G: initialGame,
