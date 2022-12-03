@@ -8,3 +8,7 @@ test('0,0 coords, 3,4 array', () => {
 test('1,1 coords, 3,4 array', () => {
   expect(coordinatesToArray({ x: 1, y: 1 }, { x: 3, y: 4 })).toEqual(4);
 });
+
+test('2,3 coords, 3,4 array', () => {
+  expect(coordinatesToArray({ x: 2, y: 3 }, { x: 3, y: 4 })).toEqual(11);
+});
