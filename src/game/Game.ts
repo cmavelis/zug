@@ -1,17 +1,21 @@
 import { INVALID_MOVE } from 'boardgame.io/core';
 import { createPiece, type Piece } from '@/game/pieces';
 import type { Order, Orders } from '@/game/orders';
+import type { Coordinates } from '@/game/common';
 
 export interface GameState {
-  cells: any[];
+  board: Coordinates;
+  cells: Array<null | number>;
   orders: { [playerID: number]: Orders };
   pieces: Piece[];
 }
 
 export const SimulChess = {
   setup: () => {
+    const board = { x: 3, y: 4 };
     const initialGame = {
-      cells: Array(9).fill(null),
+      board,
+      cells: Array(board.x * board.y).fill(null),
       pieces: [],
       orders: { 0: [], 1: [] },
     };

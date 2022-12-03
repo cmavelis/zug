@@ -21,6 +21,7 @@ const styleObject = reactive({
 
 <style scoped>
 .piece {
+  pointer-events: none;
   position: absolute;
 }
 </style>

@@ -17,7 +17,9 @@ export const createPiece = ({
   if (G.cells[x]) {
     throw new Error('cell occupied');
   }
-  G.cells[x] = pieceToCreate.owner;
-  const pieceWithId = { ...pieceToCreate, id: G.pieces.length.toString() };
+
+  const pieceId = G.pieces.length;
+  G.cells[x] = pieceId;
+  const pieceWithId = { ...pieceToCreate, id: pieceId.toString() };
   G.pieces.push(pieceWithId);
 };

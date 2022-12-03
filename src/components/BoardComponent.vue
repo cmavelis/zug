@@ -27,6 +27,13 @@ const handlePieceClick = (id: string) => {
   }
 };
 
+const handleCellClick = (pieceID?: number) => {
+  if (!pieceID) {
+    return;
+  }
+  handlePieceClick(pieceID.toString());
+};
+
 const handleCellHover = (cellId: number) => {
   cellHover.value = cellId;
 };
@@ -40,6 +47,7 @@ const handleCellHover = (cellId: number) => {
         :key="index"
         class="board-square"
         :class="{ hoveredCell: cellHover === index }"
+        @click="handleCellClick(cell)"
         @mouseover="handleCellHover(index)"
       />
       <BoardPiece
@@ -63,7 +71,7 @@ const handleCellHover = (cellId: number) => {
 .board-container {
   display: grid;
   grid-template-columns: repeat(3, var(--square-size));
-  grid-template-rows: repeat(3, var(--square-size));
+  grid-template-rows: repeat(4, var(--square-size));
   border: 1px solid blanchedalmond;
   width: fit-content;
   margin: auto;
