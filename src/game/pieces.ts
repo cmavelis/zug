@@ -1,9 +1,9 @@
 import type { GameState } from '@/game/Game';
-import { coordinatesToArray } from '@/game/common';
+import { type Coordinates, coordinatesToArray } from '@/game/common';
 
 export interface Piece {
   id: number;
-  position: { x: number; y: number };
+  position: Coordinates;
   owner: number;
 }
 
