@@ -2,7 +2,6 @@ import type { Coordinates } from '@/game/common';
 
 export interface OrderBase {
   sourcePieceId: number;
-  targetPieceId: number;
 }
 
 export interface MoveOrder extends OrderBase {
@@ -12,6 +11,7 @@ export interface MoveOrder extends OrderBase {
 
 export interface AttackOrder extends OrderBase {
   type: 'attack';
+  targetPieceId: number;
 }
 
 export type Order = MoveOrder | AttackOrder;
