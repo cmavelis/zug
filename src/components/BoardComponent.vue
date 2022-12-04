@@ -16,7 +16,7 @@ const cellHover: Ref<null | number> = ref(null);
 const props = defineProps<BoardProps>();
 
 const handlePieceClick = (id: number) => {
-  if (!selectedPiece.value) {
+  if (typeof selectedPiece.value !== 'number') {
     selectedPiece.value = id;
   } else {
     const order: Order = {
