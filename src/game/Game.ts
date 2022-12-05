@@ -48,22 +48,23 @@ export const SimulChess = {
         moves: {
           addOrder: {
             move: (
-              { G, playerID }: { G: GameState; playerID: number },
+              { G, playerID }: { G: GameState; playerID: string },
               order: Order
             ) => {
+              const playerNumber = +playerID;
               const movedPiece = G.pieces[order.sourcePieceId];
-              if (movedPiece.owner !== playerID) {
+              if (movedPiece.owner !== playerNumber) {
                 return INVALID_MOVE;
               }
               if (
-                G.orders[playerID].find(
+                G.orders[playerNumber].find(
                   (currentOrders) =>
                     currentOrders.sourcePieceId === order.sourcePieceId
                 )
               ) {
                 return INVALID_MOVE;
               }
-              G.orders[playerID].push(order);
+              G.orders[playerNumber].push(order);
             },
             // Prevents the move counting towards a player’s number of moves.
             noLimit: true,
@@ -75,13 +76,13 @@ export const SimulChess = {
 
   moves: {
     clickCell: (
-      { G, playerID }: { G: GameState; playerID: number },
+      { G, playerID }: { G: GameState; playerID: string },
       id: number
     ) => {
       if (G.cells[id] !== null) {
         return INVALID_MOVE;
       }
-      G.cells[id] = playerID;
+      G.cells[id] = +playerID;
     },
   },
 

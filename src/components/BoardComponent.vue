@@ -5,6 +5,7 @@ import BoardPiece from '@/components/BoardPiece.vue';
 import type { GameState } from '@/game/Game';
 import type { Order } from '@/game/orders';
 import { chessClient } from '@/game/App';
+import { arrayToCoordinates } from '@/game/common';
 
 interface BoardProps {
   state: { G: GameState };
@@ -31,9 +32,21 @@ const handlePieceClick = (id: number) => {
 
 const handleCellClick = (pieceID?: number) => {
   if (typeof pieceID !== 'number') {
-    return;
+    if (
+      typeof selectedPiece.value === 'number' &&
+      typeof cellHover.value === 'number'
+    ) {
+      const order: Order = {
+        sourcePieceId: selectedPiece.value,
+        type: 'move',
+        moveTo: arrayToCoordinates(cellHover.value, props.state.G.board),
+      };
+      chessClient.client.moves.addOrder(order);
+      selectedPiece.value = null;
+    }
+  } else {
+    handlePieceClick(pieceID);
   }
-  handlePieceClick(pieceID);
 };
 
 const handleCellHover = (cellId: number) => {
