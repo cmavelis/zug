@@ -74,6 +74,11 @@ export const SimulChess = {
       },
       resolution: {},
     },
+    endIf: ({ ctx }) => {
+      return Object.values(ctx.activePlayers).every((p) => p === 'resolution');
+    },
+    // TODO: use this to resolve moves and modify state from player orders
+    // onEnd: ({ ctx }) => {},
   },
 
   moves: {
