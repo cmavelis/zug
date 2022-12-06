@@ -70,7 +70,9 @@ export const SimulChess = {
             noLimit: true,
           },
         },
+        next: 'resolution',
       },
+      resolution: {},
     },
   },
 

@@ -4,10 +4,11 @@ import type { Ref } from 'vue';
 import BoardPiece from '@/components/BoardPiece.vue';
 import type { GameState } from '@/game/Game';
 import type { Order } from '@/game/orders';
-import { chessClient } from '@/game/App';
+import type { _ClientImpl } from 'boardgame.io/dist/types/src/client/client';
 import { arrayToCoordinates } from '@/game/common';
 
 interface BoardProps {
+  client: _ClientImpl;
   state: { G: GameState };
 }
 
@@ -25,7 +26,7 @@ const handlePieceClick = (id: number) => {
       targetPieceId: id,
       type: 'attack',
     };
-    chessClient.client.moves.addOrder(order);
+    props.client.moves.addOrder(order);
     selectedPiece.value = null;
   }
 };
@@ -41,7 +42,7 @@ const handleCellClick = (pieceID?: number) => {
         type: 'move',
         moveTo: arrayToCoordinates(cellHover.value, props.state.G.board),
       };
-      chessClient.client.moves.addOrder(order);
+      props.client.moves.addOrder(order);
       selectedPiece.value = null;
     }
   } else {
@@ -51,6 +52,11 @@ const handleCellClick = (pieceID?: number) => {
 
 const handleCellHover = (cellId: number) => {
   cellHover.value = cellId;
+};
+
+const handleEndTurn = () => {
+  const { endStage } = props.client.events;
+  if (endStage) endStage();
 };
 </script>
 
@@ -74,6 +80,7 @@ const handleCellHover = (cellId: number) => {
       />
     </div>
   </div>
+  <button @click="handleEndTurn">end turn</button>
   <p>{{ props.state.G }}</p>
 </template>
 
