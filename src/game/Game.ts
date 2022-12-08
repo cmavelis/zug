@@ -1,3 +1,4 @@
+import type { Game } from 'boardgame.io';
 import { INVALID_MOVE } from 'boardgame.io/core';
 import { createPiece, type Piece } from '@/game/pieces';
 import type { Order, Orders } from '@/game/orders';
@@ -12,7 +13,7 @@ export interface GameState {
 }
 
 function orderResolver({ G }: { G: GameState }) {
-  const { cells, orders } = G;
+  const { cells, orders, pieces } = G;
   // apply orders
   // TODO: DRY this up
   if (orders[0].length > 0) {
@@ -23,6 +24,7 @@ function orderResolver({ G }: { G: GameState }) {
         const oldLocation = cells.findIndex((i) => i === order.sourcePieceId);
         cells[oldLocation] = null;
         cells[newLocation] = order.sourcePieceId;
+        pieces[order.sourcePieceId].position = order.moveTo;
       }
     });
   }
@@ -34,13 +36,14 @@ function orderResolver({ G }: { G: GameState }) {
         const oldLocation = cells.findIndex((i) => i === order.sourcePieceId);
         cells[oldLocation] = null;
         cells[newLocation] = order.sourcePieceId;
+        pieces[order.sourcePieceId].position = order.moveTo;
       }
     });
   }
   return G;
 }
 
-export const SimulChess = {
+export const SimulChess: Game<GameState> = {
   setup: () => {
     const board = { x: 3, y: 4 };
     const initialGame = {
@@ -67,7 +70,6 @@ export const SimulChess = {
   },
 
   turn: {
-    // @ts-ignore-line
     onBegin: ({ events }) => {
       events.setActivePlayers({
         all: 'planning',
@@ -105,7 +107,10 @@ export const SimulChess = {
       resolution: {},
     },
     endIf: ({ ctx }) => {
-      return Object.values(ctx.activePlayers).every((p) => p === 'resolution');
+      if (ctx.activePlayers)
+        return Object.values(ctx.activePlayers).every(
+          (p) => p === 'resolution'
+        );
     },
     // TODO: use this to resolve moves and modify state from player orders
     onEnd: ({ G }) => {
