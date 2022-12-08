@@ -2,12 +2,42 @@ import { INVALID_MOVE } from 'boardgame.io/core';
 import { createPiece, type Piece } from '@/game/pieces';
 import type { Order, Orders } from '@/game/orders';
 import type { Coordinates } from '@/game/common';
+import { coordinatesToArray } from '@/game/common';
 
 export interface GameState {
   board: Coordinates;
   cells: Array<null | number>;
   orders: { [playerID: number]: Orders };
   pieces: Piece[];
+}
+
+function orderResolver({ G }: { G: GameState }) {
+  const { cells, orders } = G;
+  // apply orders
+  // TODO: DRY this up
+  if (orders[0].length > 0) {
+    orders[0].forEach((order) => {
+      // MOVE order
+      if (order.type === 'move') {
+        const newLocation = coordinatesToArray(order.moveTo, G.board);
+        const oldLocation = cells.findIndex((i) => i === order.sourcePieceId);
+        cells[oldLocation] = null;
+        cells[newLocation] = order.sourcePieceId;
+      }
+    });
+  }
+  if (orders[1].length > 0) {
+    orders[1].forEach((order) => {
+      // MOVE order
+      if (order.type === 'move') {
+        const newLocation = coordinatesToArray(order.moveTo, G.board);
+        const oldLocation = cells.findIndex((i) => i === order.sourcePieceId);
+        cells[oldLocation] = null;
+        cells[newLocation] = order.sourcePieceId;
+      }
+    });
+  }
+  return G;
 }
 
 export const SimulChess = {
@@ -78,7 +108,9 @@ export const SimulChess = {
       return Object.values(ctx.activePlayers).every((p) => p === 'resolution');
     },
     // TODO: use this to resolve moves and modify state from player orders
-    // onEnd: ({ ctx }) => {},
+    onEnd: ({ G }) => {
+      return orderResolver({ G });
+    },
   },
 
   moves: {
