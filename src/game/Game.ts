@@ -26,6 +26,7 @@ function orderResolver({ G }: { G: GameState }) {
         pieces[order.sourcePieceId].position = order.moveTo;
       }
     });
+    orders[0] = [];
   }
   // TODO: DRY this up
   if (orders[1].length > 0) {
@@ -39,6 +40,7 @@ function orderResolver({ G }: { G: GameState }) {
         pieces[order.sourcePieceId].position = order.moveTo;
       }
     });
+    orders[1] = [];
   }
   return G;
 }
@@ -112,7 +114,6 @@ export const SimulChess: Game<GameState> = {
           (p) => p === 'resolution'
         );
     },
-    // TODO: use this to resolve moves and modify state from player orders
     onEnd: ({ G }) => {
       return orderResolver({ G });
     },
