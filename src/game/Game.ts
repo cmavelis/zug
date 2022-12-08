@@ -15,7 +15,6 @@ export interface GameState {
 function orderResolver({ G }: { G: GameState }) {
   const { cells, orders, pieces } = G;
   // apply orders
-  // TODO: DRY this up
   if (orders[0].length > 0) {
     orders[0].forEach((order) => {
       // MOVE order
@@ -28,6 +27,7 @@ function orderResolver({ G }: { G: GameState }) {
       }
     });
   }
+  // TODO: DRY this up
   if (orders[1].length > 0) {
     orders[1].forEach((order) => {
       // MOVE order
