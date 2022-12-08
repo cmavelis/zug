@@ -2,47 +2,14 @@ import type { Game } from 'boardgame.io';
 import { INVALID_MOVE } from 'boardgame.io/core';
 import { createPiece, type Piece } from '@/game/pieces';
 import type { Order, Orders } from '@/game/orders';
+import { orderResolver } from '@/game/orders';
 import type { Coordinates } from '@/game/common';
-import { coordinatesToArray } from '@/game/common';
 
 export interface GameState {
   board: Coordinates;
   cells: Array<null | number>;
   orders: { [playerID: number]: Orders };
   pieces: Piece[];
-}
-
-function orderResolver({ G }: { G: GameState }) {
-  const { cells, orders, pieces } = G;
-  // apply orders
-  if (orders[0].length > 0) {
-    orders[0].forEach((order) => {
-      // MOVE order
-      if (order.type === 'move') {
-        const newLocation = coordinatesToArray(order.moveTo, G.board);
-        const oldLocation = cells.findIndex((i) => i === order.sourcePieceId);
-        cells[oldLocation] = null;
-        cells[newLocation] = order.sourcePieceId;
-        pieces[order.sourcePieceId].position = order.moveTo;
-      }
-    });
-    orders[0] = [];
-  }
-  // TODO: DRY this up
-  if (orders[1].length > 0) {
-    orders[1].forEach((order) => {
-      // MOVE order
-      if (order.type === 'move') {
-        const newLocation = coordinatesToArray(order.moveTo, G.board);
-        const oldLocation = cells.findIndex((i) => i === order.sourcePieceId);
-        cells[oldLocation] = null;
-        cells[newLocation] = order.sourcePieceId;
-        pieces[order.sourcePieceId].position = order.moveTo;
-      }
-    });
-    orders[1] = [];
-  }
-  return G;
 }
 
 export const SimulChess: Game<GameState> = {
