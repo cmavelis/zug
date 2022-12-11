@@ -13,15 +13,33 @@ const styleObject = reactive({
   width: squareSize + 'px',
   height: squareSize + 'px',
 });
+
+const pieceColor = props.owner === 0 ? '#729bf1' : '#62d368';
 </script>
 
 <template>
-  <div class="piece" :style="styleObject">{{ props.id }}</div>
+  <div class="piece" :style="styleObject">
+    <div class="pieceIcon">{{ props.id }}</div>
+  </div>
 </template>
 
 <style scoped>
 .piece {
   pointer-events: none;
   position: absolute;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.pieceIcon {
+  background-color: v-bind(pieceColor);
+  border-radius: 50%;
+  height: 80%;
+  width: 80%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: black;
 }
 </style>
