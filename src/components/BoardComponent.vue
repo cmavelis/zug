@@ -20,15 +20,18 @@ const props = defineProps<BoardProps>();
 const handlePieceClick = (id: number) => {
   if (typeof selectedPiece.value !== 'number') {
     selectedPiece.value = id;
-  } else {
-    const order: Order = {
-      sourcePieceId: selectedPiece.value,
-      targetPieceId: id,
-      type: 'attack',
-    };
-    props.client.moves.addOrder(order);
-    selectedPiece.value = null;
   }
+
+  // COMMENTED OUT ATTACK FOR NOW
+  // } else {
+  //   const order: Order = {
+  //     sourcePieceId: selectedPiece.value,
+  //     targetPieceId: id,
+  //     type: 'attack',
+  //   };
+  //   props.client.moves.addOrder(order);
+  //   selectedPiece.value = null;
+  // }
 };
 
 const handleCellClick = (pieceID?: number) => {
