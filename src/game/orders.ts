@@ -80,15 +80,13 @@ export function orderResolver({ G }: { G: GameState }) {
   }
 
   clashingMoves.forEach((m) => {
+    // remove pieces from cells array
     const clashedPieceIDs = Object.values(m).flatMap((m) => m.sourcePieceId);
     clashedPieceIDs.forEach(
       (id) => (cells[cells.findIndex((c) => c === id)] = null)
     );
 
-    // pullAll(
-    //   cells,
-    //   Object.values(m).map((m) => m.sourcePieceId)
-    // );
+    // remove pieces from pieces array
     Object.values(m).forEach((move) => {
       remove(pieces, (p) => p.id === move.sourcePieceId);
     });
