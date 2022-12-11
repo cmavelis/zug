@@ -22,18 +22,19 @@ export const SimulChess: Game<GameState> = {
       orders: { 0: [], 1: [] },
     };
 
-    createPiece({
-      G: initialGame,
-      pieceToCreate: { owner: 0, position: { x: 1, y: 1 } },
-    });
-    createPiece({
-      G: initialGame,
-      pieceToCreate: { owner: 1, position: { x: 2, y: 3 } },
-    });
-    createPiece({
-      G: initialGame,
-      pieceToCreate: { owner: 1, position: { x: 2, y: 2 } },
-    });
+    [0, 1, 2].forEach((x) =>
+      createPiece({
+        G: initialGame,
+        pieceToCreate: { owner: 0, position: { x, y: 0 } },
+      })
+    );
+
+    [0, 1, 2].forEach((x) =>
+      createPiece({
+        G: initialGame,
+        pieceToCreate: { owner: 1, position: { x, y: 3 } },
+      })
+    );
 
     return initialGame;
   },
