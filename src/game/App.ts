@@ -8,7 +8,9 @@ export class SimulChessClient {
   constructor(playerID: string) {
     this.client = Client({
       game: SimulChess,
-      multiplayer: SocketIO({ server: 'localhost:8000' }),
+      multiplayer: SocketIO({
+        server: `localhost:${process.env.PORT || 8000}`,
+      }),
       playerID,
     });
     this.client.start();
