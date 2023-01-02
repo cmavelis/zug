@@ -10,7 +10,9 @@
     "type-check": "vue-tsc --noEmit -p tsconfig.vitest.json --composite false",
     "lint": "eslint . --ext .vue,.js,.jsx,.cjs,.mjs,.ts,.tsx,.cts,.mts --fix --ignore-path .gitignore",
     "server:dev": "nodemon server/main.ts --watch server/main.ts --watch src/game",
-    "server:prod": "ts-node server/main.ts"
+    "server:prod": "ts-node server/main.ts",
+    "client:prod": "npx http-server ./dist",
+    "start": "npm run client:prod & npm run server:prod && kill $!"
   },
   "dependencies": {
     "boardgame.io": "^0.50.2",
