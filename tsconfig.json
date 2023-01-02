@@ -1,4 +1,16 @@
 {
+  "ts-node": {
+    "require": ["tsconfig-paths/register"],
+    "transpileOnly": true
+  },
+  "compilerOptions": {
+    "baseUrl": "./",
+    "paths": {
+      "@/*": [
+        "./src/*"
+      ]
+    },
+  },
   "files": [],
   "references": [
     {
