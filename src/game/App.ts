@@ -6,7 +6,6 @@ import type { _ClientImpl } from 'boardgame.io/dist/types/src/client/client';
 const SERVER_PORT = 8000;
 
 let server = `localhost:${SERVER_PORT}`;
-console.log(process.env.RAILWAY_STATIC_URL);
 if (process.env.RAILWAY_STATIC_URL) {
   server = `${process.env.RAILWAY_STATIC_URL}:${SERVER_PORT}`;
 }
