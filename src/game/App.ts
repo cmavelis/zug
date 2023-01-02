@@ -6,8 +6,9 @@ import type { _ClientImpl } from 'boardgame.io/dist/types/src/client/client';
 const SERVER_PORT = 8000;
 
 let server = `localhost:${SERVER_PORT}`;
-if (import.meta.env.RAILWAY_STATIC_URL) {
-  server = `${import.meta.env.RAILWAY_STATIC_URL}:${SERVER_PORT}`;
+console.log(process.env.RAILWAY_STATIC_URL);
+if (process.env.RAILWAY_STATIC_URL) {
+  server = `${process.env.RAILWAY_STATIC_URL}:${SERVER_PORT}`;
 }
 
 export class SimulChessClient {
