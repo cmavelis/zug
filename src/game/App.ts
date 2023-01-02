@@ -9,7 +9,7 @@ export class SimulChessClient {
     this.client = Client({
       game: SimulChess,
       multiplayer: SocketIO({
-        server: `localhost:${process.env.PORT || 8000}`,
+        server: `localhost:${import.meta.env.PORT || 8000}`,
       }),
       playerID,
     });
