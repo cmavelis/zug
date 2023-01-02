@@ -11,7 +11,7 @@
     "lint": "eslint . --ext .vue,.js,.jsx,.cjs,.mjs,.ts,.tsx,.cts,.mts --fix --ignore-path .gitignore",
     "server:dev": "nodemon server/main.ts --watch server/main.ts --watch src/game",
     "server:prod": "ts-node server/main.ts",
-    "client:prod": "npx http-server ./dist",
+    "client:prod": "npx http-server --cors ./dist",
     "start": "npm run client:prod & npm run server:prod && kill $!"
   },
   "dependencies": {
