@@ -1,8 +1,6 @@
 const { Server, Origins } = require('boardgame.io/server');
 const { SimulChess } = require('../src/game/Game');
 
-console.log('process.env.RAILWAY_STATIC_URL', process.env.RAILWAY_STATIC_URL);
-
 const server = Server({
   games: [SimulChess],
   origins: [Origins.LOCALHOST_IN_DEVELOPMENT, process.env.RAILWAY_STATIC_URL],

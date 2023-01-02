@@ -13,5 +13,3 @@ export default defineConfig({
     },
   },
 });
-
-console.log('process.env.RAILWAY_STATIC_URL', process.env.RAILWAY_STATIC_URL);
