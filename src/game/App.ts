@@ -3,11 +3,11 @@ import { SocketIO } from 'boardgame.io/multiplayer';
 import { type GameState, SimulChess } from './Game';
 import type { _ClientImpl } from 'boardgame.io/dist/types/src/client/client';
 
-const SERVER_PORT = 8000;
-
-let server = `localhost:${SERVER_PORT}`;
+let server = `localhost:${import.meta.env.VITE_SERVER_PORT}`;
 if (import.meta.env.VITE_SERVER_URL) {
-  server = `https://${import.meta.env.VITE_SERVER_URL}:${SERVER_PORT}`;
+  server = `https://${import.meta.env.VITE_SERVER_URL}:${
+    import.meta.env.VITE_SERVER_PORT
+  }`;
 }
 
 export class SimulChessClient {

@@ -3,7 +3,10 @@ const { SimulChess } = require('../src/game/Game');
 
 const server = Server({
   games: [SimulChess],
-  origins: [Origins.LOCALHOST_IN_DEVELOPMENT, process.env.RAILWAY_STATIC_URL],
+  origins: [
+    Origins.LOCALHOST_IN_DEVELOPMENT,
+    `https://${process.env.RAILWAY_STATIC_URL}`,
+  ],
 });
 
-server.run(8000);
+server.run(process.env.SERVER_PORT);
