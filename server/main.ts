@@ -16,7 +16,7 @@ const server = Server({
 const frontEndAppBuildPath = path.resolve(__dirname, '../dist');
 server.app.use(serve(frontEndAppBuildPath));
 
-server.run(Number(process.env.SERVER_PORT) || 8000, () => {
+server.run(Number(process.env.PORT) || 8000, () => {
   server.app.use(
     async (ctx, next) =>
       await serve(frontEndAppBuildPath)(
