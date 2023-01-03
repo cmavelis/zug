@@ -6,6 +6,7 @@ const server = Server({
   origins: [
     Origins.LOCALHOST,
     `https://${process.env.RAILWAY_STATIC_URL}:${process.env.PORT}`,
+    `https://${process.env.RAILWAY_STATIC_URL}`,
   ],
 });
 
