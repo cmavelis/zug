@@ -14,7 +14,7 @@ export interface GameState {
 
 export const SimulChess: Game<GameState> = {
   setup: () => {
-    const board = { x: 3, y: 4 };
+    const board = { x: 4, y: 3 };
     const initialGame = {
       board,
       cells: Array(board.x * board.y).fill(null),
@@ -22,17 +22,17 @@ export const SimulChess: Game<GameState> = {
       orders: { 0: [], 1: [] },
     };
 
-    [0, 1, 2].forEach((x) =>
+    [0, 1, 2, 3].forEach((x) =>
       createPiece({
         G: initialGame,
         pieceToCreate: { owner: 0, position: { x, y: 0 } },
       })
     );
 
-    [0, 1, 2].forEach((x) =>
+    [0, 1, 2, 3].forEach((x) =>
       createPiece({
         G: initialGame,
-        pieceToCreate: { owner: 1, position: { x, y: 3 } },
+        pieceToCreate: { owner: 1, position: { x, y: 2 } },
       })
     );
 
