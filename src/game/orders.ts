@@ -15,7 +15,7 @@ export interface MoveOrder extends OrderBase {
 
 export interface AttackOrder extends OrderBase {
   type: 'attack';
-  targetPieceId: number;
+  target: Coordinates;
 }
 
 export type Order = MoveOrder | AttackOrder;
