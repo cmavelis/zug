@@ -95,7 +95,7 @@ const handleEndTurn = () => {
 
 .board-container {
   display: grid;
-  grid-template-columns: repeat(3, var(--square-size));
+  grid-template-columns: repeat(4, var(--square-size));
   grid-template-rows: repeat(4, var(--square-size));
   border: 1px solid blanchedalmond;
   width: fit-content;
