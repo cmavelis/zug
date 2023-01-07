@@ -2,7 +2,7 @@ import type { Coordinates } from '@/game/common';
 import { coordinatesToArray } from '@/game/common';
 import type { GameState } from '@/game/Game';
 import { isEqual, remove } from 'lodash';
-import { moveValidator } from '@/game/zugzwang/validators';
+import { attackValidator, moveValidator } from '@/game/zugzwang/validators';
 
 export interface OrderBase {
   sourcePieceId: number;
@@ -22,6 +22,17 @@ export type Order = MoveOrder | AttackOrder;
 
 export type Orders = Order[];
 
+function removePieces(G: GameState, pieceIDs: number[]) {
+  const { cells, pieces } = G;
+
+  pieceIDs.forEach((id) => {
+    // empty the cells
+    cells[cells.findIndex((c) => c === id)] = null;
+    // remove pieces
+    remove(pieces, (p) => p.id === id);
+  });
+}
+
 export function orderResolver({ G }: { G: GameState }) {
   const { cells, orders, pieces } = G;
 
@@ -32,9 +43,7 @@ export function orderResolver({ G }: { G: GameState }) {
   const moves1 = orders[1].filter(
     (order): order is MoveOrder => order.type === 'move'
   );
-
   const clashingMoves: Array<{ [index: number]: MoveOrder }> = [];
-
   moves0.forEach((order0) => {
     moves1.forEach((order1) => {
       if (isEqual(order0.moveTo, order1.moveTo)) {
@@ -47,13 +56,16 @@ export function orderResolver({ G }: { G: GameState }) {
   });
 
   const allMoves = moves0.concat(moves1);
+  const allAttacks = orders[0]
+    .concat(orders[1])
+    .filter((order): order is AttackOrder => order.type === 'attack');
 
   function applyMove(order: Order) {
     // MOVE order
     if (order.type === 'move') {
       const movedPiece = pieces.find((p) => p.id === order.sourcePieceId);
       if (!(movedPiece && moveValidator(movedPiece, order))) {
-        throw Error('Invalid move received');
+        throw Error('Invalid action received');
       }
 
       // MOVE type specific effects
@@ -67,10 +79,38 @@ export function orderResolver({ G }: { G: GameState }) {
     }
   }
 
+  function applyAttack(order: Order) {
+    // filter for order type
+    if (order.type === 'attack') {
+      const actingPiece = pieces.find((p) => p.id === order.sourcePieceId);
+      if (!(actingPiece && attackValidator(actingPiece, order))) {
+        throw Error('Invalid action received');
+      }
+
+      const targetPiece = pieces.find((p) => p.position === order.target);
+      // type specific effects
+      if (actingPiece && targetPiece) {
+        return targetPiece.id;
+      }
+    }
+  }
+
+  const attackedPieceIDs: number[] = [];
+
   // apply orders
   if (allMoves.length > 0) {
     allMoves.forEach(applyMove);
   }
+  if (allAttacks.length > 0) {
+    allAttacks.forEach((attack) => {
+      const attackedPieceID = applyAttack(attack);
+      if (attackedPieceID) {
+        attackedPieceIDs.push(attackedPieceID);
+      }
+    });
+  }
+
+  removePieces(G, attackedPieceIDs);
 
   // clashing MOVEs pt 2
   clashingMoves.forEach((m) => {
