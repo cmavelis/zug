@@ -46,6 +46,8 @@ export function orderResolver({ G }: { G: GameState }) {
     });
   });
 
+  const allMoves = moves0.concat(moves1);
+
   function applyMove(order: Order) {
     // MOVE order
     if (order.type === 'move') {
@@ -53,6 +55,8 @@ export function orderResolver({ G }: { G: GameState }) {
       if (!(movedPiece && moveValidator(movedPiece, order))) {
         throw Error('Invalid move received');
       }
+
+      // MOVE type specific effects
       if (movedPiece) {
         movedPiece.position = order.moveTo;
       }
@@ -64,14 +68,8 @@ export function orderResolver({ G }: { G: GameState }) {
   }
 
   // apply orders
-  if (orders[0].length > 0) {
-    orders[0].forEach(applyMove);
-    orders[0] = [];
-  }
-  // TODO: DRY this up
-  if (orders[1].length > 0) {
-    orders[1].forEach(applyMove);
-    orders[1] = [];
+  if (allMoves.length > 0) {
+    allMoves.forEach(applyMove);
   }
 
   //clashes pt 2
@@ -87,6 +85,10 @@ export function orderResolver({ G }: { G: GameState }) {
       remove(pieces, (p) => p.id === move.sourcePieceId);
     });
   });
+
+  // clear orders out
+  orders[0] = [];
+  orders[1] = [];
 
   return G;
 }
