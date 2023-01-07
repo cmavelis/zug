@@ -25,7 +25,7 @@ export type Orders = Order[];
 export function orderResolver({ G }: { G: GameState }) {
   const { cells, orders, pieces } = G;
 
-  // Clashes pt 1
+  // clashing MOVEs pt 1
   const moves0 = orders[0].filter(
     (order): order is MoveOrder => order.type === 'move'
   );
@@ -72,7 +72,7 @@ export function orderResolver({ G }: { G: GameState }) {
     allMoves.forEach(applyMove);
   }
 
-  //clashes pt 2
+  // clashing MOVEs pt 2
   clashingMoves.forEach((m) => {
     // remove pieces from cells array
     const clashedPieceIDs = Object.values(m).flatMap((m) => m.sourcePieceId);
@@ -86,7 +86,7 @@ export function orderResolver({ G }: { G: GameState }) {
     });
   });
 
-  // clear orders out
+  // clear orders out for next turn
   orders[0] = [];
   orders[1] = [];
 
