@@ -107,10 +107,10 @@ const handleEndTurn = () => {
 }
 
 .hoveredCell {
-  box-shadow: inset 0 0 5px cyan;
+  box-shadow: inset 0 0 5px cyan, inset 0 0 10px cyan;
 }
 
 .selected {
-  box-shadow: 0 0 10px coral;
+  box-shadow: 0 0 10px coral, 0 0 5px coral;
 }
 </style>

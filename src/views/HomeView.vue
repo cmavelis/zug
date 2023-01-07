@@ -32,3 +32,9 @@ chessClientTwo.client.subscribe(updateGameStateTwo);
     <BoardComponent :client="chessClientTwo.client" :state="gameStateTwo" />
   </main>
 </template>
+
+<style>
+main {
+  padding: 1rem 0;
+}
+</style>
