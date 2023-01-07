@@ -2,6 +2,7 @@ import type { Coordinates } from '@/game/common';
 import { coordinatesToArray } from '@/game/common';
 import type { GameState } from '@/game/Game';
 import { isEqual, remove } from 'lodash';
+import { moveValidator } from '@/game/zugzwang/validators';
 
 export interface OrderBase {
   sourcePieceId: number;
@@ -24,6 +25,7 @@ export type Orders = Order[];
 export function orderResolver({ G }: { G: GameState }) {
   const { cells, orders, pieces } = G;
 
+  // Clashes pt 1
   const moves0 = orders[0].filter(
     (order): order is MoveOrder => order.type === 'move'
   );
@@ -44,41 +46,35 @@ export function orderResolver({ G }: { G: GameState }) {
     });
   });
 
+  function applyMove(order: Order) {
+    // MOVE order
+    if (order.type === 'move') {
+      const movedPiece = pieces.find((p) => p.id === order.sourcePieceId);
+      if (!(movedPiece && moveValidator(movedPiece, order))) {
+        throw Error('Invalid move received');
+      }
+      if (movedPiece) {
+        movedPiece.position = order.moveTo;
+      }
+      const newLocation = coordinatesToArray(order.moveTo, G.board);
+      const oldLocation = cells.findIndex((i) => i === order.sourcePieceId);
+      cells[oldLocation] = null;
+      cells[newLocation] = order.sourcePieceId;
+    }
+  }
+
   // apply orders
   if (orders[0].length > 0) {
-    orders[0].forEach((order) => {
-      // MOVE order
-      if (order.type === 'move') {
-        const newLocation = coordinatesToArray(order.moveTo, G.board);
-        const oldLocation = cells.findIndex((i) => i === order.sourcePieceId);
-        cells[oldLocation] = null;
-        cells[newLocation] = order.sourcePieceId;
-        const movedPiece = pieces.find((p) => p.id === order.sourcePieceId);
-        if (movedPiece) {
-          movedPiece.position = order.moveTo;
-        }
-      }
-    });
+    orders[0].forEach(applyMove);
     orders[0] = [];
   }
   // TODO: DRY this up
   if (orders[1].length > 0) {
-    orders[1].forEach((order) => {
-      // MOVE order
-      if (order.type === 'move') {
-        const newLocation = coordinatesToArray(order.moveTo, G.board);
-        const oldLocation = cells.findIndex((i) => i === order.sourcePieceId);
-        cells[oldLocation] = null;
-        cells[newLocation] = order.sourcePieceId;
-        const movedPiece = pieces.find((p) => p.id === order.sourcePieceId);
-        if (movedPiece) {
-          movedPiece.position = order.moveTo;
-        }
-      }
-    });
+    orders[1].forEach(applyMove);
     orders[1] = [];
   }
 
+  //clashes pt 2
   clashingMoves.forEach((m) => {
     // remove pieces from cells array
     const clashedPieceIDs = Object.values(m).flatMap((m) => m.sourcePieceId);
