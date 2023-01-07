@@ -1,7 +1,7 @@
+import { isEqual, remove } from 'lodash';
 import type { Coordinates } from '@/game/common';
 import { coordinatesToArray } from '@/game/common';
 import type { GameState } from '@/game/Game';
-import { isEqual, remove } from 'lodash';
 import { attackValidator, moveValidator } from '@/game/zugzwang/validators';
 
 export interface OrderBase {
@@ -53,6 +53,10 @@ export function orderResolver({ G }: { G: GameState }) {
         });
       }
     });
+  });
+  // removed further down, in cleanup
+  const clashedPieceIDs = clashingMoves.flatMap((m) => {
+    return Object.values(m).flatMap((m) => m.sourcePieceId) || [];
   });
 
   const allMoves = moves0.concat(moves1);
@@ -111,20 +115,7 @@ export function orderResolver({ G }: { G: GameState }) {
   }
 
   removePieces(G, attackedPieceIDs);
-
-  // clashing MOVEs pt 2
-  clashingMoves.forEach((m) => {
-    // remove pieces from cells array
-    const clashedPieceIDs = Object.values(m).flatMap((m) => m.sourcePieceId);
-    clashedPieceIDs.forEach(
-      (id) => (cells[cells.findIndex((c) => c === id)] = null)
-    );
-
-    // remove pieces from pieces array
-    Object.values(m).forEach((move) => {
-      remove(pieces, (p) => p.id === move.sourcePieceId);
-    });
-  });
+  removePieces(G, clashedPieceIDs);
 
   // clear orders out for next turn
   orders[0] = [];
