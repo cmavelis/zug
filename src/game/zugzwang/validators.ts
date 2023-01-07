@@ -5,7 +5,7 @@ import type { AttackOrder, MoveOrder } from '@/game/orders';
 
 export function moveValidator(piece: Piece, move: MoveOrder): boolean {
   // assume moves can only go one direction
-  const yChangeAllowed = piece.owner === 0 ? -1 : 1;
+  const yChangeAllowed = piece.owner === 0 ? 1 : -1;
   const xChangeAllowed = 0;
 
   const yChange = move.moveTo.y - piece.position.y;
@@ -16,7 +16,7 @@ export function moveValidator(piece: Piece, move: MoveOrder): boolean {
 
 export function attackValidator(piece: Piece, attack: AttackOrder): boolean {
   // assume attacks can only go one direction
-  const yChangeAllowed = piece.owner === 0 ? -1 : 1;
+  const yChangeAllowed = piece.owner === 0 ? 1 : -1;
   // attack is diagonal
   const xChangeAllowed = 1;
 
