@@ -73,6 +73,13 @@ export const SimulChess: Game<GameState> = {
             // Prevents the move counting towards a player’s number of moves.
             noLimit: true,
           },
+          removeLastOrder: {
+            move: ({ G, playerID }: { G: GameState; playerID: string }) => {
+              const playerNumber = +playerID;
+              G.orders[playerNumber].pop();
+            },
+            noLimit: true,
+          },
         },
         next: 'resolution',
       },
