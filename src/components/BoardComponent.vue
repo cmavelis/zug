@@ -61,6 +61,7 @@ const selectAction = (action: ActionsEnum) => {
 
 const clearAction = () => {
   selectedAction.value = null;
+  selectedPiece.value = null;
 };
 
 const undoLastOrder = () => {
@@ -71,7 +72,14 @@ const undoLastOrder = () => {
 <template>
   <section>
     <div>
-      <p>piece: {{ selectedPiece || 'none selected' }}</p>
+      <p>
+        piece:
+        {{
+          typeof selectedPiece === 'number'
+            ? String(selectedPiece)
+            : 'none selected'
+        }}
+      </p>
       <p>action: {{ selectedAction || 'none selected' }}</p>
       <button @click="undoLastOrder()">undo last order</button>
     </div>
