@@ -1,4 +1,4 @@
-import { isEqual, remove } from 'lodash';
+import { isEqual, isNumber, remove } from 'lodash';
 import type { Coordinates } from '@/game/common';
 import { coordinatesToArray } from '@/game/common';
 import type { GameState } from '@/game/Game';
@@ -69,6 +69,7 @@ export function orderResolver({ G }: { G: GameState }) {
     if (order.type === 'move') {
       const movedPiece = pieces.find((p) => p.id === order.sourcePieceId);
       if (!(movedPiece && moveValidator(movedPiece, order))) {
+        console.log(JSON.parse(JSON.stringify(order)));
         throw Error('Invalid action received');
       }
 
@@ -88,10 +89,12 @@ export function orderResolver({ G }: { G: GameState }) {
     if (order.type === 'attack') {
       const actingPiece = pieces.find((p) => p.id === order.sourcePieceId);
       if (!(actingPiece && attackValidator(actingPiece, order))) {
+        console.log(JSON.parse(JSON.stringify(order)));
+        console.log(JSON.parse(JSON.stringify(actingPiece)));
         throw Error('Invalid action received');
       }
 
-      const targetPiece = pieces.find((p) => p.position === order.target);
+      const targetPiece = pieces.find((p) => isEqual(p.position, order.target));
       // type specific effects
       if (actingPiece && targetPiece) {
         return targetPiece.id;
@@ -108,7 +111,7 @@ export function orderResolver({ G }: { G: GameState }) {
   if (allAttacks.length > 0) {
     allAttacks.forEach((attack) => {
       const attackedPieceID = applyAttack(attack);
-      if (attackedPieceID) {
+      if (isNumber(attackedPieceID)) {
         attackedPieceIDs.push(attackedPieceID);
       }
     });

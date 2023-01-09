@@ -3,7 +3,6 @@ import { ref } from 'vue';
 import type { Ref } from 'vue';
 import BoardPiece from '@/components/BoardPiece.vue';
 import type { GameState } from '@/game/Game';
-import type { Order } from '@/game/orders';
 import type { _ClientImpl } from 'boardgame.io/dist/types/src/client/client';
 import { arrayToCoordinates } from '@/game/common';
 
@@ -28,21 +27,29 @@ const handlePieceClick = (id: number) => {
 
 // select piece, then action, then cell
 const handleCellClick = (pieceID?: number) => {
-  if (typeof pieceID !== 'number') {
-    if (
-      typeof selectedPiece.value === 'number' &&
-      typeof cellHover.value === 'number'
-    ) {
-      const order: Order = {
-        sourcePieceId: selectedPiece.value,
-        type: 'move',
-        moveTo: arrayToCoordinates(cellHover.value, props.state.G.board),
-      };
-      props.client.moves.addOrder(order);
-      selectedPiece.value = null;
-    }
-  } else {
+  if (selectedPiece.value === null && typeof pieceID === 'number') {
     handlePieceClick(pieceID);
+    return;
+  }
+  if (
+    typeof selectedPiece.value === 'number' &&
+    selectedAction.value &&
+    typeof cellHover.value === 'number'
+  ) {
+    const order = {
+      sourcePieceId: selectedPiece.value,
+      type: selectedAction.value,
+    };
+    // TODO: figure out how to type this correctly, or simplify moveTo/target
+    if (selectedAction.value === 'attack') {
+      // @ts-ignore-next-line
+      order.target = arrayToCoordinates(cellHover.value, props.state.G.board);
+    } else if (selectedAction.value === 'move') {
+      // @ts-ignore-next-line
+      order.moveTo = arrayToCoordinates(cellHover.value, props.state.G.board);
+    }
+    props.client.moves.addOrder(order);
+    clearAction();
   }
 };
 

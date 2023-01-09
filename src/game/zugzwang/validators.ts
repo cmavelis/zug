@@ -18,10 +18,10 @@ export function attackValidator(piece: Piece, attack: AttackOrder): boolean {
   // assume attacks can only go one direction
   const yChangeAllowed = piece.owner === 0 ? 1 : -1;
   // attack is diagonal
-  const xChangeAllowed = 1;
+  const xChangesAllowed = [-1, 1];
 
   const yChange = attack.target.y - piece.position.y;
   const xChange = attack.target.x - piece.position.x;
 
-  return yChange === yChangeAllowed && xChange === xChangeAllowed;
+  return yChange === yChangeAllowed && xChangesAllowed.includes(xChange);
 }
