@@ -1,5 +1,5 @@
 import { Client } from 'boardgame.io/client';
-import { SocketIO } from 'boardgame.io/multiplayer';
+import { Local, SocketIO } from 'boardgame.io/multiplayer';
 import { type GameState, SimulChess } from './Game';
 import type { _ClientImpl } from 'boardgame.io/dist/types/src/client/client';
 
@@ -11,9 +11,12 @@ export class SimulChessClient {
   constructor(playerID: string) {
     this.client = Client({
       game: SimulChess,
-      multiplayer: SocketIO({
-        server,
-      }),
+      multiplayer:
+        hostname === 'localhost'
+          ? Local()
+          : SocketIO({
+              server,
+            }),
       playerID,
     });
     this.client.start();

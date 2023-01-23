@@ -3,7 +3,6 @@ import { ref } from 'vue';
 import type { Ref } from 'vue';
 import BoardPiece from '@/components/BoardPiece.vue';
 import type { GameState } from '@/game/Game';
-import type { Order } from '@/game/orders';
 import type { _ClientImpl } from 'boardgame.io/dist/types/src/client/client';
 import { arrayToCoordinates } from '@/game/common';
 
@@ -12,7 +11,10 @@ interface BoardProps {
   state: { G: GameState };
 }
 
+type ActionsEnum = 'move' | 'attack';
+
 const selectedPiece: Ref<null | number> = ref(null);
+const selectedAction: Ref<null | ActionsEnum> = ref(null);
 const cellHover: Ref<null | number> = ref(null);
 
 const props = defineProps<BoardProps>();
@@ -21,35 +23,33 @@ const handlePieceClick = (id: number) => {
   if (typeof selectedPiece.value !== 'number') {
     selectedPiece.value = id;
   }
-
-  // COMMENTED OUT ATTACK FOR NOW
-  // } else {
-  //   const order: Order = {
-  //     sourcePieceId: selectedPiece.value,
-  //     targetPieceId: id,
-  //     type: 'attack',
-  //   };
-  //   props.client.moves.addOrder(order);
-  //   selectedPiece.value = null;
-  // }
 };
 
+// select piece, then action, then cell
 const handleCellClick = (pieceID?: number) => {
-  if (typeof pieceID !== 'number') {
-    if (
-      typeof selectedPiece.value === 'number' &&
-      typeof cellHover.value === 'number'
-    ) {
-      const order: Order = {
-        sourcePieceId: selectedPiece.value,
-        type: 'move',
-        moveTo: arrayToCoordinates(cellHover.value, props.state.G.board),
-      };
-      props.client.moves.addOrder(order);
-      selectedPiece.value = null;
-    }
-  } else {
+  if (selectedPiece.value === null && typeof pieceID === 'number') {
     handlePieceClick(pieceID);
+    return;
+  }
+  if (
+    typeof selectedPiece.value === 'number' &&
+    selectedAction.value &&
+    typeof cellHover.value === 'number'
+  ) {
+    const order = {
+      sourcePieceId: selectedPiece.value,
+      type: selectedAction.value,
+    };
+    // TODO: figure out how to type this correctly, or simplify moveTo/target
+    if (selectedAction.value === 'attack') {
+      // @ts-ignore-next-line
+      order.target = arrayToCoordinates(cellHover.value, props.state.G.board);
+    } else if (selectedAction.value === 'move') {
+      // @ts-ignore-next-line
+      order.moveTo = arrayToCoordinates(cellHover.value, props.state.G.board);
+    }
+    props.client.moves.addOrder(order);
+    clearAction();
   }
 };
 
@@ -61,28 +61,60 @@ const handleEndTurn = () => {
   const { endStage } = props.client.events;
   if (endStage) endStage();
 };
+
+const selectAction = (action: ActionsEnum) => {
+  selectedAction.value = action;
+};
+
+const clearAction = () => {
+  selectedAction.value = null;
+  selectedPiece.value = null;
+};
+
+const undoLastOrder = () => {
+  props.client.moves.removeLastOrder();
+};
 </script>
 
 <template>
-  <div class="board-wrapper">
-    <div class="board-container">
-      <div
-        v-for="(cell, index) in props.state.G.cells"
-        :key="index"
-        class="board-square"
-        :class="{ hoveredCell: cellHover === index }"
-        @click="handleCellClick(cell)"
-        @mouseover="handleCellHover(index)"
-      />
-      <BoardPiece
-        v-for="piece in props.state.G.pieces"
-        :key="piece.position"
-        :class="{ selected: selectedPiece === piece.id }"
-        v-bind="piece"
-        @click="handlePieceClick(piece.id)"
-      />
+  <section>
+    <div>
+      <p>
+        piece:
+        {{
+          typeof selectedPiece === 'number'
+            ? String(selectedPiece)
+            : 'none selected'
+        }}
+      </p>
+      <p>action: {{ selectedAction || 'none selected' }}</p>
+      <button @click="undoLastOrder()">undo last order</button>
     </div>
-  </div>
+    <div class="board-wrapper">
+      <div>
+        <button @click="selectAction('attack')">attack</button>
+        <button @click="selectAction('move')">move</button>
+        <button @click="clearAction()">clear</button>
+      </div>
+      <div class="board-container">
+        <div
+          v-for="(cell, index) in props.state.G.cells"
+          :key="index"
+          class="board-square"
+          :class="{ hoveredCell: cellHover === index }"
+          @click="handleCellClick(cell)"
+          @mouseover="handleCellHover(index)"
+        />
+        <BoardPiece
+          v-for="piece in props.state.G.pieces"
+          :key="piece.position"
+          :class="{ selected: selectedPiece === piece.id }"
+          v-bind="piece"
+          @click="handlePieceClick(piece.id)"
+        />
+      </div>
+    </div>
+  </section>
   <button @click="handleEndTurn">end turn</button>
   <p>{{ props.state.G }}</p>
 </template>
@@ -95,7 +127,7 @@ const handleEndTurn = () => {
 
 .board-container {
   display: grid;
-  grid-template-columns: repeat(3, var(--square-size));
+  grid-template-columns: repeat(4, var(--square-size));
   grid-template-rows: repeat(4, var(--square-size));
   border: 1px solid blanchedalmond;
   width: fit-content;
@@ -107,10 +139,17 @@ const handleEndTurn = () => {
 }
 
 .hoveredCell {
-  box-shadow: inset 0 0 5px cyan;
+  box-shadow: inset 0 0 5px cyan, inset 0 0 10px cyan;
+}
+
+section {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-evenly;
+  padding: 1rem;
 }
 
 .selected {
-  box-shadow: 0 0 10px coral;
+  box-shadow: 0 0 10px coral, 0 0 5px coral;
 }
 </style>
