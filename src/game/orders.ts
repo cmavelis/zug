@@ -1,21 +1,21 @@
 import { isEqual, isNumber, remove } from 'lodash';
 import type { Coordinates } from '@/game/common';
-import { coordinatesToArray } from '@/game/common';
+import { applyDisplacement, coordinatesToArray } from '@/game/common';
 import type { GameState } from '@/game/Game';
 import { attackValidator, moveValidator } from '@/game/zugzwang/validators';
 
+// orders are stored with displacement from piece to target
 export interface OrderBase {
   sourcePieceId: number;
+  toTarget: Coordinates;
 }
 
 export interface MoveOrder extends OrderBase {
   type: 'move';
-  moveTo: Coordinates;
 }
 
 export interface AttackOrder extends OrderBase {
   type: 'attack';
-  target: Coordinates;
 }
 
 export type Order = MoveOrder | AttackOrder;
@@ -44,16 +44,17 @@ export function orderResolver({ G }: { G: GameState }) {
     (order): order is MoveOrder => order.type === 'move'
   );
   const clashingMoves: Array<{ [index: number]: MoveOrder }> = [];
-  moves0.forEach((order0) => {
-    moves1.forEach((order1) => {
-      if (isEqual(order0.moveTo, order1.moveTo)) {
-        clashingMoves.push({
-          0: order0,
-          1: order1,
-        });
-      }
-    });
-  });
+  // TODO
+  // moves0.forEach((order0) => {
+  //   moves1.forEach((order1) => {
+  //     if (isEqual(order0.toTarget, order1.toTarget)) {
+  //       clashingMoves.push({
+  //         0: order0,
+  //         1: order1,
+  //       });
+  //     }
+  //   });
+  // });
   // removed further down, in cleanup
   const clashedPieceIDs = clashingMoves.flatMap((m) => {
     return Object.values(m).flatMap((m) => m.sourcePieceId) || [];
@@ -75,9 +76,12 @@ export function orderResolver({ G }: { G: GameState }) {
 
       // MOVE type specific effects
       if (movedPiece) {
-        movedPiece.position = order.moveTo;
+        movedPiece.position = applyDisplacement(
+          movedPiece.position,
+          order.toTarget
+        );
       }
-      const newLocation = coordinatesToArray(order.moveTo, G.board);
+      const newLocation = coordinatesToArray(movedPiece.position, G.board);
       const oldLocation = cells.findIndex((i) => i === order.sourcePieceId);
       cells[oldLocation] = null;
       cells[newLocation] = order.sourcePieceId;
@@ -94,7 +98,11 @@ export function orderResolver({ G }: { G: GameState }) {
         throw Error('Invalid action received');
       }
 
-      const targetPiece = pieces.find((p) => isEqual(p.position, order.target));
+      const targetSquare = applyDisplacement(
+        actingPiece.position,
+        order.toTarget
+      );
+      const targetPiece = pieces.find((p) => isEqual(p.position, targetSquare));
       // type specific effects
       if (actingPiece && targetPiece) {
         return targetPiece.id;

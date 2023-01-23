@@ -4,7 +4,7 @@ import type { Ref } from 'vue';
 import BoardPiece from '@/components/BoardPiece.vue';
 import type { GameState } from '@/game/Game';
 import type { _ClientImpl } from 'boardgame.io/dist/types/src/client/client';
-import { arrayToCoordinates } from '@/game/common';
+import { arrayToCoordinates, getDisplacement } from '@/game/common';
 
 interface BoardProps {
   client: _ClientImpl;
@@ -25,6 +25,14 @@ const handlePieceClick = (id: number) => {
   }
 };
 
+const getPieceCoords = (pieceID: number, G: GameState) => {
+  const piece = G.pieces.find((p) => p.id === pieceID);
+  if (!piece) {
+    throw Error(`Could not find piece with ID: ${pieceID}`);
+  }
+  return piece.position;
+};
+
 // select piece, then action, then cell
 const handleCellClick = (pieceID?: number) => {
   if (selectedPiece.value === null && typeof pieceID === 'number') {
@@ -36,18 +44,18 @@ const handleCellClick = (pieceID?: number) => {
     selectedAction.value &&
     typeof cellHover.value === 'number'
   ) {
+    const pieceCoords = getPieceCoords(selectedPiece.value, props.state.G);
+    const targetCoords = arrayToCoordinates(
+      cellHover.value,
+      props.state.G.board
+    );
+
+    const toTarget = getDisplacement(pieceCoords, targetCoords);
     const order = {
       sourcePieceId: selectedPiece.value,
       type: selectedAction.value,
+      toTarget,
     };
-    // TODO: figure out how to type this correctly, or simplify moveTo/target
-    if (selectedAction.value === 'attack') {
-      // @ts-ignore-next-line
-      order.target = arrayToCoordinates(cellHover.value, props.state.G.board);
-    } else if (selectedAction.value === 'move') {
-      // @ts-ignore-next-line
-      order.moveTo = arrayToCoordinates(cellHover.value, props.state.G.board);
-    }
     props.client.moves.addOrder(order);
     clearAction();
   }

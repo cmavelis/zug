@@ -11,7 +11,7 @@ const testPiece: Piece = {
 
 const testAttack1: AttackOrder = {
   sourcePieceId: 0,
-  target: { x: 1, y: 0 },
+  toTarget: { x: 1, y: -1 },
   type: 'attack',
 };
 
