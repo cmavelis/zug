@@ -86,18 +86,6 @@ const undoLastOrder = () => {
 
 <template>
   <section>
-    <div>
-      <p>
-        piece:
-        {{
-          typeof selectedPiece === 'number'
-            ? String(selectedPiece)
-            : 'none selected'
-        }}
-      </p>
-      <p>action: {{ selectedAction || 'none selected' }}</p>
-      <button @click="undoLastOrder()">undo last order</button>
-    </div>
     <div class="board-wrapper">
       <div>
         <button @click="selectAction('attack')">attack</button>
@@ -122,8 +110,30 @@ const undoLastOrder = () => {
         />
       </div>
     </div>
+    <div>
+      <p>
+        piece:
+        {{
+          typeof selectedPiece === 'number'
+            ? String(selectedPiece)
+            : 'none selected'
+        }}
+      </p>
+      <p>action: {{ selectedAction || 'none selected' }}</p>
+      <p>ORDERS</p>
+      <template
+        v-for="order in props.state.G.orders[client.playerID]"
+        :key="order.sourcePieceId"
+      >
+        <p>
+          piece {{ order.sourcePieceId }}: {{ order.type }} with vector
+          {{ order.toTarget }}
+        </p>
+      </template>
+      <button @click="undoLastOrder()">undo last order</button>
+      <button @click="handleEndTurn">end turn</button>
+    </div>
   </section>
-  <button @click="handleEndTurn">end turn</button>
   <p>{{ props.state.G }}</p>
 </template>
 
