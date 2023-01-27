@@ -9,12 +9,22 @@ const testPiece: Piece = {
   owner: 1,
 };
 
+const testPiece2: Piece = {
+  id: 1,
+  position: { x: 2, y: 1 },
+  owner: 0,
+};
+
 const testAttack1: AttackOrder = {
   sourcePieceId: 0,
   toTarget: { x: 1, y: -1 },
   type: 'attack',
 };
 
-test('attackValidator happy path', () => {
+test('attackValidator valid', () => {
   expect(attackValidator(testPiece, testAttack1)).toEqual(true);
+});
+
+test('attackValidator invalid', () => {
+  expect(attackValidator(testPiece2, testAttack1)).toEqual(false);
 });
