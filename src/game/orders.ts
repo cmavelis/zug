@@ -54,7 +54,11 @@ export function orderResolver({ G }: { G: GameState }) {
     //   mark both attacked, wait to cleanup after
     //  if move
     //   if same square, destroy
-    if (ordersToResolve[0].priority === ordersToResolve[1].priority) {
+    if (
+      ordersToResolve[0] &&
+      ordersToResolve[1] &&
+      ordersToResolve[0].priority === ordersToResolve[1].priority
+    ) {
       const pieceIDsToRemove: (number | undefined)[] = [];
       switch (ordersToResolve[0].type) {
         case 'attack':
@@ -70,6 +74,7 @@ export function orderResolver({ G }: { G: GameState }) {
     } else {
       // sequential move resolution, by priority
       ordersToResolve.forEach((order) => {
+        if (!order) return;
         switch (order.type) {
           case 'attack':
             // eslint-disable-next-line no-case-declarations
