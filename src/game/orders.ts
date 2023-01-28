@@ -25,10 +25,11 @@ export type Order = MoveOrder | AttackOrder;
 
 export type Orders = Order[];
 
-function removePieces(G: GameState, pieceIDs: number[]) {
+function removePieces(G: GameState, pieceIDs: (number | undefined)[]) {
   const { cells, pieces } = G;
 
   pieceIDs.forEach((id) => {
+    if (id === undefined) return;
     // empty the cells
     cells[cells.findIndex((c) => c === id)] = null;
     // remove pieces
@@ -47,28 +48,42 @@ export function orderResolver({ G }: { G: GameState }) {
     );
     logProxy(ordersToResolve);
 
-    // concurrent move resolution
-    // if (ordersToResolve[0].priority === ordersToResolve[1].priority) {
-    // const pieceIDsToRemove: number[] = [];
-    //  removePieces(G, attackedPieceIDs);
-    // } else {}
-
-    // sequential move resolution, by priority
-    ordersToResolve.forEach((order) => {
-      switch (order.type) {
+    // concurrent move resolution (for now)
+    // if same priority
+    //  if attack
+    //   mark both attacked, wait to cleanup after
+    //  if move
+    //   if same square, destroy
+    if (ordersToResolve[0].priority === ordersToResolve[1].priority) {
+      const pieceIDsToRemove: (number | undefined)[] = [];
+      switch (ordersToResolve[0].type) {
         case 'attack':
-          // eslint-disable-next-line no-case-declarations
-          const attackedPieceID = applyAttack(order);
-          if (isNumber(attackedPieceID)) {
-            removePieces(G, [attackedPieceID]);
-          }
+          pieceIDsToRemove.push(applyAttack(ordersToResolve[0]));
+          pieceIDsToRemove.push(applyAttack(ordersToResolve[1]));
           break;
         case 'move':
-          applyMove(order);
+          pieceIDsToRemove.concat(applyMove(ordersToResolve[0]));
+          pieceIDsToRemove.concat(applyMove(ordersToResolve[1]));
           break;
       }
-    });
-
+      removePieces(G, pieceIDsToRemove);
+    } else {
+      // sequential move resolution, by priority
+      ordersToResolve.forEach((order) => {
+        switch (order.type) {
+          case 'attack':
+            // eslint-disable-next-line no-case-declarations
+            const attackedPieceID = applyAttack(order);
+            if (isNumber(attackedPieceID)) {
+              removePieces(G, [attackedPieceID]);
+            }
+            break;
+          case 'move':
+            applyMove(order);
+            break;
+        }
+      });
+    }
     // add cleanup here
     // removePieces(G, clashedPieceIDs);
   }
@@ -89,16 +104,26 @@ export function orderResolver({ G }: { G: GameState }) {
 
       // MOVE type specific effects
       if (movedPiece) {
-        movedPiece.position = addDisplacement(
+        const newPosition = addDisplacement(
           movedPiece.position,
           order.toTarget
         );
+
+        const maybePiece = pieces.find((p) => p.position === newPosition);
+        if (maybePiece) {
+          // return for cleanup
+          return [maybePiece.id, movedPiece.id];
+        }
+
+        movedPiece.position = newPosition;
       }
       const newLocation = coordinatesToArray(movedPiece.position, G.board);
       const oldLocation = cells.findIndex((i) => i === order.sourcePieceId);
       cells[oldLocation] = null;
       cells[newLocation] = order.sourcePieceId;
     }
+
+    return [];
   }
 
   // returns attacked piece ID
