@@ -1,6 +1,6 @@
 import { isEqual, isNumber, remove } from 'lodash';
 import type { Coordinates } from '@/game/common';
-import { applyDisplacement, coordinatesToArray } from '@/game/common';
+import { addDisplacement, coordinatesToArray } from '@/game/common';
 import type { GameState } from '@/game/Game';
 import { attackValidator, moveValidator } from '@/game/zugzwang/validators';
 
@@ -12,10 +12,12 @@ export interface OrderBase {
 
 export interface MoveOrder extends OrderBase {
   type: 'move';
+  priority: 1;
 }
 
 export interface AttackOrder extends OrderBase {
   type: 'attack';
+  priority: 2;
 }
 
 export type Order = MoveOrder | AttackOrder;
@@ -36,34 +38,38 @@ function removePieces(G: GameState, pieceIDs: number[]) {
 export function orderResolver({ G }: { G: GameState }) {
   const { cells, orders, pieces } = G;
 
-  // clashing MOVEs pt 1
-  const moves0 = orders[0].filter(
-    (order): order is MoveOrder => order.type === 'move'
-  );
-  const moves1 = orders[1].filter(
-    (order): order is MoveOrder => order.type === 'move'
-  );
-  const clashingMoves: Array<{ [index: number]: MoveOrder }> = [];
-  // TODO
-  // moves0.forEach((order0) => {
-  //   moves1.forEach((order1) => {
-  //     if (isEqual(order0.toTarget, order1.toTarget)) {
-  //       clashingMoves.push({
-  //         0: order0,
-  //         1: order1,
-  //       });
-  //     }
-  //   });
-  // });
-  // removed further down, in cleanup
-  const clashedPieceIDs = clashingMoves.flatMap((m) => {
-    return Object.values(m).flatMap((m) => m.sourcePieceId) || [];
-  });
+  // Assume both players submit 4 orders for now
+  for (let i = 0; i < 4; i++) {
+    // rank orders by priority
+    const ordersToResolve = [orders[0][i], orders[1][i]].sort(
+      (a, b) => b.priority - a.priority
+    );
 
-  const allMoves = moves0.concat(moves1);
-  const allAttacks = orders[0]
-    .concat(orders[1])
-    .filter((order): order is AttackOrder => order.type === 'attack');
+    // concurrent move resolution
+    // if (ordersToResolve[0].priority === ordersToResolve[1].priority) {
+    // const pieceIDsToRemove: number[] = [];
+    //  removePieces(G, attackedPieceIDs);
+    // } else {}
+
+    // sequential move resolution, by priority
+    ordersToResolve.forEach((order) => {
+      switch (order.type) {
+        case 'attack':
+          // eslint-disable-next-line no-case-declarations
+          const attackedPieceID = applyAttack(order);
+          if (isNumber(attackedPieceID)) {
+            removePieces(G, [attackedPieceID]);
+          }
+          break;
+        case 'move':
+          applyMove(order);
+          break;
+      }
+    });
+
+    // add cleanup here
+    // removePieces(G, clashedPieceIDs);
+  }
 
   function applyMove(order: Order) {
     // MOVE order
@@ -76,7 +82,7 @@ export function orderResolver({ G }: { G: GameState }) {
 
       // MOVE type specific effects
       if (movedPiece) {
-        movedPiece.position = applyDisplacement(
+        movedPiece.position = addDisplacement(
           movedPiece.position,
           order.toTarget
         );
@@ -88,6 +94,7 @@ export function orderResolver({ G }: { G: GameState }) {
     }
   }
 
+  // returns attacked piece ID
   function applyAttack(order: Order) {
     // filter for order type
     if (order.type === 'attack') {
@@ -98,7 +105,7 @@ export function orderResolver({ G }: { G: GameState }) {
         throw Error('Invalid action received');
       }
 
-      const targetSquare = applyDisplacement(
+      const targetSquare = addDisplacement(
         actingPiece.position,
         order.toTarget
       );
@@ -109,24 +116,6 @@ export function orderResolver({ G }: { G: GameState }) {
       }
     }
   }
-
-  const attackedPieceIDs: number[] = [];
-
-  // apply orders
-  if (allMoves.length > 0) {
-    allMoves.forEach(applyMove);
-  }
-  if (allAttacks.length > 0) {
-    allAttacks.forEach((attack) => {
-      const attackedPieceID = applyAttack(attack);
-      if (isNumber(attackedPieceID)) {
-        attackedPieceIDs.push(attackedPieceID);
-      }
-    });
-  }
-
-  removePieces(G, attackedPieceIDs);
-  removePieces(G, clashedPieceIDs);
 
   // clear orders out for next turn
   orders[0] = [];

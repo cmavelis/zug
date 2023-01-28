@@ -23,7 +23,7 @@ export const getDisplacement = (start: Coordinates, end: Coordinates) => {
   return { x: end.x - start.x, y: end.y - start.y };
 };
 
-export const applyDisplacement = (
+export const addDisplacement = (
   start: Coordinates,
   displacement: Coordinates
 ) => {
