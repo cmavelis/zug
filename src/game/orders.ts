@@ -13,15 +13,25 @@ export interface OrderBase {
 
 export interface MoveOrder extends OrderBase {
   type: 'move';
-  priority: 1;
+  priority: 2;
+}
+
+export interface MoveDiagOrder extends OrderBase {
+  type: 'move-diagonal';
+  priority: 4;
 }
 
 export interface AttackOrder extends OrderBase {
   type: 'attack';
-  priority: 2;
+  priority: 3;
 }
 
-export type Order = MoveOrder | AttackOrder;
+export interface DefendOrder extends OrderBase {
+  type: 'defend';
+  priority: 1;
+}
+
+export type Order = MoveOrder | MoveDiagOrder | AttackOrder | DefendOrder;
 
 export type Orders = Order[];
 
