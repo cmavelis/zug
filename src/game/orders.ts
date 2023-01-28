@@ -40,7 +40,7 @@ export function orderResolver({ G }: { G: GameState }) {
   const { cells, orders, pieces } = G;
 
   // Assume both players submit 4 orders for now
-  for (let i = 0; i < 1; i++) {
+  for (let i = 0; i < 4; i++) {
     // rank orders by priority
     const ordersToResolve = [orders[0][i], orders[1][i]].sort(
       (a, b) => b.priority - a.priority
