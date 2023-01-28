@@ -3,6 +3,7 @@ import type { Coordinates } from '@/game/common';
 import { addDisplacement, coordinatesToArray } from '@/game/common';
 import type { GameState } from '@/game/Game';
 import { attackValidator, moveValidator } from '@/game/zugzwang/validators';
+import { logProxy } from '@/utils';
 
 // orders are stored with displacement from piece to target
 export interface OrderBase {
@@ -39,11 +40,12 @@ export function orderResolver({ G }: { G: GameState }) {
   const { cells, orders, pieces } = G;
 
   // Assume both players submit 4 orders for now
-  for (let i = 0; i < 4; i++) {
+  for (let i = 0; i < 1; i++) {
     // rank orders by priority
     const ordersToResolve = [orders[0][i], orders[1][i]].sort(
       (a, b) => b.priority - a.priority
     );
+    logProxy(ordersToResolve);
 
     // concurrent move resolution
     // if (ordersToResolve[0].priority === ordersToResolve[1].priority) {
@@ -75,6 +77,11 @@ export function orderResolver({ G }: { G: GameState }) {
     // MOVE order
     if (order.type === 'move') {
       const movedPiece = pieces.find((p) => p.id === order.sourcePieceId);
+      if (!movedPiece) {
+        console.log('piece ', order.sourcePieceId, ' no longer exists');
+        return;
+      }
+
       if (!(movedPiece && moveValidator(movedPiece, order))) {
         console.log(JSON.parse(JSON.stringify(order)));
         throw Error('Invalid action received');
@@ -99,9 +106,14 @@ export function orderResolver({ G }: { G: GameState }) {
     // filter for order type
     if (order.type === 'attack') {
       const actingPiece = pieces.find((p) => p.id === order.sourcePieceId);
+      if (!actingPiece) {
+        console.log('piece ', order.sourcePieceId, ' no longer exists');
+        return;
+      }
+
       if (!(actingPiece && attackValidator(actingPiece, order))) {
-        console.log(JSON.parse(JSON.stringify(order)));
-        console.log(JSON.parse(JSON.stringify(actingPiece)));
+        console.log(order && JSON.parse(JSON.stringify(order)));
+        console.log(actingPiece && JSON.parse(JSON.stringify(actingPiece)));
         throw Error('Invalid action received');
       }
 
