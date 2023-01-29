@@ -202,7 +202,13 @@ export function orderResolver({ G }: { G: GameState }) {
   orders[0] = [];
   orders[1] = [];
 
-  // TODO: set all pieces to 'not defending'
+  // ----------------- END OF TURN -------------------------
+  // set all pieces to 'not defending'
+  pieces
+    .filter((p) => p.isDefending)
+    .forEach((p) => {
+      p.isDefending = false;
+    });
 
   return G;
 }
