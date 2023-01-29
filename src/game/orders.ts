@@ -30,7 +30,7 @@ export interface AttackOrder extends OrderBase {
   priority: 3;
 }
 
-export interface DefendOrder extends OrderBase {
+export interface DefendOrder extends Omit<OrderBase, 'toTarget'> {
   type: 'defend';
   priority: 1;
 }
@@ -109,6 +109,9 @@ export function orderResolver({ G }: { G: GameState }) {
             break;
           case 'move-straight' || 'move-diagonal':
             applyMove(order);
+            break;
+          case 'defend':
+            applyDefend(order);
             break;
         }
       });
