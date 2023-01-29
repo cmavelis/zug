@@ -11,7 +11,7 @@ interface BoardProps {
   state: { G: GameState };
 }
 
-type ActionsEnum = 'move' | 'attack';
+type ActionsEnum = 'move-straight' | 'attack';
 
 const selectedPiece: Ref<null | number> = ref(null);
 const selectedAction: Ref<null | ActionsEnum> = ref(null);
@@ -89,7 +89,7 @@ const undoLastOrder = () => {
     <div class="board-wrapper">
       <div>
         <button @click="selectAction('attack')">attack</button>
-        <button @click="selectAction('move')">move</button>
+        <button @click="selectAction('move-straight')">move (straight)</button>
         <button @click="clearAction()">clear</button>
       </div>
       <div class="board-container">

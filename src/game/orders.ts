@@ -16,7 +16,7 @@ export interface OrderBase {
 }
 
 export interface MoveStraightOrder extends OrderBase {
-  type: 'move';
+  type: 'move-straight';
   priority: 2;
 }
 
@@ -83,7 +83,7 @@ export function orderResolver({ G }: { G: GameState }) {
           pieceIDsToRemove.push(applyAttack(ordersToResolve[0]));
           pieceIDsToRemove.push(applyAttack(ordersToResolve[1]));
           break;
-        case 'move' || 'move-diagonal':
+        case 'move-straight' || 'move-diagonal':
           pieceIDsToRemove.concat(applyMove(ordersToResolve[0]));
           // @ts-ignore -- Haven't explicitly checked the type of [1], but move priorities are unique
           pieceIDsToRemove.concat(applyMove(ordersToResolve[1]));
@@ -103,7 +103,7 @@ export function orderResolver({ G }: { G: GameState }) {
               removePieces(G, [attackedPieceID]);
             }
             break;
-          case 'move' || 'move-diagonal':
+          case 'move-straight' || 'move-diagonal':
             applyMove(order);
             break;
         }
@@ -122,7 +122,10 @@ export function orderResolver({ G }: { G: GameState }) {
     }
 
     // validate
-    if (order.type === 'move' && !isValidMoveStraight(movedPiece, order)) {
+    if (
+      order.type === 'move-straight' &&
+      !isValidMoveStraight(movedPiece, order)
+    ) {
       console.log(JSON.parse(JSON.stringify(order)));
       throw Error('Invalid action received');
     }
