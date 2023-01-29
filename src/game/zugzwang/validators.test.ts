@@ -1,5 +1,5 @@
 import { test, expect } from 'vitest';
-import { attackValidator } from '@/game/zugzwang/validators';
+import { isValidAttack } from '@/game/zugzwang/validators';
 import type { Piece } from '@/game/pieces';
 import type { AttackOrder } from '@/game/orders';
 
@@ -22,9 +22,9 @@ const testAttack1: AttackOrder = {
 };
 
 test('attackValidator valid', () => {
-  expect(attackValidator(testPiece, testAttack1)).toEqual(true);
+  expect(isValidAttack(testPiece, testAttack1)).toEqual(true);
 });
 
 test('attackValidator invalid', () => {
-  expect(attackValidator(testPiece2, testAttack1)).toEqual(false);
+  expect(isValidAttack(testPiece2, testAttack1)).toEqual(false);
 });

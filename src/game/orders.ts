@@ -3,9 +3,9 @@ import type { Coordinates } from '@/game/common';
 import { addDisplacement, coordinatesToArray } from '@/game/common';
 import type { GameState } from '@/game/Game';
 import {
-  attackValidator,
+  isValidAttack,
   isValidMoveDiagonal,
-  moveValidator,
+  isValidMoveStraight,
 } from '@/game/zugzwang/validators';
 import { logProxy } from '@/utils';
 
@@ -15,8 +15,7 @@ export interface OrderBase {
   toTarget: Coordinates;
 }
 
-// TODO: add "cardinal" to name
-export interface MoveOrder extends OrderBase {
+export interface MoveStraightOrder extends OrderBase {
   type: 'move';
   priority: 2;
 }
@@ -36,7 +35,11 @@ export interface DefendOrder extends OrderBase {
   priority: 1;
 }
 
-export type Order = MoveOrder | MoveDiagonalOrder | AttackOrder | DefendOrder;
+export type Order =
+  | MoveStraightOrder
+  | MoveDiagonalOrder
+  | AttackOrder
+  | DefendOrder;
 
 export type Orders = Order[];
 
@@ -110,7 +113,7 @@ export function orderResolver({ G }: { G: GameState }) {
     // removePieces(G, clashedPieceIDs);
   }
 
-  function applyMove(order: MoveOrder | MoveDiagonalOrder) {
+  function applyMove(order: MoveStraightOrder | MoveDiagonalOrder) {
     const movedPiece = pieces.find((p) => p.id === order.sourcePieceId);
     // piece might be removed prior to action
     if (!movedPiece) {
@@ -119,7 +122,7 @@ export function orderResolver({ G }: { G: GameState }) {
     }
 
     // validate
-    if (order.type === 'move' && !moveValidator(movedPiece, order)) {
+    if (order.type === 'move' && !isValidMoveStraight(movedPiece, order)) {
       console.log(JSON.parse(JSON.stringify(order)));
       throw Error('Invalid action received');
     }
@@ -161,7 +164,7 @@ export function orderResolver({ G }: { G: GameState }) {
         return;
       }
 
-      if (!(actingPiece && attackValidator(actingPiece, order))) {
+      if (!(actingPiece && isValidAttack(actingPiece, order))) {
         console.log(order && JSON.parse(JSON.stringify(order)));
         console.log(actingPiece && JSON.parse(JSON.stringify(actingPiece)));
         throw Error('Invalid action received');

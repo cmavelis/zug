@@ -1,7 +1,11 @@
 /** for zugzwang game
  */
 import type { Piece } from '@/game/pieces';
-import type { AttackOrder, MoveOrderDiagonal, MoveOrder } from '@/game/orders';
+import type {
+  AttackOrder,
+  MoveDiagonalOrder,
+  MoveStraightOrder,
+} from '@/game/orders';
 import type { Coordinates } from '@/game/common';
 
 export function isDiagonal(vector: Coordinates): boolean {
@@ -13,7 +17,7 @@ export function isDiagonal(vector: Coordinates): boolean {
   );
 }
 
-export function isCardinal(vector: Coordinates): boolean {
+export function isStraight(vector: Coordinates): boolean {
   if (Math.abs(vector.x) > 0) {
     return vector.y === 0;
   }
@@ -25,12 +29,15 @@ export function isCardinal(vector: Coordinates): boolean {
 
 export function isValidMoveDiagonal(
   piece: Piece,
-  move: MoveOrderDiagonal
+  move: MoveDiagonalOrder
 ): boolean {
   return isDiagonal(move.toTarget);
 }
 
-export function moveValidator(piece: Piece, move: MoveOrder): boolean {
+export function isValidMoveStraight(
+  piece: Piece,
+  move: MoveStraightOrder
+): boolean {
   // assume moves can only go one direction
   const yChangeAllowed = piece.owner === 0 ? 1 : -1;
   const xChangeAllowed = 0;
@@ -41,7 +48,7 @@ export function moveValidator(piece: Piece, move: MoveOrder): boolean {
   return yChange === yChangeAllowed && xChange === xChangeAllowed;
 }
 
-export function attackValidator(piece: Piece, attack: AttackOrder): boolean {
+export function isValidAttack(piece: Piece, attack: AttackOrder): boolean {
   // assume attacks can only go one direction
   const yChangeAllowed = piece.owner === 0 ? 1 : -1;
   // attack is diagonal
