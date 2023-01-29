@@ -62,7 +62,7 @@ export function orderResolver({ G }: { G: GameState }) {
   for (let i = 0; i < 4; i++) {
     // rank orders by priority
     const ordersToResolve = [orders[0][i], orders[1][i]].sort(
-      (a, b) => b.priority - a.priority
+      (a, b) => a.priority - b.priority
     );
     logProxy(ordersToResolve);
 
