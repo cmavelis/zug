@@ -75,9 +75,13 @@ export const SimulChess: Game<GameState> = {
               const movedPiece = G.pieces.find(
                 (p) => p.id === order.sourcePieceId
               );
+
+              // only order your pieces
               if (movedPiece?.owner !== playerNumber) {
                 return INVALID_MOVE;
               }
+
+              // one order per piece
               if (
                 G.orders[playerNumber].find(
                   (currentOrders) =>
