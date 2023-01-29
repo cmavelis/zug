@@ -1,7 +1,34 @@
 /** for zugzwang game
  */
 import type { Piece } from '@/game/pieces';
-import type { AttackOrder, MoveOrder } from '@/game/orders';
+import type { AttackOrder, MoveOrderDiagonal, MoveOrder } from '@/game/orders';
+import type { Coordinates } from '@/game/common';
+
+export function isDiagonal(vector: Coordinates): boolean {
+  const xChangesAllowed = [-1, 1];
+  const yChangesAllowed = [-1, 1];
+
+  return (
+    xChangesAllowed.includes(vector.x) && yChangesAllowed.includes(vector.y)
+  );
+}
+
+export function isCardinal(vector: Coordinates): boolean {
+  if (Math.abs(vector.x) > 0) {
+    return vector.y === 0;
+  }
+  if (Math.abs(vector.y) > 0) {
+    return vector.x === 0;
+  }
+  return false;
+}
+
+export function isValidMoveDiagonal(
+  piece: Piece,
+  move: MoveOrderDiagonal
+): boolean {
+  return isDiagonal(move.toTarget);
+}
 
 export function moveValidator(piece: Piece, move: MoveOrder): boolean {
   // assume moves can only go one direction

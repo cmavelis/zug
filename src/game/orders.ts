@@ -2,7 +2,11 @@ import { isEqual, isNumber, remove } from 'lodash';
 import type { Coordinates } from '@/game/common';
 import { addDisplacement, coordinatesToArray } from '@/game/common';
 import type { GameState } from '@/game/Game';
-import { attackValidator, moveValidator } from '@/game/zugzwang/validators';
+import {
+  attackValidator,
+  isValidMoveDiagonal,
+  moveValidator,
+} from '@/game/zugzwang/validators';
 import { logProxy } from '@/utils';
 
 // orders are stored with displacement from piece to target
@@ -11,12 +15,13 @@ export interface OrderBase {
   toTarget: Coordinates;
 }
 
+// TODO: add "cardinal" to name
 export interface MoveOrder extends OrderBase {
   type: 'move';
   priority: 2;
 }
 
-export interface MoveDiagOrder extends OrderBase {
+export interface MoveDiagonalOrder extends OrderBase {
   type: 'move-diagonal';
   priority: 4;
 }
@@ -31,7 +36,7 @@ export interface DefendOrder extends OrderBase {
   priority: 1;
 }
 
-export type Order = MoveOrder | MoveDiagOrder | AttackOrder | DefendOrder;
+export type Order = MoveOrder | MoveDiagonalOrder | AttackOrder | DefendOrder;
 
 export type Orders = Order[];
 
@@ -75,15 +80,17 @@ export function orderResolver({ G }: { G: GameState }) {
           pieceIDsToRemove.push(applyAttack(ordersToResolve[0]));
           pieceIDsToRemove.push(applyAttack(ordersToResolve[1]));
           break;
-        case 'move':
+        case 'move' || 'move-diagonal':
           pieceIDsToRemove.concat(applyMove(ordersToResolve[0]));
+          // @ts-ignore -- Haven't explicitly checked the type of [1], but move priorities are unique
           pieceIDsToRemove.concat(applyMove(ordersToResolve[1]));
           break;
       }
       removePieces(G, pieceIDsToRemove);
     } else {
-      // sequential move resolution, by priority
+      // sequential move resolution, already sorted by priority
       ordersToResolve.forEach((order) => {
+        // allows for < 4 orders per person without error
         if (!order) return;
         switch (order.type) {
           case 'attack':
@@ -93,7 +100,7 @@ export function orderResolver({ G }: { G: GameState }) {
               removePieces(G, [attackedPieceID]);
             }
             break;
-          case 'move':
+          case 'move' || 'move-diagonal':
             applyMove(order);
             break;
         }
@@ -103,40 +110,43 @@ export function orderResolver({ G }: { G: GameState }) {
     // removePieces(G, clashedPieceIDs);
   }
 
-  function applyMove(order: Order) {
-    // MOVE order
-    if (order.type === 'move') {
-      const movedPiece = pieces.find((p) => p.id === order.sourcePieceId);
-      if (!movedPiece) {
-        console.log('piece ', order.sourcePieceId, ' no longer exists');
-        return;
-      }
-
-      if (!(movedPiece && moveValidator(movedPiece, order))) {
-        console.log(JSON.parse(JSON.stringify(order)));
-        throw Error('Invalid action received');
-      }
-
-      // MOVE type specific effects
-      if (movedPiece) {
-        const newPosition = addDisplacement(
-          movedPiece.position,
-          order.toTarget
-        );
-
-        const maybePiece = pieces.find((p) => p.position === newPosition);
-        if (maybePiece) {
-          // return for cleanup
-          return [maybePiece.id, movedPiece.id];
-        }
-
-        movedPiece.position = newPosition;
-      }
-      const newLocation = coordinatesToArray(movedPiece.position, G.board);
-      const oldLocation = cells.findIndex((i) => i === order.sourcePieceId);
-      cells[oldLocation] = null;
-      cells[newLocation] = order.sourcePieceId;
+  function applyMove(order: MoveOrder | MoveDiagonalOrder) {
+    const movedPiece = pieces.find((p) => p.id === order.sourcePieceId);
+    // piece might be removed prior to action
+    if (!movedPiece) {
+      console.log('piece ', order.sourcePieceId, ' no longer exists');
+      return;
     }
+
+    // validate
+    if (order.type === 'move' && !moveValidator(movedPiece, order)) {
+      console.log(JSON.parse(JSON.stringify(order)));
+      throw Error('Invalid action received');
+    }
+    if (
+      order.type === 'move-diagonal' &&
+      !isValidMoveDiagonal(movedPiece, order)
+    ) {
+      console.log(JSON.parse(JSON.stringify(order)));
+      throw Error('Invalid action received');
+    }
+
+    // apply effects
+    if (movedPiece) {
+      const newPosition = addDisplacement(movedPiece.position, order.toTarget);
+
+      const maybePiece = pieces.find((p) => p.position === newPosition);
+      if (maybePiece) {
+        // return for cleanup
+        return [maybePiece.id, movedPiece.id];
+      }
+
+      movedPiece.position = newPosition;
+    }
+    const newLocation = coordinatesToArray(movedPiece.position, G.board);
+    const oldLocation = cells.findIndex((i) => i === order.sourcePieceId);
+    cells[oldLocation] = null;
+    cells[newLocation] = order.sourcePieceId;
 
     return [];
   }
