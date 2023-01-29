@@ -5,6 +5,7 @@ export interface Piece {
   id: number;
   position: Coordinates;
   owner: number;
+  isDefending: boolean;
 }
 
 export const createPiece = ({
@@ -12,7 +13,7 @@ export const createPiece = ({
   pieceToCreate,
 }: {
   G: GameState;
-  pieceToCreate: Omit<Piece, 'id'>;
+  pieceToCreate: Omit<Piece, 'id' | 'isDefending'>;
 }) => {
   const cellIndex = coordinatesToArray(pieceToCreate.position, G.board);
   if (G.cells[cellIndex]) {
@@ -21,6 +22,6 @@ export const createPiece = ({
 
   const pieceId = G.pieces.length;
   G.cells[cellIndex] = pieceId;
-  const pieceWithId = { ...pieceToCreate, id: pieceId };
+  const pieceWithId = { isDefending: false, ...pieceToCreate, id: pieceId };
   G.pieces.push(pieceWithId);
 };

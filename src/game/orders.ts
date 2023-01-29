@@ -85,9 +85,13 @@ export function orderResolver({ G }: { G: GameState }) {
           break;
         case 'move-straight' || 'move-diagonal':
           pieceIDsToRemove.concat(applyMove(ordersToResolve[0]));
-          // @ts-ignore -- Haven't explicitly checked the type of [1], but move priorities are unique
+          // @ts-ignore -- Haven't explicitly checked the type of [1], but order priorities are unique
           pieceIDsToRemove.concat(applyMove(ordersToResolve[1]));
           break;
+        case 'defend':
+          applyDefend(ordersToResolve[0]);
+          // @ts-ignore -- Haven't explicitly checked the type of [1], but order priorities are unique
+          applyDefend(ordersToResolve[1]);
       }
       removePieces(G, pieceIDsToRemove);
     } else {
@@ -178,16 +182,27 @@ export function orderResolver({ G }: { G: GameState }) {
         order.toTarget
       );
       const targetPiece = pieces.find((p) => isEqual(p.position, targetSquare));
-      // type specific effects
-      if (actingPiece && targetPiece) {
+
+      if (actingPiece && targetPiece && !targetPiece.isDefending) {
         return targetPiece.id;
       }
     }
   }
 
+  function applyDefend(order: DefendOrder) {
+    const actingPiece = pieces.find((p) => p.id === order.sourcePieceId);
+    if (!actingPiece) {
+      console.log('piece ', order.sourcePieceId, ' no longer exists');
+      return;
+    }
+    actingPiece.isDefending = true;
+  }
+
   // clear orders out for next turn
   orders[0] = [];
   orders[1] = [];
+
+  // TODO: set all pieces to 'not defending'
 
   return G;
 }
