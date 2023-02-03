@@ -12,6 +12,8 @@ export interface GameState {
   pieces: Piece[];
 }
 
+const { hostname } = window.location;
+
 export const SimulChess: Game<GameState> = {
   setup: () => {
     const board = { x: 4, y: 4 };
@@ -22,19 +24,35 @@ export const SimulChess: Game<GameState> = {
       orders: { 0: [], 1: [] },
     };
 
-    [0, 1, 2, 3].forEach((x) =>
-      createPiece({
-        G: initialGame,
-        pieceToCreate: { owner: 0, position: { x, y: 0 } },
-      })
-    );
+    if (hostname === 'localhost') {
+      [0, 1].forEach((x) =>
+        createPiece({
+          G: initialGame,
+          pieceToCreate: { owner: 0, position: { x, y: 1 } },
+        })
+      );
 
-    [0, 1, 2, 3].forEach((x) =>
-      createPiece({
-        G: initialGame,
-        pieceToCreate: { owner: 1, position: { x, y: 3 } },
-      })
-    );
+      [0, 1, 2, 3].forEach((x) =>
+        createPiece({
+          G: initialGame,
+          pieceToCreate: { owner: 1, position: { x, y: 2 } },
+        })
+      );
+    } else {
+      [0, 1, 2, 3].forEach((x) =>
+        createPiece({
+          G: initialGame,
+          pieceToCreate: { owner: 0, position: { x, y: 0 } },
+        })
+      );
+
+      [0, 1, 2, 3].forEach((x) =>
+        createPiece({
+          G: initialGame,
+          pieceToCreate: { owner: 1, position: { x, y: 3 } },
+        })
+      );
+    }
 
     return initialGame;
   },
@@ -57,9 +75,13 @@ export const SimulChess: Game<GameState> = {
               const movedPiece = G.pieces.find(
                 (p) => p.id === order.sourcePieceId
               );
+
+              // only order your pieces
               if (movedPiece?.owner !== playerNumber) {
                 return INVALID_MOVE;
               }
+
+              // one order per piece
               if (
                 G.orders[playerNumber].find(
                   (currentOrders) =>
@@ -117,3 +139,5 @@ export const SimulChess: Game<GameState> = {
   //   }
   // },
 };
+
+export interface moveAddOrder {}

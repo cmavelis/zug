@@ -1,28 +1,40 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 import type { Ref } from 'vue';
+import type { _ClientImpl } from 'boardgame.io/dist/types/src/client/client';
 import BoardPiece from '@/components/BoardPiece.vue';
 import type { GameState } from '@/game/Game';
-import type { _ClientImpl } from 'boardgame.io/dist/types/src/client/client';
-import { arrayToCoordinates } from '@/game/common';
+import type { Order, OrderTypes } from '@/game/orders';
+import { arrayToCoordinates, getDisplacement } from '@/game/common';
+import { createOrder } from '@/game/orders';
 
 interface BoardProps {
-  client: _ClientImpl;
+  client: _ClientImpl<GameState>;
   state: { G: GameState };
 }
 
-type ActionsEnum = 'move' | 'attack';
-
 const selectedPiece: Ref<null | number> = ref(null);
-const selectedAction: Ref<null | ActionsEnum> = ref(null);
+const selectedAction: Ref<null | OrderTypes> = ref(null);
 const cellHover: Ref<null | number> = ref(null);
 
 const props = defineProps<BoardProps>();
+
+const addOrder = (order: Order) => {
+  props.client.moves.addOrder(order);
+};
 
 const handlePieceClick = (id: number) => {
   if (typeof selectedPiece.value !== 'number') {
     selectedPiece.value = id;
   }
+};
+
+const getPieceCoords = (pieceID: number, G: GameState) => {
+  const piece = G.pieces.find((p) => p.id === pieceID);
+  if (!piece) {
+    throw Error(`Could not find piece with ID: ${pieceID}`);
+  }
+  return piece.position;
 };
 
 // select piece, then action, then cell
@@ -36,19 +48,21 @@ const handleCellClick = (pieceID?: number) => {
     selectedAction.value &&
     typeof cellHover.value === 'number'
   ) {
-    const order = {
-      sourcePieceId: selectedPiece.value,
-      type: selectedAction.value,
-    };
-    // TODO: figure out how to type this correctly, or simplify moveTo/target
-    if (selectedAction.value === 'attack') {
-      // @ts-ignore-next-line
-      order.target = arrayToCoordinates(cellHover.value, props.state.G.board);
-    } else if (selectedAction.value === 'move') {
-      // @ts-ignore-next-line
-      order.moveTo = arrayToCoordinates(cellHover.value, props.state.G.board);
-    }
-    props.client.moves.addOrder(order);
+    const pieceCoords = getPieceCoords(selectedPiece.value, props.state.G);
+    const targetCoords = arrayToCoordinates(
+      cellHover.value,
+      props.state.G.board
+    );
+
+    const toTarget = getDisplacement(pieceCoords, targetCoords);
+    const order = createOrder(
+      {
+        sourcePieceId: selectedPiece.value,
+        toTarget,
+      },
+      selectedAction.value
+    );
+    addOrder(order);
     clearAction();
   }
 };
@@ -62,7 +76,7 @@ const handleEndTurn = () => {
   if (endStage) endStage();
 };
 
-const selectAction = (action: ActionsEnum) => {
+const selectAction = (action: OrderTypes) => {
   selectedAction.value = action;
 };
 
@@ -78,22 +92,12 @@ const undoLastOrder = () => {
 
 <template>
   <section>
-    <div>
-      <p>
-        piece:
-        {{
-          typeof selectedPiece === 'number'
-            ? String(selectedPiece)
-            : 'none selected'
-        }}
-      </p>
-      <p>action: {{ selectedAction || 'none selected' }}</p>
-      <button @click="undoLastOrder()">undo last order</button>
-    </div>
     <div class="board-wrapper">
       <div>
+        <button @click="selectAction('defend')">defend</button>
+        <button @click="selectAction('move-straight')">move (straight)</button>
         <button @click="selectAction('attack')">attack</button>
-        <button @click="selectAction('move')">move</button>
+        <button @click="selectAction('move-diagonal')">move (diagonal)</button>
         <button @click="clearAction()">clear</button>
       </div>
       <div class="board-container">
@@ -114,8 +118,30 @@ const undoLastOrder = () => {
         />
       </div>
     </div>
+    <div>
+      <p>
+        piece:
+        {{
+          typeof selectedPiece === 'number'
+            ? String(selectedPiece)
+            : 'none selected'
+        }}
+      </p>
+      <p>action: {{ selectedAction || 'none selected' }}</p>
+      <p>ORDERS</p>
+      <template
+        v-for="order in props.state.G.orders[client.playerID]"
+        :key="order.sourcePieceId"
+      >
+        <p>
+          piece {{ order.sourcePieceId }}: {{ order.type }} with vector
+          {{ order.toTarget }}
+        </p>
+      </template>
+      <button @click="undoLastOrder()">undo last order</button>
+      <button @click="handleEndTurn">end turn</button>
+    </div>
   </section>
-  <button @click="handleEndTurn">end turn</button>
   <p>{{ props.state.G }}</p>
 </template>
 

@@ -18,3 +18,14 @@ export const arrayToCoordinates = (arrayIndex: number, shape: Coordinates) => {
 
   return { x: remainderX, y };
 };
+
+export const getDisplacement = (start: Coordinates, end: Coordinates) => {
+  return { x: end.x - start.x, y: end.y - start.y };
+};
+
+export const addDisplacement = (
+  start: Coordinates,
+  displacement: Coordinates
+) => {
+  return { x: start.x + displacement.x, y: start.y + displacement.y };
+};
