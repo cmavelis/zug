@@ -13,26 +13,32 @@ import { logProxy } from '@/utils';
 export interface OrderBase {
   sourcePieceId: number;
   toTarget: Coordinates;
+  priority: number;
 }
+
+const ORDER_PRIORITIES = {
+  defend: 1,
+  'move-straight': 2,
+  attack: 3,
+  'move-diagonal': 4,
+};
+
+export type OrderTypes = keyof typeof ORDER_PRIORITIES;
 
 export interface MoveStraightOrder extends OrderBase {
   type: 'move-straight';
-  priority: 2;
 }
 
 export interface MoveDiagonalOrder extends OrderBase {
   type: 'move-diagonal';
-  priority: 4;
 }
 
 export interface AttackOrder extends OrderBase {
   type: 'attack';
-  priority: 3;
 }
 
 export interface DefendOrder extends Omit<OrderBase, 'toTarget'> {
   type: 'defend';
-  priority: 1;
 }
 
 export type Order =
@@ -214,4 +220,15 @@ export function orderResolver({ G }: { G: GameState }) {
     });
 
   return G;
+}
+
+export function createOrder(
+  order: Omit<OrderBase, 'priority'>,
+  type: OrderTypes
+): Order {
+  return {
+    ...order,
+    type,
+    priority: ORDER_PRIORITIES[type],
+  };
 }

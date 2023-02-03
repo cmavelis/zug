@@ -1,23 +1,27 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 import type { Ref } from 'vue';
+import type { _ClientImpl } from 'boardgame.io/dist/types/src/client/client';
 import BoardPiece from '@/components/BoardPiece.vue';
 import type { GameState } from '@/game/Game';
-import type { _ClientImpl } from 'boardgame.io/dist/types/src/client/client';
+import type { Order, OrderTypes } from '@/game/orders';
 import { arrayToCoordinates, getDisplacement } from '@/game/common';
+import { createOrder } from '@/game/orders';
 
 interface BoardProps {
-  client: _ClientImpl;
+  client: _ClientImpl<GameState>;
   state: { G: GameState };
 }
 
-type ActionsEnum = 'move-straight' | 'move-diagonal' | 'attack' | 'defend';
-
 const selectedPiece: Ref<null | number> = ref(null);
-const selectedAction: Ref<null | ActionsEnum> = ref(null);
+const selectedAction: Ref<null | OrderTypes> = ref(null);
 const cellHover: Ref<null | number> = ref(null);
 
 const props = defineProps<BoardProps>();
+
+const addOrder = (order: Order) => {
+  props.client.moves.addOrder(order);
+};
 
 const handlePieceClick = (id: number) => {
   if (typeof selectedPiece.value !== 'number') {
@@ -51,12 +55,14 @@ const handleCellClick = (pieceID?: number) => {
     );
 
     const toTarget = getDisplacement(pieceCoords, targetCoords);
-    const order = {
-      sourcePieceId: selectedPiece.value,
-      type: selectedAction.value,
-      toTarget,
-    };
-    props.client.moves.addOrder(order);
+    const order = createOrder(
+      {
+        sourcePieceId: selectedPiece.value,
+        toTarget,
+      },
+      selectedAction.value
+    );
+    addOrder(order);
     clearAction();
   }
 };
@@ -70,7 +76,7 @@ const handleEndTurn = () => {
   if (endStage) endStage();
 };
 
-const selectAction = (action: ActionsEnum) => {
+const selectAction = (action: OrderTypes) => {
   selectedAction.value = action;
 };
 

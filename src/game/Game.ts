@@ -139,3 +139,5 @@ export const SimulChess: Game<GameState> = {
   //   }
   // },
 };
+
+export interface moveAddOrder {}
