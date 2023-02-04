@@ -7,18 +7,21 @@ const testPiece: Piece = {
   id: 0,
   position: { x: 2, y: 1 },
   owner: 1,
+  isDefending: false,
 };
 
 const testPiece2: Piece = {
   id: 1,
   position: { x: 2, y: 1 },
   owner: 0,
+  isDefending: false,
 };
 
 const testAttack1: AttackOrder = {
   sourcePieceId: 0,
   toTarget: { x: 1, y: -1 },
   type: 'attack',
+  priority: 1,
 };
 
 test('attackValidator valid', () => {

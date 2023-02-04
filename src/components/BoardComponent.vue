@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 import type { Ref } from 'vue';
-import type { Ctx } from 'boardgame.io';
+import type { Ctx } from 'boardgame.io/dist/types/src/types';
 import type { _ClientImpl } from 'boardgame.io/dist/types/src/client/client';
 import BoardPiece from '@/components/BoardPiece.vue';
 import type { GameState } from '@/game/Game';

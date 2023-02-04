@@ -1,4 +1,4 @@
-<script>
+<script setup lang="ts">
 import { LobbyClient } from 'boardgame.io/client';
 
 const lobbyClient = new LobbyClient({ server: 'http://localhost:8000' });

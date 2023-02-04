@@ -4,11 +4,13 @@ import { reactive, ref } from 'vue';
 import { chessClient, chessClientTwo } from '@/game/App';
 import type { GameState } from '@/game/Game';
 import type { ClientState } from 'boardgame.io/dist/types/src/client/client';
-import type { Ctx } from 'boardgame.io';
+import type { Ctx } from 'boardgame.io/dist/types/src/types';
 
 const gameState = reactive({ G: {}, ctx: {} });
+const gameStateLoaded = ref(false);
 const updateGameState = (state: ClientState<{ G: GameState; ctx: Ctx }>) => {
   if (state) {
+    gameStateLoaded.value = true;
     gameState.G = state.G;
     gameState.ctx = state.ctx;
   } else {
@@ -18,10 +20,13 @@ const updateGameState = (state: ClientState<{ G: GameState; ctx: Ctx }>) => {
 chessClient.client.subscribe(updateGameState);
 
 const gameStateTwo = reactive({ G: {}, ctx: {} });
+const gameStateTwoLoaded = ref(false);
+
 const updateGameStateTwo = (state: ClientState<{ G: GameState; ctx: Ctx }>) => {
   if (state) {
     gameStateTwo.G = state.G;
     gameStateTwo.ctx = state.ctx;
+    gameStateTwoLoaded.value = true;
   } else {
     console.error('A null game state update was received');
   }
@@ -38,12 +43,12 @@ const playerID = ref(0);
     <p>phase: {{ gameState.ctx.activePlayers[playerID - 1] }}</p>
 
     <BoardComponent
-      v-if="playerID === 1"
+      v-if="playerID === 1 && !gameStateLoaded"
       :client="chessClient.client"
       :state="gameState"
     />
     <BoardComponent
-      v-if="playerID === 2"
+      v-if="playerID === 2 && !gameStateTwoLoaded"
       :client="chessClientTwo.client"
       :state="gameStateTwo"
     />
