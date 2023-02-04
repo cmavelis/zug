@@ -12,7 +12,7 @@ export class SimulChessClient {
     this.client = Client({
       game: SimulChess,
       multiplayer:
-        hostname === 'localhost'
+        hostname === 'localhost' && port === '5173'
           ? Local()
           : SocketIO({
               server,

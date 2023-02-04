@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import BoardComponent from '../components/BoardComponent.vue';
-import { reactive } from 'vue';
+import { reactive, ref } from 'vue';
 import { chessClient, chessClientTwo } from '@/game/App';
 import type { GameState } from '@/game/Game';
 import type { ClientState } from 'boardgame.io/dist/types/src/client/client';
@@ -24,12 +24,25 @@ const updateGameStateTwo = (state: ClientState<{ G: GameState }>) => {
   }
 };
 chessClientTwo.client.subscribe(updateGameStateTwo);
+
+const playerID = ref(0);
 </script>
 
 <template>
   <main>
-    <BoardComponent :client="chessClient.client" :state="gameState" />
-    <BoardComponent :client="chessClientTwo.client" :state="gameStateTwo" />
+    <input type="radio" v-model="playerID" :value="1" /> player 1
+    <input type="radio" v-model="playerID" :value="2" /> player 2
+
+    <BoardComponent
+      v-if="playerID === 1"
+      :client="chessClient.client"
+      :state="gameState"
+    />
+    <BoardComponent
+      v-if="playerID === 2"
+      :client="chessClientTwo.client"
+      :state="gameStateTwo"
+    />
   </main>
 </template>
 
