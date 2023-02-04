@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 import type { Ref } from 'vue';
-import type { Ctx } from 'boardgame.io/dist/types/src/types';
 import type { _ClientImpl } from 'boardgame.io/dist/types/src/client/client';
 import BoardPiece from '@/components/BoardPiece.vue';
 import type { GameState } from '@/game/Game';
@@ -11,7 +10,7 @@ import { createOrder } from '@/game/orders';
 
 interface BoardProps {
   client: _ClientImpl<GameState>;
-  state: { G: GameState; ctx: Ctx };
+  state: { G: GameState };
 }
 
 const selectedPiece: Ref<null | number> = ref(null);
