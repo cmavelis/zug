@@ -1,4 +1,4 @@
-import { isEqual, isNumber, remove } from 'lodash';
+import { isEqual, remove } from 'lodash';
 import type { Coordinates } from '@/game/common';
 import { addDisplacement, coordinatesToArray } from '@/game/common';
 import type { GameState } from '@/game/Game';
@@ -54,6 +54,7 @@ function removePieces(G: GameState, pieceIDs: (number | undefined)[]) {
 
   pieceIDs.forEach((id) => {
     if (id === undefined) return;
+    console.log('deleting piece with id:', id);
     // empty the cells
     cells[cells.findIndex((c) => c === id)] = null;
     // remove pieces
@@ -89,10 +90,11 @@ export function orderResolver({ G }: { G: GameState }) {
           pieceIDsToRemove.push(applyAttack(ordersToResolve[0]));
           pieceIDsToRemove.push(applyAttack(ordersToResolve[1]));
           break;
-        case 'move-straight' || 'move-diagonal':
-          pieceIDsToRemove.concat(applyMove(ordersToResolve[0]));
+        case 'move-straight':
+        case 'move-diagonal':
+          pieceIDsToRemove.push(...applyMove(ordersToResolve[0]));
           // @ts-ignore -- Haven't explicitly checked the type of [1], but order priorities are unique
-          pieceIDsToRemove.concat(applyMove(ordersToResolve[1]));
+          pieceIDsToRemove.push(...applyMove(ordersToResolve[1]));
           break;
         case 'defend':
           applyDefend(ordersToResolve[0]);
@@ -105,21 +107,20 @@ export function orderResolver({ G }: { G: GameState }) {
       ordersToResolve.forEach((order) => {
         // allows for < 4 orders per person without error
         if (!order) return;
+        const pieceIDsToRemove: (number | undefined)[] = [];
         switch (order.type) {
           case 'attack':
-            // eslint-disable-next-line no-case-declarations
-            const attackedPieceID = applyAttack(order);
-            if (isNumber(attackedPieceID)) {
-              removePieces(G, [attackedPieceID]);
-            }
+            pieceIDsToRemove.push(applyAttack(order));
             break;
-          case 'move-straight' || 'move-diagonal':
-            applyMove(order);
+          case 'move-straight':
+          case 'move-diagonal':
+            pieceIDsToRemove.push(...applyMove(order));
             break;
           case 'defend':
             applyDefend(order);
             break;
         }
+        removePieces(G, pieceIDsToRemove);
       });
     }
     // add cleanup here
@@ -131,7 +132,7 @@ export function orderResolver({ G }: { G: GameState }) {
     // piece might be removed prior to action
     if (!movedPiece) {
       console.log('piece ', order.sourcePieceId, ' no longer exists');
-      return;
+      return [];
     }
 
     // validate
@@ -154,7 +155,7 @@ export function orderResolver({ G }: { G: GameState }) {
     if (movedPiece) {
       const newPosition = addDisplacement(movedPiece.position, order.toTarget);
 
-      const maybePiece = pieces.find((p) => p.position === newPosition);
+      const maybePiece = pieces.find((p) => isEqual(p.position, newPosition));
       if (maybePiece) {
         // return for cleanup
         return [maybePiece.id, movedPiece.id];
