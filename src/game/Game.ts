@@ -12,9 +12,15 @@ export interface GameState {
   pieces: Piece[];
 }
 
-const { hostname } = window.location;
+let hostname: any;
+let port: any;
+if (typeof window !== 'undefined' && window?.location) {
+  hostname = window.location.hostname;
+  port = window.location.port;
+}
 
 export const SimulChess: Game<GameState> = {
+  name: 'zug',
   setup: () => {
     const board = { x: 4, y: 4 };
     const initialGame = {
@@ -24,7 +30,7 @@ export const SimulChess: Game<GameState> = {
       orders: { 0: [], 1: [] },
     };
 
-    if (hostname === 'localhost') {
+    if (hostname === 'localhost' && port === '5173') {
       [0, 1].forEach((x) =>
         createPiece({
           G: initialGame,

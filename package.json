@@ -7,6 +7,7 @@
     "preview": "vite preview",
     "test": "vitest --environment jsdom --root src/",
     "build-only": "vite build",
+    "build-watch": "vite build --watch",
     "type-check": "vue-tsc --noEmit -p tsconfig.vitest.json --composite false",
     "lint": "eslint . --ext .vue,.js,.jsx,.cjs,.mjs,.ts,.tsx,.cts,.mts --fix --ignore-path .gitignore",
     "server:dev": "nodemon server/main.ts --watch server/main.ts --watch src/",

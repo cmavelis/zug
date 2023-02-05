@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { reactive } from 'vue';
-import { type Piece } from '@/game/pieces';
+import type { Piece } from '@/game/pieces';
 
 const props = defineProps<Piece>();
 

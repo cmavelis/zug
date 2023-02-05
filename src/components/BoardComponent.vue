@@ -142,7 +142,7 @@ const undoLastOrder = () => {
       <button @click="handleEndTurn">end turn</button>
     </div>
   </section>
-  <p>{{ props.state.G }}</p>
+  <p>{{ props.state }}</p>
 </template>
 
 <style scoped>
