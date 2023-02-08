@@ -8,6 +8,7 @@ import {
   isValidMoveStraight,
 } from '@/game/zugzwang/validators';
 import { logProxy } from '@/utils';
+import type { Piece } from '@/game/pieces';
 
 // orders are stored with displacement from piece to target
 export interface OrderBase {
@@ -49,6 +50,11 @@ export type Order =
 
 export type Orders = Order[];
 
+interface Move {
+  id: number;
+  newPosition: Coordinates;
+}
+
 function removePieces(G: GameState, pieceIDs: (number | undefined)[]) {
   const { cells, pieces } = G;
 
@@ -59,6 +65,24 @@ function removePieces(G: GameState, pieceIDs: (number | undefined)[]) {
     cells[cells.findIndex((c) => c === id)] = null;
     // remove pieces
     remove(pieces, (p) => p.id === id);
+  });
+}
+
+function movePieces(G: GameState, moveArray: Move[]) {
+  const { cells, pieces } = G;
+
+  moveArray.forEach((move) => {
+    console.log('moving piece:', move.id);
+
+    const movedPiece = pieces.find((p) => p.id === move.id);
+    if (!movedPiece) return;
+
+    console.log('moving to', move.newPosition);
+    const newPosition = coordinatesToArray(move.newPosition, G.board);
+    movedPiece.position = move.newPosition;
+    const oldPosition = cells.findIndex((i) => i === move.id);
+    cells[oldPosition] = null;
+    cells[newPosition] = move.id;
   });
 }
 
@@ -153,20 +177,47 @@ export function orderResolver({ G }: { G: GameState }) {
 
     // apply effects
     if (movedPiece) {
-      const newPosition = addDisplacement(movedPiece.position, order.toTarget);
+      const pushesArray: { id: number; newPosition: Coordinates }[][] = [];
+      const checkPush = (
+        currentArray: { id: number; newPosition: Coordinates }[] = [],
+        pushingPiece: Piece,
+        vector: Coordinates
+      ) => {
+        const newPosition = addDisplacement(pushingPiece.position, vector);
+        currentArray.push({ id: pushingPiece.id, newPosition });
+        const maybePiece = pieces.find((p) => isEqual(p.position, newPosition));
 
-      const maybePiece = pieces.find((p) => isEqual(p.position, newPosition));
-      if (maybePiece) {
-        // return for cleanup
-        return [maybePiece.id, movedPiece.id];
-      }
+        if (maybePiece) {
+          checkPush(currentArray, maybePiece, vector);
+        } else {
+          pushesArray.push(currentArray);
+        }
+      };
+      checkPush([], movedPiece, order.toTarget);
+      console.log('pushesArray', pushesArray);
 
-      movedPiece.position = newPosition;
+      // do another check?
+      // apply pushes
+      pushesArray.forEach((toPush) => movePieces(G, toPush));
+
+      // const maybePiece = pieces.find((p) => isEqual(p.position, newPosition));
+      //
+      // if (maybePiece) {
+      //   const pushesArray = [];
+      //
+      //   // IF destroying pieces that move to same square
+      //   // return for cleanup
+      //   return [maybePiece.id, movedPiece.id];
+      // }
+
+      // movedPiece.position = newPosition;
     }
-    const newLocation = coordinatesToArray(movedPiece.position, G.board);
-    const oldLocation = cells.findIndex((i) => i === order.sourcePieceId);
-    cells[oldLocation] = null;
-    cells[newLocation] = order.sourcePieceId;
+
+    // // actually move things
+    // const newLocation = coordinatesToArray(movedPiece.position, G.board);
+    // const oldLocation = cells.findIndex((i) => i === order.sourcePieceId);
+    // cells[oldLocation] = null;
+    // cells[newLocation] = order.sourcePieceId;
 
     return [];
   }
