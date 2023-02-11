@@ -1,6 +1,10 @@
-import { isEqual, remove } from 'lodash';
+import { countBy, forOwn, isEqual, remove } from 'lodash';
 import type { Coordinates } from '@/game/common';
-import { addDisplacement, coordinatesToArray } from '@/game/common';
+import {
+  addDisplacement,
+  arrayToCoordinates,
+  coordinatesToArray,
+} from '@/game/common';
 import type { GameState } from '@/game/Game';
 import {
   isValidAttack,
@@ -116,15 +120,20 @@ export function orderResolver({ G }: { G: GameState }) {
           break;
         case 'move-straight':
         case 'move-diagonal':
-          pieceIDsToRemove.push(...applyMove(ordersToResolve[0]));
+          // eslint-disable-next-line no-case-declarations
+          const pushArray = [];
+          pushArray.push(...applyMove(ordersToResolve[0]));
           // @ts-ignore -- Haven't explicitly checked the type of [1], but order priorities are unique
-          pieceIDsToRemove.push(...applyMove(ordersToResolve[1]));
+          pushArray.push(...applyMove(ordersToResolve[1]));
+          // TODO: special handling for concurrent pushes
+          pushArray.forEach((push) => movePieces(G, push));
           break;
         case 'defend':
           applyDefend(ordersToResolve[0]);
           // @ts-ignore -- Haven't explicitly checked the type of [1], but order priorities are unique
           applyDefend(ordersToResolve[1]);
       }
+      pieceIDsToRemove.push(...findDisallowedPieces(G));
       removePieces(G, pieceIDsToRemove);
     } else {
       // sequential move resolution, already sorted by priority
@@ -138,7 +147,7 @@ export function orderResolver({ G }: { G: GameState }) {
             break;
           case 'move-straight':
           case 'move-diagonal':
-            pieceIDsToRemove.push(...applyMove(order));
+            applyMove(order).forEach((push) => movePieces(G, push));
             break;
           case 'defend':
             applyDefend(order);
@@ -178,9 +187,9 @@ export function orderResolver({ G }: { G: GameState }) {
 
     // apply effects
     if (movedPiece) {
-      const pushesArray: { id: number; newPosition: Coordinates }[][] = [];
+      const pushesArray: Move[][] = [];
       const checkPush = (
-        currentArray: { id: number; newPosition: Coordinates }[] = [],
+        currentArray: Move[] = [],
         pushingPiece: Piece,
         vector: Coordinates
       ) => {
@@ -198,18 +207,7 @@ export function orderResolver({ G }: { G: GameState }) {
       console.log('pushesArray', pushesArray);
 
       // do another check?
-      // apply pushes
-      pushesArray.forEach((toPush) => movePieces(G, toPush));
-
-      // const maybePiece = pieces.find((p) => isEqual(p.position, newPosition));
-      //
-      // if (maybePiece) {
-      //   const pushesArray = [];
-      //
-      //   // IF destroying pieces that move to same square
-      //   // return for cleanup
-      //   return [maybePiece.id, movedPiece.id];
-      // }
+      return pushesArray;
     }
 
     return [];
@@ -276,4 +274,42 @@ export function createOrder(
     type,
     priority: ORDER_PRIORITIES[type],
   };
+}
+
+// get ids for pieces that need to be removed
+function findDisallowedPieces(G: GameState): number[] {
+  const pieceIDs: number[] = [];
+
+  // pieces off the board
+  G.pieces.forEach((p) => {
+    if (!isPositionOnBoard(G, p.position)) {
+      pieceIDs.push(p.id);
+    }
+  });
+
+  // overlapping pieces -- should I not allow this to happen in the first place?
+  const overlapPositions = countBy(G.pieces, (p) =>
+    coordinatesToArray(p.position, G.board)
+  );
+  forOwn(overlapPositions, (v, k) => {
+    // if 2 pieces found at position
+    if (v > 1) {
+      // key is the position as an array index, so convert to coord
+      const overlapCoordinate = arrayToCoordinates(Number(k), G.board);
+      const filterPieces = G.pieces.filter((p) =>
+        isEqual(p.position, overlapCoordinate)
+      );
+      filterPieces.forEach((p) => pieceIDs.push(p.id));
+    }
+  });
+
+  return pieceIDs;
+}
+
+// assumes rectangular board
+function isPositionOnBoard(G: GameState, position: Coordinates): boolean {
+  if (position.x < 0 || position.x > G.board.x) {
+    return false;
+  }
+  return !(position.y < 0 || position.y > G.board.y);
 }

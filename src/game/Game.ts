@@ -34,7 +34,7 @@ export const SimulChess: Game<GameState> = {
       [0, 1].forEach((x) =>
         createPiece({
           G: initialGame,
-          pieceToCreate: { owner: 0, position: { x, y: 1 } },
+          pieceToCreate: { owner: 0, position: { x, y: 0 } },
         })
       );
 
