@@ -151,6 +151,7 @@ export function orderResolver({ G }: { G: GameState }) {
     // removePieces(G, clashedPieceIDs);
   }
 
+  // return array of "pushes" to be applied
   function applyMove(order: MoveStraightOrder | MoveDiagonalOrder) {
     const movedPiece = pieces.find((p) => p.id === order.sourcePieceId);
     // piece might be removed prior to action
@@ -209,15 +210,7 @@ export function orderResolver({ G }: { G: GameState }) {
       //   // return for cleanup
       //   return [maybePiece.id, movedPiece.id];
       // }
-
-      // movedPiece.position = newPosition;
     }
-
-    // // actually move things
-    // const newLocation = coordinatesToArray(movedPiece.position, G.board);
-    // const oldLocation = cells.findIndex((i) => i === order.sourcePieceId);
-    // cells[oldLocation] = null;
-    // cells[newLocation] = order.sourcePieceId;
 
     return [];
   }
