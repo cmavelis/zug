@@ -8,6 +8,8 @@ import type { Order, OrderTypes } from '@/game/orders';
 import { arrayToCoordinates, getDisplacement } from '@/game/common';
 import { createOrder } from '@/game/orders';
 
+import OrderDisplay from '@/components/OrderDisplay.vue';
+
 interface BoardProps {
   client: _ClientImpl<GameState>;
   state: { G: GameState };
@@ -116,6 +118,14 @@ const undoLastOrder = () => {
           v-bind="piece"
           @click="handlePieceClick(piece.id)"
         />
+        <svg width="200" height="200">
+          <OrderDisplay
+            v-for="order in props.state.G.orders[0]"
+            :key="order"
+            :order="order"
+            :G="props.state.G"
+          />
+        </svg>
       </div>
     </div>
     <div>
@@ -162,6 +172,7 @@ const undoLastOrder = () => {
 
 .board-square {
   border: 1px solid blanchedalmond;
+  z-index: 3; /* want this above the order overlay for hover events */
 }
 
 .hoveredCell {
@@ -177,5 +188,10 @@ section {
 
 .selected {
   box-shadow: 0 0 10px coral, 0 0 5px coral;
+}
+
+svg {
+  position: absolute;
+  z-index: 2;
 }
 </style>
