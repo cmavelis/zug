@@ -153,6 +153,7 @@ export function orderResolver({ G }: { G: GameState }) {
             applyDefend(order);
             break;
         }
+        pieceIDsToRemove.push(...findDisallowedPieces(G));
         removePieces(G, pieceIDsToRemove);
       });
     }
