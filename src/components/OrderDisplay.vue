@@ -60,14 +60,16 @@ const lineColor = computed(() => {
       r="27"
       fill="darkcyan"
     ></circle>
-    <line
-      v-else
-      :x1="points.x1"
-      :y1="points.y1"
-      :x2="points.x2"
-      :y2="points.y2"
-      :stroke="lineColor"
-    ></line>
+    <template v-else>
+      <line
+        :x1="points.x1"
+        :y1="points.y1"
+        :x2="points.x2"
+        :y2="points.y2"
+        :stroke="lineColor"
+      ></line>
+      <circle :cx="points.x1" :cy="points.y1" r="10" :fill="lineColor"></circle>
+    </template>
   </g>
 </template>
 
