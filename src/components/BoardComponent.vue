@@ -13,6 +13,7 @@ import OrderDisplay from '@/components/OrderDisplay.vue';
 interface BoardProps {
   client: _ClientImpl<GameState>;
   state: { G: GameState };
+  playerID: number;
 }
 
 const selectedPiece: Ref<null | number> = ref(null);
@@ -120,7 +121,7 @@ const undoLastOrder = () => {
         />
         <svg width="200" height="200">
           <OrderDisplay
-            v-for="order in props.state.G.orders[0]"
+            v-for="order in props.state.G.orders[props.playerID]"
             :key="order"
             :order="order"
             :G="props.state.G"

@@ -11,6 +11,7 @@ interface Props {
 }
 
 const props = defineProps<Props>();
+const sideLength = 50;
 
 const coordsToPixels = (coordinates: Coordinates, squareLength: number) => {
   return {
@@ -25,12 +26,12 @@ const points = computed(() => {
     isEqual(p.id, order.sourcePieceId)
   );
   if (maybePiece) {
-    const { x: x1, y: y1 } = coordsToPixels(maybePiece.position, 50);
+    const { x: x1, y: y1 } = coordsToPixels(maybePiece.position, sideLength);
     let x2 = 0;
     let y2 = 0;
-    if (order.toTarget) {
-      x2 = x1 + order.toTarget.x * 50;
-      y2 = y1 + order.toTarget.y * 50;
+    if ('toTarget' in order) {
+      x2 = x1 + order.toTarget.x * sideLength;
+      y2 = y1 + order.toTarget.y * sideLength;
     }
     return {
       x1,
@@ -41,22 +42,39 @@ const points = computed(() => {
   }
   return { x1: 0, y1: 0, x2: 0, y2: 0 };
 });
+
+const lineColor = computed(() => {
+  if (props.order.type === 'attack') {
+    return 'red';
+  }
+  return 'darkcyan';
+});
 </script>
 
 <template>
   <g class="order">
-    <!--    <circle :cx="x" :cy="y" r="27" fill="darkcyan"></circle>-->
+    <circle
+      v-if="order.type === 'defend'"
+      :cx="points.x1"
+      :cy="points.y1"
+      r="27"
+      fill="darkcyan"
+    ></circle>
     <line
+      v-else
       :x1="points.x1"
       :y1="points.y1"
       :x2="points.x2"
       :y2="points.y2"
-      stroke="darkcyan"
+      :stroke="lineColor"
     ></line>
   </g>
 </template>
 
 <style scoped>
+circle {
+  opacity: 0.5;
+}
 .order {
   pointer-events: none;
   position: absolute;

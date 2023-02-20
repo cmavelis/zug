@@ -57,11 +57,13 @@ matchClientTwo.client.subscribe(updateGameStateTwo);
       v-if="playerID === 0 && gameStateLoaded"
       :client="matchClientOne.client"
       :state="gameState"
+      :playerID="playerID"
     />
     <BoardComponent
       v-if="playerID === 1 && gameStateTwoLoaded"
       :client="matchClientTwo.client"
       :state="gameStateTwo"
+      :playerID="playerID"
     />
   </main>
 </template>
