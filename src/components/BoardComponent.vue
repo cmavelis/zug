@@ -94,15 +94,8 @@ const undoLastOrder = () => {
 </script>
 
 <template>
-  <section>
+  <section class="layout">
     <div class="board-wrapper">
-      <div>
-        <button @click="selectAction('defend')">defend</button>
-        <button @click="selectAction('move-straight')">move (straight)</button>
-        <button @click="selectAction('attack')">attack</button>
-        <button @click="selectAction('move-diagonal')">move (diagonal)</button>
-        <button @click="clearAction()">clear</button>
-      </div>
       <div class="board-container">
         <div
           v-for="(cell, index) in props.state.G.cells"
@@ -127,6 +120,13 @@ const undoLastOrder = () => {
             :G="props.state.G"
           />
         </svg>
+      </div>
+      <div class="order-button-group">
+        <button @click="selectAction('defend')">defend</button>
+        <button @click="selectAction('move-straight')">move (straight)</button>
+        <button @click="selectAction('attack')">attack</button>
+        <button @click="selectAction('move-diagonal')">move (diagonal)</button>
+        <button @click="clearAction()">clear</button>
       </div>
     </div>
     <div>
@@ -153,13 +153,21 @@ const undoLastOrder = () => {
       <button @click="handleEndTurn">end turn</button>
     </div>
   </section>
-  <p>{{ props.state }}</p>
+  <!--  <p>{{ props.state }}</p>-->
 </template>
 
 <style scoped>
+.layout {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+}
 .board-wrapper {
   --square-size: 50px;
   position: relative;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  gap: 8px;
 }
 
 .board-container {
@@ -168,7 +176,6 @@ const undoLastOrder = () => {
   grid-template-rows: repeat(4, var(--square-size));
   border: 1px solid blanchedalmond;
   width: fit-content;
-  margin: auto;
 }
 
 .board-square {
@@ -178,6 +185,11 @@ const undoLastOrder = () => {
 
 .hoveredCell {
   box-shadow: inset 0 0 5px cyan, inset 0 0 10px cyan;
+}
+
+.order-button-group {
+  display: flex;
+  flex-direction: column;
 }
 
 section {
