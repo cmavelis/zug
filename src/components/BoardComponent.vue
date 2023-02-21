@@ -10,6 +10,7 @@ import { createOrder } from '@/game/orders';
 
 import OrderDisplay from '@/components/OrderDisplay.vue';
 
+// TODO: display-only board, no client prop
 interface BoardProps {
   client: _ClientImpl<GameState>;
   state: { G: GameState };

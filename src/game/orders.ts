@@ -91,7 +91,9 @@ function movePieces(G: GameState, moveArray: Move[]) {
 }
 
 export function orderResolver({ G }: { G: GameState }) {
-  const { cells, orders, pieces } = G;
+  const { orders, pieces } = G;
+
+  // copy game state for player review
 
   // Assume both players submit 4 orders for now
   for (let i = 0; i < 4; i++) {
