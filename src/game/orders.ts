@@ -5,7 +5,7 @@ import {
   arrayToCoordinates,
   coordinatesToArray,
 } from '@/game/common';
-import type { GameState } from '@/game/Game';
+import type { GameState, GObject } from '@/game/Game';
 import {
   isValidAttack,
   isValidMoveDiagonal,
@@ -90,10 +90,15 @@ function movePieces(G: GameState, moveArray: Move[]) {
   });
 }
 
-export function orderResolver({ G }: { G: GameState }) {
-  const { orders, pieces } = G;
+export function orderResolver({ G }: { G: GObject }) {
+  const { cells, orders, pieces } = G;
 
   // copy game state for player review
+  G.history.push({
+    cells,
+    orders,
+    pieces,
+  });
 
   // Assume both players submit 4 orders for now
   for (let i = 0; i < 4; i++) {

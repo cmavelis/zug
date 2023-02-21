@@ -12,6 +12,10 @@ export interface GameState {
   pieces: Piece[];
 }
 
+export type GObject = {
+  history: Omit<GameState, 'board'>[];
+} & GameState;
+
 let hostname: any;
 let port: any;
 if (typeof window !== 'undefined' && window?.location) {
@@ -19,7 +23,7 @@ if (typeof window !== 'undefined' && window?.location) {
   port = window.location.port;
 }
 
-export const SimulChess: Game<GameState> = {
+export const SimulChess: Game<GObject> = {
   name: 'zug',
   setup: () => {
     const board = { x: 4, y: 4 };
@@ -28,6 +32,7 @@ export const SimulChess: Game<GameState> = {
       cells: Array(board.x * board.y).fill(null),
       pieces: [],
       orders: { 0: [], 1: [] },
+      history: [],
     };
 
     if (hostname === 'localhost' && port === '5173') {
