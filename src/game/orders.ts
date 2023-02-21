@@ -1,4 +1,4 @@
-import { countBy, forOwn, isEqual, remove } from 'lodash';
+import { cloneDeep, countBy, forOwn, isEqual, remove } from 'lodash';
 import type { Coordinates } from '@/game/common';
 import {
   addDisplacement,
@@ -94,11 +94,13 @@ export function orderResolver({ G }: { G: GObject }) {
   const { cells, orders, pieces } = G;
 
   // copy game state for player review
-  G.history.push({
-    cells,
-    orders,
-    pieces,
-  });
+  G.history.push(
+    cloneDeep({
+      cells,
+      orders,
+      pieces,
+    })
+  );
 
   // Assume both players submit 4 orders for now
   for (let i = 0; i < 4; i++) {
