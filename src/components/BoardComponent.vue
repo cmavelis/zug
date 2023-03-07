@@ -8,9 +8,13 @@ import type { Order, OrderTypes } from '@/game/orders';
 import { arrayToCoordinates, getDisplacement } from '@/game/common';
 import { createOrder } from '@/game/orders';
 
+import OrderDisplay from '@/components/OrderDisplay.vue';
+
+// TODO: display-only board, no client prop
 interface BoardProps {
   client: _ClientImpl<GameState>;
   state: { G: GameState };
+  playerID: number;
 }
 
 const selectedPiece: Ref<null | number> = ref(null);
@@ -91,15 +95,8 @@ const undoLastOrder = () => {
 </script>
 
 <template>
-  <section>
+  <section class="layout">
     <div class="board-wrapper">
-      <div>
-        <button @click="selectAction('defend')">defend</button>
-        <button @click="selectAction('move-straight')">move (straight)</button>
-        <button @click="selectAction('attack')">attack</button>
-        <button @click="selectAction('move-diagonal')">move (diagonal)</button>
-        <button @click="clearAction()">clear</button>
-      </div>
       <div class="board-container">
         <div
           v-for="(cell, index) in props.state.G.cells"
@@ -116,6 +113,21 @@ const undoLastOrder = () => {
           v-bind="piece"
           @click="handlePieceClick(piece.id)"
         />
+        <svg width="200" height="200">
+          <OrderDisplay
+            v-for="order in props.state.G.orders[props.playerID]"
+            :key="order"
+            :order="order"
+            :G="props.state.G"
+          />
+        </svg>
+      </div>
+      <div class="order-button-group">
+        <button @click="selectAction('defend')">defend</button>
+        <button @click="selectAction('move-straight')">move (straight)</button>
+        <button @click="selectAction('attack')">attack</button>
+        <button @click="selectAction('move-diagonal')">move (diagonal)</button>
+        <button @click="clearAction()">clear</button>
       </div>
     </div>
     <div>
@@ -142,13 +154,21 @@ const undoLastOrder = () => {
       <button @click="handleEndTurn">end turn</button>
     </div>
   </section>
-  <p>{{ props.state }}</p>
+  <!--  <p>{{ props.state }}</p>-->
 </template>
 
 <style scoped>
+.layout {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+}
 .board-wrapper {
   --square-size: 50px;
   position: relative;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  gap: 8px;
 }
 
 .board-container {
@@ -157,15 +177,20 @@ const undoLastOrder = () => {
   grid-template-rows: repeat(4, var(--square-size));
   border: 1px solid blanchedalmond;
   width: fit-content;
-  margin: auto;
 }
 
 .board-square {
   border: 1px solid blanchedalmond;
+  z-index: 3; /* want this above the order overlay for hover events */
 }
 
 .hoveredCell {
   box-shadow: inset 0 0 5px cyan, inset 0 0 10px cyan;
+}
+
+.order-button-group {
+  display: flex;
+  flex-direction: column;
 }
 
 section {
@@ -177,5 +202,10 @@ section {
 
 .selected {
   box-shadow: 0 0 10px coral, 0 0 5px coral;
+}
+
+svg {
+  position: absolute;
+  z-index: 2;
 }
 </style>

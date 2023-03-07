@@ -1,11 +1,15 @@
 <script setup lang="ts">
-import BoardComponent from '../components/BoardComponent.vue';
-import { reactive, ref } from 'vue';
+import { computed, reactive, ref } from 'vue';
 import { useRoute } from 'vue-router';
-import { SimulChessClient } from '@/game/App';
-import type { GameState } from '@/game/Game';
+
 import type { ClientState } from 'boardgame.io/dist/types/src/client/client';
 import type { Ctx } from 'boardgame.io/dist/types/src/types';
+import { isEqual } from 'lodash';
+
+import BoardComponent from '../components/BoardComponent.vue';
+import BoardDisplay from '@/components/BoardDisplay.vue';
+import { SimulChessClient } from '@/game/App';
+import type { GameState, GObject } from '@/game/Game';
 
 const playerID = ref(0);
 const route = useRoute();
@@ -32,6 +36,17 @@ const updateGameState = (state: ClientState<{ G: GameState; ctx: Ctx }>) => {
 };
 matchClientOne.client.subscribe(updateGameState);
 
+const gameLastTurn = computed(() => {
+  if (isEqual(gameState.G, {})) {
+    return null;
+  }
+  const { history } = gameState.G as GObject;
+  if (history.length > 0) {
+    return { G: history[history.length - 1] };
+  }
+  return null;
+});
+
 const gameStateTwo = reactive({ G: {}, ctx: {} });
 const gameStateTwoLoaded = ref(false);
 
@@ -57,12 +72,15 @@ matchClientTwo.client.subscribe(updateGameStateTwo);
       v-if="playerID === 0 && gameStateLoaded"
       :client="matchClientOne.client"
       :state="gameState"
+      :playerID="playerID"
     />
     <BoardComponent
       v-if="playerID === 1 && gameStateTwoLoaded"
       :client="matchClientTwo.client"
       :state="gameStateTwo"
+      :playerID="playerID"
     />
+    <BoardDisplay v-if="gameLastTurn" :state="gameLastTurn" />
   </main>
 </template>
 

@@ -30,6 +30,7 @@ const pieceColor = props.owner === 0 ? '#729bf1' : '#62d368';
   display: flex;
   align-items: center;
   justify-content: center;
+  z-index: 1; /* below the order overlay */
 }
 
 .pieceIcon {
