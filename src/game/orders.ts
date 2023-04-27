@@ -46,11 +46,9 @@ export interface DefendOrder extends Omit<OrderBase, 'toTarget'> {
   type: 'defend';
 }
 
-export type Order =
-  | MoveStraightOrder
-  | MoveDiagonalOrder
-  | AttackOrder
-  | DefendOrder;
+type MoveOrder = MoveStraightOrder | MoveDiagonalOrder;
+
+export type Order = MoveOrder | AttackOrder | DefendOrder;
 
 export type Orders = Order[];
 
@@ -129,6 +127,10 @@ export function orderResolver({ G }: { G: GObject }) {
           break;
         case 'move-straight':
         case 'move-diagonal':
+          // @ts-ignore -- Haven't explicitly checked the type of [1], but order priorities are unique
+          if (didMovesBounce(ordersToResolve[0], ordersToResolve[1])) {
+            break;
+          }
           // eslint-disable-next-line no-case-declarations
           const pushArray = [];
           pushArray.push(...applyMove(ordersToResolve[0]));
@@ -258,6 +260,31 @@ export function orderResolver({ G }: { G: GObject }) {
       return;
     }
     actingPiece.isDefending = true;
+  }
+
+  function didMovesBounce(order1: MoveOrder, order2: MoveOrder) {
+    const movedPiece1 = pieces.find((p) => p.id === order1.sourcePieceId);
+    if (!movedPiece1) {
+      return false;
+    }
+    const movedPiece2 = pieces.find((p) => p.id === order2.sourcePieceId);
+    if (!movedPiece2) {
+      return false;
+    }
+
+    const target1 = addDisplacement(movedPiece1.position, order1.toTarget);
+    const target2 = addDisplacement(movedPiece2.position, order2.toTarget);
+
+    const targetEachOther =
+      isEqual(target1, movedPiece2.position) &&
+      isEqual(target2, movedPiece1.position);
+    const targetSameSquare = isEqual(target1, target2);
+
+    if (targetEachOther || targetSameSquare) {
+      // the moves "bounce", cancel the orders
+      return true;
+    }
+    return false;
   }
 
   // clear orders out for next turn
