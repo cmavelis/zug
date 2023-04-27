@@ -159,6 +159,7 @@ const undoLastOrder = () => {
 
 <style scoped>
 button {
+  -webkit-appearance: none;
   min-height: 2.5rem;
 }
 
@@ -181,7 +182,6 @@ button {
   grid-template-rows: repeat(4, var(--square-size));
   border: 1px solid blanchedalmond;
   width: fit-content;
-  height: fit-content;
 }
 
 .board-square {

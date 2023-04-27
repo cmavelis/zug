@@ -13,7 +13,7 @@ lobbyClient.listMatches('zug').then(console.log);
 
 <template>
   <div class="about">
-    <h1>This is an about page</h1>
+    <button>test</button>
   </div>
 </template>
 
@@ -24,5 +24,9 @@ lobbyClient.listMatches('zug').then(console.log);
     display: flex;
     align-items: center;
   }
+}
+button {
+  -webkit-appearance: none;
+  min-height: 2.5rem;
 }
 </style>
