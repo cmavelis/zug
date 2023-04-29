@@ -36,19 +36,23 @@ export const SimulChess: Game<GObject> = {
     };
 
     if (hostname === 'localhost' && port === '5173') {
-      [0, 1].forEach((x) =>
+      [0, 1, 2].forEach((x) =>
         createPiece({
           G: initialGame,
           pieceToCreate: { owner: 0, position: { x, y: 0 } },
         })
       );
 
-      [0, 1, 2, 3].forEach((x) =>
+      [0, 1, 2].forEach((x) =>
         createPiece({
           G: initialGame,
           pieceToCreate: { owner: 1, position: { x, y: 2 } },
         })
       );
+      createPiece({
+        G: initialGame,
+        pieceToCreate: { owner: 1, position: { x: 3, y: 3 } },
+      });
     } else {
       [0, 1, 2, 3].forEach((x) =>
         createPiece({
