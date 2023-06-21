@@ -1,5 +1,9 @@
 import type { GameState } from '@/game/Game';
-import { type Coordinates, coordinatesToArray } from '@/game/common';
+import {
+  type Coordinates,
+  coordinatesToArray,
+  reportError,
+} from '@/game/common';
 
 export interface Piece {
   id: number;
@@ -17,7 +21,7 @@ export const createPiece = ({
 }) => {
   const cellIndex = coordinatesToArray(pieceToCreate.position, G.board);
   if (G.cells[cellIndex]) {
-    throw new Error('cell occupied');
+    reportError('cell occupied');
   }
 
   const pieceId = G.pieces.length;
