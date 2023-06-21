@@ -281,6 +281,7 @@ export function orderResolver({ G }: { G: GObject }) {
       isEqual(target2, movedPiece1.position);
     const targetSameSquare = isEqual(target1, target2);
 
+    // noinspection RedundantIfStatementJS
     if (targetEachOther || targetSameSquare) {
       // the moves "bounce", cancel the orders
       return true;
