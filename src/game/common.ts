@@ -29,3 +29,7 @@ export const addDisplacement = (
 ) => {
   return { x: start.x + displacement.x, y: start.y + displacement.y };
 };
+
+export function reportError(e: string) {
+  console.error(e);
+}

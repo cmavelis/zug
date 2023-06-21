@@ -4,6 +4,7 @@ import {
   addDisplacement,
   arrayToCoordinates,
   coordinatesToArray,
+  reportError,
 } from '@/game/common';
 import type { GameState, GObject } from '@/game/Game';
 import {
@@ -187,14 +188,14 @@ export function orderResolver({ G }: { G: GObject }) {
       !isValidMoveStraight(movedPiece, order)
     ) {
       console.log(JSON.parse(JSON.stringify(order)));
-      throw Error('Invalid action received');
+      reportError('Invalid action received');
     }
     if (
       order.type === 'move-diagonal' &&
       !isValidMoveDiagonal(movedPiece, order)
     ) {
       console.log(JSON.parse(JSON.stringify(order)));
-      throw Error('Invalid action received');
+      reportError('Invalid action received');
     }
 
     // apply effects
@@ -238,7 +239,7 @@ export function orderResolver({ G }: { G: GObject }) {
       if (!(actingPiece && isValidAttack(actingPiece, order))) {
         console.log(order && JSON.parse(JSON.stringify(order)));
         console.log(actingPiece && JSON.parse(JSON.stringify(actingPiece)));
-        throw Error('Invalid action received');
+        reportError('Invalid action received');
       }
 
       const targetSquare = addDisplacement(
@@ -280,6 +281,7 @@ export function orderResolver({ G }: { G: GObject }) {
       isEqual(target2, movedPiece1.position);
     const targetSameSquare = isEqual(target1, target2);
 
+    // noinspection RedundantIfStatementJS
     if (targetEachOther || targetSameSquare) {
       // the moves "bounce", cancel the orders
       return true;
