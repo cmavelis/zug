@@ -347,8 +347,8 @@ function findDisallowedPieces(G: GameState): number[] {
 
 // assumes rectangular board
 function isPositionOnBoard(G: GameState, position: Coordinates): boolean {
-  if (position.x < 0 || position.x > G.board.x) {
+  if (position.x < 0 || position.x >= G.board.x) {
     return false;
   }
-  return !(position.y < 0 || position.y > G.board.y);
+  return !(position.y < 0 || position.y >= G.board.y);
 }
