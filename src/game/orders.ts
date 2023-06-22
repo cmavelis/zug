@@ -176,7 +176,10 @@ export function orderResolver({ G }: { G: GObject }) {
     }
     // -- CLEANUP --
     // truncate cells array if it got weird from pieces being pushed off
-    G.cells.length = G.board.x * G.board.y;
+    const cellsArraySize = G.board.x * G.board.y;
+    if (G.cells.length > cellsArraySize) {
+      G.cells.length = cellsArraySize;
+    }
   }
 
   // return array of "pushes" to be applied
