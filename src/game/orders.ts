@@ -169,8 +169,9 @@ export function orderResolver({ G }: { G: GObject }) {
         removePieces(G, pieceIDsToRemove);
       });
     }
-    // add cleanup here
-    // removePieces(G, clashedPieceIDs);
+    // // add cleanup here
+    // truncate cells array if it got weird from pieces being pushed off
+    G.cells.length = G.board.x * G.board.y;
   }
 
   // return array of "pushes" to be applied

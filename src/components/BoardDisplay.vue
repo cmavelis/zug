@@ -82,6 +82,7 @@ logProxy(props);
   grid-template-rows: repeat(4, var(--square-size));
   border: 1px solid blanchedalmond;
   width: fit-content;
+  height: fit-content;
 }
 
 .board-square {
