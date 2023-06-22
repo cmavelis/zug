@@ -98,7 +98,10 @@ matchClientTwo.client.subscribe(updateGameStateTwo);
         -
       </button>
       <span id="history-order-number-display">{{ historyOrderNumber }}</span>
-      <button :disabled="historyOrderNumber >= 4" @click="incrementHistory()">
+      <button
+        :disabled="historyOrderNumber >= gameLastTurn.length"
+        @click="incrementHistory()"
+      >
         +
       </button>
     </div>
