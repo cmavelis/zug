@@ -80,7 +80,9 @@ matchClientTwo.client.subscribe(updateGameStateTwo);
       :state="gameStateTwo"
       :playerID="playerID"
     />
-    <BoardDisplay v-if="gameLastTurn" :state="gameLastTurn" />
+    <div v-for="(turn, index) in gameState.G.history" :key="index">
+      <BoardDisplay v-if="gameLastTurn" :state="{ G: turn }" />
+    </div>
   </main>
 </template>
 

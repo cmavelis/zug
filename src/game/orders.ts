@@ -92,15 +92,6 @@ function movePieces(G: GameState, moveArray: Move[]) {
 export function orderResolver({ G }: { G: GObject }) {
   const { cells, orders, pieces } = G;
 
-  // copy game state for player review
-  G.history.push(
-    cloneDeep({
-      cells,
-      orders,
-      pieces,
-    })
-  );
-
   // Assume both players submit 4 orders for now
   for (let i = 0; i < 4; i++) {
     // rank orders by priority
@@ -108,6 +99,20 @@ export function orderResolver({ G }: { G: GObject }) {
       (a, b) => a.priority - b.priority
     );
     logProxy(ordersToResolve);
+
+    const ordersUsed = {
+      0: ordersToResolve[0] ? [ordersToResolve[0]] : undefined,
+      1: ordersToResolve[1] ? [ordersToResolve[1]] : undefined,
+    };
+
+    // copy game state for player review
+    G.history.push(
+      cloneDeep({
+        cells,
+        orders: ordersUsed,
+        pieces,
+      })
+    );
 
     // concurrent move resolution (for now)
     // if same priority
@@ -169,7 +174,7 @@ export function orderResolver({ G }: { G: GObject }) {
         removePieces(G, pieceIDsToRemove);
       });
     }
-    // // add cleanup here
+    // -- CLEANUP --
     // truncate cells array if it got weird from pieces being pushed off
     G.cells.length = G.board.x * G.board.y;
   }
