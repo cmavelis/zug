@@ -42,10 +42,17 @@ const gameLastTurn = computed(() => {
   }
   const { history } = gameState.G as GObject;
   if (history.length > 0) {
-    return { G: history[history.length - 1] };
+    return history[history.length - 1];
   }
   return null;
 });
+const historyOrderNumber = ref(1);
+function incrementHistory() {
+  historyOrderNumber.value++;
+}
+function decrementHistory() {
+  historyOrderNumber.value--;
+}
 
 const gameStateTwo = reactive({ G: {}, ctx: {} });
 const gameStateTwoLoaded = ref(false);
@@ -80,12 +87,34 @@ matchClientTwo.client.subscribe(updateGameStateTwo);
       :state="gameStateTwo"
       :playerID="playerID"
     />
-    <BoardDisplay v-if="gameLastTurn" :state="gameLastTurn" />
+    <div v-if="gameLastTurn">
+      <div>LAST TURN</div>
+      <BoardDisplay
+        :state="{ G: gameLastTurn[historyOrderNumber - 1] }"
+        :orderNumber="historyOrderNumber"
+      />
+
+      <button :disabled="historyOrderNumber <= 1" @click="decrementHistory()">
+        -
+      </button>
+      <span id="history-order-number-display">{{ historyOrderNumber }}</span>
+      <button
+        :disabled="historyOrderNumber >= gameLastTurn.length"
+        @click="incrementHistory()"
+      >
+        +
+      </button>
+    </div>
   </main>
 </template>
 
 <style>
 main {
   padding: 1rem 0;
+}
+
+#history-order-number-display {
+  display: inline-block;
+  width: 2rem;
 }
 </style>

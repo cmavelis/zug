@@ -8,7 +8,8 @@ import OrderDisplay from '@/components/OrderDisplay.vue';
 import { logProxy } from '@/utils';
 
 interface BoardProps {
-  state: { G: GameState };
+  state: { G: Omit<GameState, 'board'> };
+  orderNumber: number;
 }
 const props = defineProps<BoardProps>();
 logProxy(props);
@@ -45,7 +46,7 @@ logProxy(props);
       </div>
     </div>
     <div>
-      <p>ORDERS</p>
+      <p>ORDERS: step {{ props.orderNumber }}</p>
       <template v-for="playerID in [0, 1]" :key="playerID">
         <p>Player {{ playerID + 1 }}</p>
         <template
@@ -82,6 +83,7 @@ logProxy(props);
   grid-template-rows: repeat(4, var(--square-size));
   border: 1px solid blanchedalmond;
   width: fit-content;
+  height: fit-content;
 }
 
 .board-square {

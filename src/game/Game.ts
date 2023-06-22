@@ -13,7 +13,7 @@ export interface GameState {
 }
 
 export type GObject = {
-  history: Omit<GameState, 'board'>[];
+  history: Omit<GameState, 'board'>[][];
 } & GameState;
 
 let hostname: any;

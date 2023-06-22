@@ -92,14 +92,7 @@ function movePieces(G: GameState, moveArray: Move[]) {
 export function orderResolver({ G }: { G: GObject }) {
   const { cells, orders, pieces } = G;
 
-  // copy game state for player review
-  G.history.push(
-    cloneDeep({
-      cells,
-      orders,
-      pieces,
-    })
-  );
+  const turnHistory = [];
 
   // Assume both players submit 4 orders for now
   for (let i = 0; i < 4; i++) {
@@ -108,6 +101,22 @@ export function orderResolver({ G }: { G: GObject }) {
       (a, b) => a.priority - b.priority
     );
     logProxy(ordersToResolve);
+
+    const ordersUsed = {
+      0: ordersToResolve[0] ? [ordersToResolve[0]] : [],
+      1: ordersToResolve[1] ? [ordersToResolve[1]] : [],
+    };
+
+    if (ordersToResolve[0] || ordersToResolve[1]) {
+      // copy game state for player review
+      turnHistory.push(
+        cloneDeep({
+          cells,
+          orders: ordersUsed,
+          pieces,
+        })
+      );
+    }
 
     // concurrent move resolution (for now)
     // if same priority
@@ -169,8 +178,12 @@ export function orderResolver({ G }: { G: GObject }) {
         removePieces(G, pieceIDsToRemove);
       });
     }
-    // add cleanup here
-    // removePieces(G, clashedPieceIDs);
+    // -- CLEANUP --
+    // truncate cells array if it got weird from pieces being pushed off
+    const cellsArraySize = G.board.x * G.board.y;
+    if (G.cells.length > cellsArraySize) {
+      G.cells.length = cellsArraySize;
+    }
   }
 
   // return array of "pushes" to be applied
@@ -288,6 +301,8 @@ export function orderResolver({ G }: { G: GObject }) {
     }
     return false;
   }
+
+  G.history.push(turnHistory);
 
   // clear orders out for next turn
   orders[0] = [];
