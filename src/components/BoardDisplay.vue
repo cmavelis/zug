@@ -46,7 +46,7 @@ logProxy(props);
       </div>
     </div>
     <div>
-      <p>ORDERS: {{ props.orderNumber }}</p>
+      <p>ORDERS: step {{ props.orderNumber }}</p>
       <template v-for="playerID in [0, 1]" :key="playerID">
         <p>Player {{ playerID + 1 }}</p>
         <template

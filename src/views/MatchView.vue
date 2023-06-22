@@ -87,20 +87,21 @@ matchClientTwo.client.subscribe(updateGameStateTwo);
       :state="gameStateTwo"
       :playerID="playerID"
     />
-    <div>LAST TURN</div>
     <div v-if="gameLastTurn">
+      <div>LAST TURN</div>
       <BoardDisplay
         :state="{ G: gameLastTurn[historyOrderNumber - 1] }"
         :orderNumber="historyOrderNumber"
       />
+
+      <button :disabled="historyOrderNumber <= 1" @click="decrementHistory()">
+        -
+      </button>
+      <span id="history-order-number-display">{{ historyOrderNumber }}</span>
+      <button :disabled="historyOrderNumber >= 4" @click="incrementHistory()">
+        +
+      </button>
     </div>
-    <button :disabled="historyOrderNumber <= 1" @click="decrementHistory()">
-      -
-    </button>
-    <span id="history-order-number-display">{{ historyOrderNumber }}</span>
-    <button :disabled="historyOrderNumber >= 4" @click="incrementHistory()">
-      +
-    </button>
   </main>
 </template>
 
