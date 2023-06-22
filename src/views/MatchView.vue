@@ -87,6 +87,7 @@ matchClientTwo.client.subscribe(updateGameStateTwo);
       :state="gameStateTwo"
       :playerID="playerID"
     />
+    <div>LAST TURN</div>
     <div v-if="gameLastTurn">
       <BoardDisplay
         :state="{ G: gameLastTurn[historyOrderNumber - 1] }"
