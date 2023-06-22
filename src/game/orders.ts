@@ -92,6 +92,8 @@ function movePieces(G: GameState, moveArray: Move[]) {
 export function orderResolver({ G }: { G: GObject }) {
   const { cells, orders, pieces } = G;
 
+  const turnHistory = [];
+
   // Assume both players submit 4 orders for now
   for (let i = 0; i < 4; i++) {
     // rank orders by priority
@@ -101,18 +103,20 @@ export function orderResolver({ G }: { G: GObject }) {
     logProxy(ordersToResolve);
 
     const ordersUsed = {
-      0: ordersToResolve[0] ? [ordersToResolve[0]] : undefined,
-      1: ordersToResolve[1] ? [ordersToResolve[1]] : undefined,
+      0: ordersToResolve[0] ? [ordersToResolve[0]] : [],
+      1: ordersToResolve[1] ? [ordersToResolve[1]] : [],
     };
 
-    // copy game state for player review
-    G.history.push(
-      cloneDeep({
-        cells,
-        orders: ordersUsed,
-        pieces,
-      })
-    );
+    if (ordersToResolve[0] || ordersToResolve[1]) {
+      // copy game state for player review
+      turnHistory.push(
+        cloneDeep({
+          cells,
+          orders: ordersUsed,
+          pieces,
+        })
+      );
+    }
 
     // concurrent move resolution (for now)
     // if same priority
@@ -297,6 +301,8 @@ export function orderResolver({ G }: { G: GObject }) {
     }
     return false;
   }
+
+  G.history.push(turnHistory);
 
   // clear orders out for next turn
   orders[0] = [];

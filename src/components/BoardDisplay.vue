@@ -9,6 +9,7 @@ import { logProxy } from '@/utils';
 
 interface BoardProps {
   state: { G: GameState };
+  orderNumber: number;
 }
 const props = defineProps<BoardProps>();
 logProxy(props);
@@ -45,7 +46,7 @@ logProxy(props);
       </div>
     </div>
     <div>
-      <p>ORDERS</p>
+      <p>ORDERS: {{ props.orderNumber }}</p>
       <template v-for="playerID in [0, 1]" :key="playerID">
         <p>Player {{ playerID + 1 }}</p>
         <template

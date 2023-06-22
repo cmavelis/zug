@@ -42,7 +42,7 @@ const gameLastTurn = computed(() => {
   }
   const { history } = gameState.G as GObject;
   if (history.length > 0) {
-    return { G: history[history.length - 1] };
+    return history[history.length - 1];
   }
   return null;
 });
@@ -80,8 +80,12 @@ matchClientTwo.client.subscribe(updateGameStateTwo);
       :state="gameStateTwo"
       :playerID="playerID"
     />
-    <div v-for="(turn, index) in gameState.G.history" :key="index">
-      <BoardDisplay v-if="gameLastTurn" :state="{ G: turn }" />
+    <div v-for="(turn, index) in gameLastTurn" :key="index">
+      <BoardDisplay
+        v-if="gameLastTurn"
+        :state="{ G: turn }"
+        :orderNumber="index + 1"
+      />
     </div>
   </main>
 </template>
