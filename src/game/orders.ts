@@ -15,6 +15,9 @@ import {
 import { logProxy } from '@/utils';
 import type { Piece } from '@/game/pieces';
 
+// CONFIG
+const MOVES_CAN_PUSH = false;
+
 // orders are stored with displacement from piece to target
 export interface OrderBase {
   sourcePieceId: number;
@@ -24,8 +27,10 @@ export interface OrderBase {
 
 const ORDER_PRIORITIES = {
   defend: 1,
+  'push-straight': 1,
   'move-straight': 2,
   attack: 3,
+  'push-diagonal': 3,
   'move-diagonal': 4,
 };
 
@@ -39,6 +44,14 @@ export interface MoveDiagonalOrder extends OrderBase {
   type: 'move-diagonal';
 }
 
+export interface PushStraightOrder extends OrderBase {
+  type: 'push-straight';
+}
+
+export interface PushDiagonalOrder extends OrderBase {
+  type: 'push-diagonal';
+}
+
 export interface AttackOrder extends OrderBase {
   type: 'attack';
 }
@@ -49,7 +62,12 @@ export interface DefendOrder extends Omit<OrderBase, 'toTarget'> {
 
 type MoveOrder = MoveStraightOrder | MoveDiagonalOrder;
 
-export type Order = MoveOrder | AttackOrder | DefendOrder;
+export type Order =
+  | MoveOrder
+  | AttackOrder
+  | DefendOrder
+  | PushDiagonalOrder
+  | PushStraightOrder;
 
 export type Orders = Order[];
 
@@ -187,7 +205,7 @@ export function orderResolver({ G }: { G: GObject }) {
   }
 
   // return array of "pushes" to be applied
-  function applyMove(order: MoveStraightOrder | MoveDiagonalOrder) {
+  function applyMove(order: MoveStraightOrder | MoveDiagonalOrder): Move[][] {
     const movedPiece = pieces.find((p) => p.id === order.sourcePieceId);
     // piece might be removed prior to action
     if (!movedPiece) {
@@ -212,31 +230,20 @@ export function orderResolver({ G }: { G: GObject }) {
     }
 
     // apply effects
-    if (movedPiece) {
-      const pushesArray: Move[][] = [];
-      const checkPush = (
-        currentArray: Move[] = [],
-        pushingPiece: Piece,
-        vector: Coordinates
-      ) => {
-        const newPosition = addDisplacement(pushingPiece.position, vector);
-        currentArray.push({ id: pushingPiece.id, newPosition });
-        const maybePiece = pieces.find((p) => isEqual(p.position, newPosition));
-
-        if (maybePiece) {
-          checkPush(currentArray, maybePiece, vector);
-        } else {
-          pushesArray.push(currentArray);
-        }
-      };
-      checkPush([], movedPiece, order.toTarget);
+    if (MOVES_CAN_PUSH) {
+      const pushesArray = getPushes(movedPiece, order.toTarget);
       console.log('pushesArray', pushesArray);
 
       // do another check?
       return pushesArray;
+    } else {
+      const newPosition = addDisplacement(movedPiece.position, order.toTarget);
+      const maybePiece = pieces.find((p) => isEqual(p.position, newPosition));
+      if (maybePiece) {
+        return [];
+      }
+      return [[{ id: movedPiece.id, newPosition }]];
     }
-
-    return [];
   }
 
   // returns attacked piece ID
@@ -274,6 +281,30 @@ export function orderResolver({ G }: { G: GObject }) {
       return;
     }
     actingPiece.isDefending = true;
+  }
+
+  function getPushes(pushingPiece: Piece, vector: Coordinates) {
+    const pushesArray: Move[][] = [];
+    const checkPush = (
+      currentArray: Move[] = [],
+      pushingPiece: Piece,
+      vector: Coordinates
+    ) => {
+      const newPosition = addDisplacement(pushingPiece.position, vector);
+      currentArray.push({ id: pushingPiece.id, newPosition });
+      const maybePiece = pieces.find((p) => isEqual(p.position, newPosition));
+
+      if (maybePiece) {
+        checkPush(currentArray, maybePiece, vector);
+      } else {
+        pushesArray.push(currentArray);
+      }
+    };
+    checkPush([], pushingPiece, vector);
+    console.log('pushesArray', pushesArray);
+
+    // do another check?
+    return pushesArray;
   }
 
   function didMovesBounce(order1: MoveOrder, order2: MoveOrder) {
