@@ -123,10 +123,10 @@ const undoLastOrder = () => {
         </svg>
       </div>
       <div class="order-button-group">
-        <button @click="selectAction('defend')">defend</button>
         <button @click="selectAction('move-straight')">move (straight)</button>
-        <button @click="selectAction('attack')">attack</button>
+        <button @click="selectAction('push-straight')">push (straight)</button>
         <button @click="selectAction('move-diagonal')">move (diagonal)</button>
+        <button @click="selectAction('push-diagonal')">push (diagonal)</button>
         <button @click="clearAction()">clear</button>
       </div>
     </div>

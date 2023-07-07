@@ -27,11 +27,11 @@ export interface OrderBase {
 
 const ORDER_PRIORITIES = {
   defend: 1,
-  'push-straight': 1,
-  'move-straight': 2,
+  'move-straight': 1,
+  'push-straight': 2,
   attack: 3,
-  'push-diagonal': 3,
-  'move-diagonal': 4,
+  'move-diagonal': 3,
+  'push-diagonal': 4,
 };
 
 export type OrderTypes = keyof typeof ORDER_PRIORITIES;
@@ -154,12 +154,11 @@ export function orderResolver({ G }: { G: GObject }) {
           pieceIDsToRemove.push(applyAttack(ordersToResolve[1]));
           break;
         case 'move-straight':
-        case 'move-diagonal':
+        case 'move-diagonal': {
           // @ts-ignore -- Haven't explicitly checked the type of [1], but order priorities are unique
           if (didMovesBounce(ordersToResolve[0], ordersToResolve[1])) {
             break;
           }
-          // eslint-disable-next-line no-case-declarations
           const pushArray = [];
           pushArray.push(...applyMove(ordersToResolve[0]));
           // @ts-ignore -- Haven't explicitly checked the type of [1], but order priorities are unique
@@ -167,6 +166,21 @@ export function orderResolver({ G }: { G: GObject }) {
           // TODO: special handling for concurrent pushes
           pushArray.forEach((push) => movePieces(G, push));
           break;
+        }
+        case 'push-diagonal':
+        case 'push-straight': {
+          // @ts-ignore -- Haven't explicitly checked the type of [1], but order priorities are unique
+          if (didMovesBounce(ordersToResolve[0], ordersToResolve[1])) {
+            break;
+          }
+          const pushArray = [];
+          pushArray.push(...applyPush(ordersToResolve[0]));
+          // @ts-ignore -- Haven't explicitly checked the type of [1], but order priorities are unique
+          pushArray.push(...applyPush(ordersToResolve[1]));
+          // TODO: special handling for concurrent pushes
+          pushArray.forEach((push) => movePieces(G, push));
+          break;
+        }
         case 'defend':
           applyDefend(ordersToResolve[0]);
           // @ts-ignore -- Haven't explicitly checked the type of [1], but order priorities are unique
@@ -187,6 +201,10 @@ export function orderResolver({ G }: { G: GObject }) {
           case 'move-straight':
           case 'move-diagonal':
             applyMove(order).forEach((push) => movePieces(G, push));
+            break;
+          case 'push-straight':
+          case 'push-diagonal':
+            applyPush(order).forEach((push) => movePieces(G, push));
             break;
           case 'defend':
             applyDefend(order);
@@ -244,6 +262,26 @@ export function orderResolver({ G }: { G: GObject }) {
       }
       return [[{ id: movedPiece.id, newPosition }]];
     }
+  }
+
+  // return array of "pushes" to be applied
+  function applyPush(order: PushStraightOrder | PushDiagonalOrder): Move[][] {
+    const pushingPiece = pieces.find((p) => p.id === order.sourcePieceId);
+    // piece might be removed prior to action
+    if (!pushingPiece) {
+      console.log('piece ', order.sourcePieceId, ' no longer exists');
+      return [];
+    }
+
+    // todo validate
+
+    // apply effects
+    const pushesArray = getPushes(pushingPiece, order.toTarget);
+    pushesArray.forEach((a) => a.shift());
+    console.log('pushesArray', pushesArray);
+
+    // do another check?
+    return pushesArray;
   }
 
   // returns attacked piece ID
