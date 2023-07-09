@@ -4,6 +4,7 @@ import { createPiece, type Piece } from '@/game/pieces';
 import type { Order, Orders } from '@/game/orders';
 import { orderResolver } from '@/game/orders';
 import type { Coordinates } from '@/game/common';
+import { isValidOrder } from '@/game/zugzwang/validators';
 
 export interface GameState {
   board: Coordinates;
@@ -105,6 +106,12 @@ export const SimulChess: Game<GObject> = {
               ) {
                 return INVALID_MOVE;
               }
+
+              // validate type/direction
+              if (!isValidOrder(movedPiece, order)) {
+                return INVALID_MOVE;
+              }
+
               G.orders[playerNumber].push(order);
             },
             // Prevents the move counting towards a player’s number of moves.
