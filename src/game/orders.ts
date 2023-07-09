@@ -136,12 +136,7 @@ export function orderResolver({ G }: { G: GObject }) {
       );
     }
 
-    // concurrent move resolution (for now)
-    // if same priority
-    //  if attack
-    //   mark both attacked, wait to cleanup after
-    //  if move
-    //   if same square, destroy
+    // concurrent move resolution
     if (
       ordersToResolve[0] &&
       ordersToResolve[1] &&
