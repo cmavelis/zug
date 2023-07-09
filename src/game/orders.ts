@@ -8,9 +8,9 @@ import {
 } from '@/game/common';
 import type { GameState, GObject } from '@/game/Game';
 import {
-  isValidAttack,
   isValidMoveDiagonal,
   isValidMoveStraight,
+  isValidOrder,
 } from '@/game/zugzwang/validators';
 import { logProxy } from '@/utils';
 import type { Piece } from '@/game/pieces';
@@ -289,7 +289,7 @@ export function orderResolver({ G }: { G: GObject }) {
         return;
       }
 
-      if (!(actingPiece && isValidAttack(actingPiece, order))) {
+      if (!(actingPiece && isValidOrder(actingPiece, order))) {
         console.log(order && JSON.parse(JSON.stringify(order)));
         console.log(actingPiece && JSON.parse(JSON.stringify(actingPiece)));
         reportError('Invalid action received');

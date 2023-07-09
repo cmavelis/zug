@@ -114,15 +114,3 @@ export function isValidMoveStraight(
 
   return yChange === yChangeAllowed && xChange === xChangeAllowed;
 }
-
-export function isValidAttack(piece: Piece, attack: AttackOrder): boolean {
-  // assume attacks can only go one direction
-  const yChangeAllowed = piece.owner === 0 ? 1 : -1;
-  // attack is diagonal
-  const xChangesAllowed = [-1, 1];
-
-  const yChange = attack.toTarget.y;
-  const xChange = attack.toTarget.x;
-
-  return yChange === yChangeAllowed && xChangesAllowed.includes(xChange);
-}
