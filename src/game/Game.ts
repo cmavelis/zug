@@ -11,6 +11,7 @@ export interface GameState {
   cells: Array<null | number>;
   orders: { [playerID: number]: Orders };
   pieces: Piece[];
+  score: { [playerID: number]: number };
 }
 
 export type GObject = {
@@ -34,6 +35,7 @@ export const SimulChess: Game<GObject> = {
       pieces: [],
       orders: { 0: [], 1: [] },
       history: [],
+      score: { 0: 0, 1: 0 },
     };
 
     if (hostname === 'localhost' && port === '5173') {
@@ -152,14 +154,11 @@ export const SimulChess: Game<GObject> = {
     },
   },
 
-  // endIf: ({ G, ctx }) => {
-  //   if (IsVictory(G.cells)) {
-  //     return { winner: ctx.currentPlayer };
-  //   }
-  //   if (IsDraw(G.cells)) {
-  //     return { draw: true };
-  //   }
-  // },
+  endIf: ({ G, ctx }) => {
+    if (Object.values(G.score).some((i) => i > 3)) {
+      return { winner: 0 }; // TODO: actually get the right one
+    }
+  },
 };
 
 export interface moveAddOrder {}
