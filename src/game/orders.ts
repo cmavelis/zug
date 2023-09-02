@@ -14,6 +14,7 @@ import {
 } from '@/game/zugzwang/validators';
 import { logProxy } from '@/utils';
 import type { Piece } from '@/game/pieces';
+import { createPiece } from '@/game/pieces';
 
 // CONFIG
 const MOVES_CAN_PUSH = false;
@@ -22,6 +23,7 @@ const MOVES_CAN_PUSH = false;
 export interface OrderBase {
   sourcePieceId: number;
   toTarget: Coordinates;
+  owner: number;
   priority: number;
 }
 
@@ -32,6 +34,7 @@ const ORDER_PRIORITIES = {
   attack: 3,
   'move-diagonal': 3,
   'push-diagonal': 4,
+  place: 5,
 };
 
 export type OrderTypes = keyof typeof ORDER_PRIORITIES;
@@ -60,6 +63,10 @@ export interface DefendOrder extends Omit<OrderBase, 'toTarget'> {
   type: 'defend';
 }
 
+export interface PlaceOrder extends OrderBase {
+  type: 'place';
+}
+
 type MoveOrder = MoveStraightOrder | MoveDiagonalOrder;
 
 export type Order =
@@ -67,7 +74,8 @@ export type Order =
   | AttackOrder
   | DefendOrder
   | PushDiagonalOrder
-  | PushStraightOrder;
+  | PushStraightOrder
+  | PlaceOrder;
 
 export type Orders = Order[];
 
@@ -108,7 +116,7 @@ function movePieces(G: GameState, moveArray: Move[]) {
 }
 
 export function orderResolver({ G }: { G: GObject }) {
-  const { cells, orders, pieces } = G;
+  const { cells, orders, pieces, score } = G;
 
   const turnHistory = [];
 
@@ -132,6 +140,7 @@ export function orderResolver({ G }: { G: GObject }) {
           cells,
           orders: ordersUsed,
           pieces,
+          score,
         })
       );
     }
@@ -180,6 +189,11 @@ export function orderResolver({ G }: { G: GObject }) {
           applyDefend(ordersToResolve[0]);
           // @ts-ignore -- Haven't explicitly checked the type of [1], but order priorities are unique
           applyDefend(ordersToResolve[1]);
+          break;
+        case 'place':
+          applyPlace(ordersToResolve[0]);
+          // @ts-ignore -- Haven't explicitly checked the type of [1], but order priorities are unique
+          applyPlace(ordersToResolve[1]);
       }
       pieceIDsToRemove.push(...findDisallowedPieces(G));
       removePieces(G, pieceIDsToRemove);
@@ -204,6 +218,8 @@ export function orderResolver({ G }: { G: GObject }) {
           case 'defend':
             applyDefend(order);
             break;
+          case 'place':
+            applyPlace(order);
         }
         pieceIDsToRemove.push(...findDisallowedPieces(G));
         removePieces(G, pieceIDsToRemove);
@@ -316,6 +332,13 @@ export function orderResolver({ G }: { G: GObject }) {
     actingPiece.isDefending = true;
   }
 
+  function applyPlace(order: PlaceOrder) {
+    createPiece({
+      G,
+      pieceToCreate: { owner: order.owner, position: order.toTarget },
+    });
+  }
+
   function getPushes(pushingPiece: Piece, vector: Coordinates) {
     const pushesArray: Move[][] = [];
     const checkPush = (
@@ -380,13 +403,15 @@ export function orderResolver({ G }: { G: GObject }) {
       p.isDefending = false;
     });
 
+  // TODO: score & remove pieces that are in the home row
+
   return G;
 }
 
 export function createOrder(
-  order: Omit<OrderBase, 'priority'>,
+  order: Omit<OrderBase, 'priority' | 'owner'>,
   type: OrderTypes
-): Order {
+): Omit<Order, 'owner'> {
   return {
     ...order,
     type,

@@ -114,6 +114,7 @@ export const SimulChess: Game<GObject> = {
                 return INVALID_MOVE;
               }
 
+              order.owner = playerNumber;
               G.orders[playerNumber].push(order);
             },
             // Prevents the move counting towards a player’s number of moves.
