@@ -23,7 +23,7 @@ const cellHover: Ref<null | number> = ref(null);
 
 const props = defineProps<BoardProps>();
 
-const addOrder = (order: Order) => {
+const addOrder = (order: Omit<Order, 'owner'>) => {
   props.client.moves.addOrder(order);
 };
 
