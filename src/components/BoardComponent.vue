@@ -52,7 +52,11 @@ const handleCellClick = (pieceID?: number) => {
     selectedAction.value &&
     typeof cellHover.value === 'number'
   ) {
-    const pieceCoords = getPieceCoords(selectedPiece.value, props.state.G);
+    let pieceCoords = { x: 0, y: 0 };
+    if (selectedPiece.value >= 0) {
+      // negative value is nonexistent piece, use absolute coords
+      pieceCoords = getPieceCoords(selectedPiece.value, props.state.G);
+    }
     const targetCoords = arrayToCoordinates(
       cellHover.value,
       props.state.G.board
@@ -61,6 +65,7 @@ const handleCellClick = (pieceID?: number) => {
     const toTarget = getDisplacement(pieceCoords, targetCoords);
     const order = createOrder(
       {
+        owner: props.playerID,
         sourcePieceId: selectedPiece.value,
         toTarget,
       },
@@ -82,6 +87,9 @@ const handleEndTurn = () => {
 
 const selectAction = (action: OrderTypes) => {
   selectedAction.value = action;
+  if (action === 'place') {
+    selectedPiece.value = -1;
+  }
 };
 
 const clearAction = () => {
@@ -127,6 +135,7 @@ const undoLastOrder = () => {
         <button @click="selectAction('push-straight')">push (straight)</button>
         <button @click="selectAction('move-diagonal')">move (diagonal)</button>
         <button @click="selectAction('push-diagonal')">push (diagonal)</button>
+        <button @click="selectAction('place')">place new piece</button>
         <button @click="clearAction()">clear</button>
       </div>
     </div>

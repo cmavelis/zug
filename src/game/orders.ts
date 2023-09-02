@@ -409,9 +409,9 @@ export function orderResolver({ G }: { G: GObject }) {
 }
 
 export function createOrder(
-  order: Omit<OrderBase, 'priority' | 'owner'>,
+  order: Omit<OrderBase, 'priority'>,
   type: OrderTypes
-): Omit<Order, 'owner'> {
+): Order {
   return {
     ...order,
     type,

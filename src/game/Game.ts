@@ -90,31 +90,33 @@ export const SimulChess: Game<GObject> = {
               order: Order
             ) => {
               const playerNumber = +playerID;
-              const movedPiece = G.pieces.find(
-                (p) => p.id === order.sourcePieceId
-              );
+              if (order.sourcePieceId >= 0) {
+                // negative values don't reference a real source piece
+                const movedPiece = G.pieces.find(
+                  (p) => p.id === order.sourcePieceId
+                );
 
-              // only order your pieces
-              if (movedPiece?.owner !== playerNumber) {
-                return INVALID_MOVE;
+                // only order your pieces
+                if (movedPiece?.owner !== playerNumber) {
+                  return INVALID_MOVE;
+                }
+
+                // one order per piece
+                if (
+                  G.orders[playerNumber].find(
+                    (currentOrders) =>
+                      currentOrders.sourcePieceId === order.sourcePieceId
+                  )
+                ) {
+                  return INVALID_MOVE;
+                }
+
+                // validate type/direction
+                if (!isValidOrder(movedPiece, order)) {
+                  return INVALID_MOVE;
+                }
               }
 
-              // one order per piece
-              if (
-                G.orders[playerNumber].find(
-                  (currentOrders) =>
-                    currentOrders.sourcePieceId === order.sourcePieceId
-                )
-              ) {
-                return INVALID_MOVE;
-              }
-
-              // validate type/direction
-              if (!isValidOrder(movedPiece, order)) {
-                return INVALID_MOVE;
-              }
-
-              order.owner = playerNumber;
               G.orders[playerNumber].push(order);
             },
             // Prevents the move counting towards a player’s number of moves.

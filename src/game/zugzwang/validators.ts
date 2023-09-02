@@ -65,6 +65,7 @@ const ORDER_CONFIG: {
     xAllowed: [1, -1],
     yAllowed: [1, -1],
   },
+  place: {}, // todo allow area of board
 };
 
 export function isValidOrder(piece: Piece, order: Order): boolean {
