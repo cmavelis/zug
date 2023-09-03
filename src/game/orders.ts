@@ -403,7 +403,19 @@ export function orderResolver({ G }: { G: GObject }) {
       p.isDefending = false;
     });
 
-  // TODO: score & remove pieces that are in the home row
+  // score & remove pieces in the goal
+  const toRemove: number[] = [];
+  pieces.forEach((p) => {
+    // TODO: add note to history
+    if (p.owner === 0 && p.position.y === 3) {
+      toRemove.push(p.id);
+      G.score[0] += 1;
+    } else if (p.owner === 1 && p.position.y === 0) {
+      toRemove.push(p.id);
+      G.score[1] += 1;
+    }
+  });
+  removePieces(G, toRemove);
 
   return G;
 }

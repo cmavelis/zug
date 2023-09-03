@@ -71,8 +71,10 @@ matchClientTwo.client.subscribe(updateGameStateTwo);
 
 <template>
   <main>
-    <input type="radio" v-model="playerID" :value="0" /> player 1
-    <input type="radio" v-model="playerID" :value="1" /> player 2
+    <input type="radio" v-model="playerID" :value="0" />
+    player 1 ({{ gameState.G.score[0] }}) - ({{ gameState.G.score[1] }}) player
+    2
+    <input type="radio" v-model="playerID" :value="1" />
     <p>phase: {{ gameState.ctx.activePlayers[playerID] }}</p>
 
     <BoardComponent

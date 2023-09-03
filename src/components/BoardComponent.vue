@@ -10,6 +10,8 @@ import { createOrder } from '@/game/orders';
 
 import OrderDisplay from '@/components/OrderDisplay.vue';
 
+const NUMBER_PIECES = 4;
+
 // TODO: display-only board, no client prop
 interface BoardProps {
   client: _ClientImpl<GameState>;
@@ -39,6 +41,10 @@ const getPieceCoords = (pieceID: number, G: GameState) => {
     throw Error(`Could not find piece with ID: ${pieceID}`);
   }
   return piece.position;
+};
+
+const getNumberPiecesMissing = (G: GameState, playerID: number) => {
+  return NUMBER_PIECES - G.pieces.filter((p) => p.owner === playerID).length;
 };
 
 // select piece, then action, then cell
@@ -135,7 +141,11 @@ const undoLastOrder = () => {
         <button @click="selectAction('push-straight')">push (straight)</button>
         <button @click="selectAction('move-diagonal')">move (diagonal)</button>
         <button @click="selectAction('push-diagonal')">push (diagonal)</button>
-        <button @click="selectAction('place')">place new piece</button>
+        <div>
+          <button @click="selectAction('place')">place new piece</button> ({{
+            getNumberPiecesMissing(props.state.G, playerID)
+          }})
+        </div>
         <button @click="clearAction()">clear</button>
       </div>
     </div>
