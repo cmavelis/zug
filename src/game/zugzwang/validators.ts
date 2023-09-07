@@ -2,11 +2,11 @@
  */
 import type { Piece } from '@/game/pieces';
 import type {
-  AttackOrder,
   MoveDiagonalOrder,
   MoveStraightOrder,
   Order,
   OrderTypes,
+  PlaceOrder,
 } from '@/game/orders';
 import type { Coordinates } from '@/game/common';
 
@@ -35,7 +35,7 @@ interface MoveConfig {
   yAllowed: Number[]; // remember to invert this for player 2
 }
 
-type ConfigOrderType = Exclude<OrderTypes, 'defend'>;
+type ConfigOrderType = Exclude<OrderTypes, 'defend' | 'place'>;
 
 const ORDER_CONFIG: {
   [T in ConfigOrderType]: MoveConfig;
@@ -65,7 +65,6 @@ const ORDER_CONFIG: {
     xAllowed: [1, -1],
     yAllowed: [1, -1],
   },
-  place: {}, // todo allow area of board
 };
 
 export function isValidOrder(piece: Piece, order: Order): boolean {
@@ -114,4 +113,10 @@ export function isValidMoveStraight(
   const xChange = move.toTarget.x;
 
   return yChange === yChangeAllowed && xChange === xChangeAllowed;
+}
+
+export function isValidPlaceOrder(piece: Piece, order: PlaceOrder): boolean {
+  const yChangeAllowed = piece.owner === 0 ? 0 : 3; // place is relative to 0, 0
+  const yChange = order.toTarget.y;
+  return yChange === yChangeAllowed;
 }
