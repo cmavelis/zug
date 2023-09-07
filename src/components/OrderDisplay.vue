@@ -47,6 +47,12 @@ const lineColor = computed(() => {
   if (props.order.type === 'attack') {
     return 'red';
   }
+  if (
+    props.order.type === 'push-diagonal' ||
+    props.order.type === 'push-straight'
+  ) {
+    return 'yellow';
+  }
   return 'darkcyan';
 });
 </script>
