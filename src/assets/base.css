@@ -47,6 +47,8 @@
 
     --color-heading: var(--vt-c-text-dark-1);
     --color-text: var(--vt-c-text-dark-2);
+
+    --color-theme-green: hsla(160, 100%, 37%, 1)
   }
 }
 
