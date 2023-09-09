@@ -24,6 +24,7 @@ const testAttack1: AttackOrder = {
   sourcePieceId: 0,
   toTarget: { x: 1, y: -1 },
   type: 'attack',
+  owner: 0,
   priority: 1,
 };
 
