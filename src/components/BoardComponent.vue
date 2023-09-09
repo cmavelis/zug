@@ -59,8 +59,8 @@ const handleCellClick = (pieceID?: number) => {
     typeof cellHover.value === 'number'
   ) {
     let pieceCoords = { x: 0, y: 0 };
+    // negative value is nonexistent piece, use absolute coords
     if (selectedPiece.value >= 0) {
-      // negative value is nonexistent piece, use absolute coords
       pieceCoords = getPieceCoords(selectedPiece.value, props.state.G);
     }
     const targetCoords = arrayToCoordinates(

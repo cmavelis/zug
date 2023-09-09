@@ -30,12 +30,12 @@ export function isStraight(vector: Coordinates): boolean {
 }
 
 interface MoveConfig {
-  angle: 'straight' | 'diagonal';
-  xAllowed: Number[];
-  yAllowed: Number[]; // remember to invert this for player 2
+  angle: 'straight' | 'diagonal' | 'area'; // rename "shape?"
+  xAllowed?: number[];
+  yAllowed?: number[]; // remember to invert this for player 2
 }
 
-type ConfigOrderType = Exclude<OrderTypes, 'defend' | 'place'>;
+type ConfigOrderType = Exclude<OrderTypes, 'defend'>;
 
 const ORDER_CONFIG: {
   [T in ConfigOrderType]: MoveConfig;
@@ -65,6 +65,10 @@ const ORDER_CONFIG: {
     xAllowed: [1, -1],
     yAllowed: [1, -1],
   },
+  place: {
+    angle: 'area',
+    yAllowed: [0],
+  },
 };
 
 export function isValidOrder(piece: Piece, order: Order): boolean {
@@ -88,8 +92,14 @@ export function isValidOrder(piece: Piece, order: Order): boolean {
     angleValid = isDiagonal(order.toTarget);
   }
 
-  const xValid = xAllowed.some((i) => i === xChange);
-  const yValid = yAllowed.some((i) => i === yChange);
+  let xValid = true;
+  let yValid = true;
+  if (xAllowed) {
+    xValid = xAllowed.some((i) => i === xChange);
+  }
+  if (yAllowed) {
+    yValid = yAllowed.some((i) => i === yChange);
+  }
 
   return xValid && yValid && angleValid;
 }
@@ -115,8 +125,56 @@ export function isValidMoveStraight(
   return yChange === yChangeAllowed && xChange === xChangeAllowed;
 }
 
-export function isValidPlaceOrder(piece: Piece, order: PlaceOrder): boolean {
-  const yChangeAllowed = piece.owner === 0 ? 0 : 3; // place is relative to 0, 0
+export function isValidPlaceOrder(order: PlaceOrder): boolean {
+  const yChangeAllowed = order.owner === 0 ? 0 : 3; // place is relative to 0, 0
   const yChange = order.toTarget.y;
   return yChange === yChangeAllowed;
 }
+
+export function getValidSquaresForOrder({
+  origin,
+  order,
+  board,
+}: {
+  origin: Coordinates;
+  order: PlaceOrder; // needs to be ordertype or order?
+  board: Coordinates;
+}) {
+  const config = ORDER_CONFIG.place;
+  // get valid X
+  const xArray =
+    config.xAllowed || Array.from({ length: board.x + 1 }, (v, i) => i);
+  // get valid Y
+  // todo invert y for playerID = 1
+  const yArray =
+    config.yAllowed || Array.from({ length: board.y + 1 }, (v, i) => i);
+
+  const allCoords: Coordinates[] = xArray.flatMap((xVal) => {
+    return yArray.map((yVal) => {
+      return { x: xVal, y: yVal };
+    });
+  });
+  return allCoords;
+}
+//
+// export function getValidSquaresForOrder({
+//   origin,
+//   order,
+//   board,
+// }: {
+//   origin: Coordinates;
+//   order: PlaceOrder; // needs to be ordertype or order?
+//   board: Coordinates;
+// }) {
+//   const xArray = Array.from({ length: board.x }, (v, i) => i);
+//   const yArray = Array.from({ length: board.y }, (v, i) => i);
+//   const allCoords: Coordinates[] = xArray.flatMap((xVal) => {
+//     return yArray.map((yVal) => {
+//       return { x: xVal, y: yVal };
+//     });
+//   });
+//
+//   return allCoords.filter((testCoord) => {
+//     return isValidPlaceOrder({ order });
+//   });
+// }

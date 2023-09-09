@@ -1,5 +1,8 @@
 import { test, expect } from 'vitest';
-import { isValidOrder } from '@/game/zugzwang/validators';
+import {
+  getValidSquaresForOrder,
+  isValidOrder,
+} from '@/game/zugzwang/validators';
 import type { Piece } from '@/game/pieces';
 import type { AttackOrder } from '@/game/orders';
 
@@ -30,4 +33,22 @@ test('attackValidator valid', () => {
 
 test('attackValidator invalid', () => {
   expect(isValidOrder(testPiece2, testAttack1)).toEqual(false);
+});
+
+test('getSquares for place order', () => {
+  expect(
+    getValidSquaresForOrder({
+      origin: {},
+      order: {},
+      board: {
+        x: 3,
+        y: 3,
+      },
+    })
+  ).toEqual([
+    { x: 0, y: 0 },
+    { x: 1, y: 0 },
+    { x: 2, y: 0 },
+    { x: 3, y: 0 },
+  ]);
 });
