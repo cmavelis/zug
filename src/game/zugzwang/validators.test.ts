@@ -39,11 +39,9 @@ test('attackValidator invalid', () => {
 test('getSquares for place order', () => {
   expect(
     getValidSquaresForOrder({
-      origin: {},
-      order: {},
       board: {
-        x: 3,
-        y: 3,
+        x: 4,
+        y: 4,
       },
     })
   ).toEqual([

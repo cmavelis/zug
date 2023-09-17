@@ -1,12 +1,17 @@
 <script setup lang="ts">
-import { ref } from 'vue';
+import { computed, ref } from 'vue';
 import type { Ref } from 'vue';
 import type { _ClientImpl } from 'boardgame.io/dist/types/src/client/client';
 import BoardPiece from '@/components/BoardPiece.vue';
 import type { GameState } from '@/game/Game';
 import type { Order, OrderTypes } from '@/game/orders';
-import { arrayToCoordinates, getDisplacement } from '@/game/common';
+import {
+  arrayToCoordinates,
+  coordinatesToArray,
+  getDisplacement,
+} from '@/game/common';
 import { createOrder } from '@/game/orders';
+import { getValidSquaresForOrder } from '@/game/zugzwang/validators';
 
 import OrderDisplay from '@/components/OrderDisplay.vue';
 
@@ -24,6 +29,15 @@ const selectedAction: Ref<null | OrderTypes> = ref(null);
 const cellHover: Ref<null | number> = ref(null);
 
 const props = defineProps<BoardProps>();
+
+const highlightedSquares: Ref<number[]> = computed(() => {
+  if (selectedAction.value === 'place') {
+    return getValidSquaresForOrder({
+      board: props.state.G.board,
+    }).map((coord) => coordinatesToArray(coord, props.state.G.board));
+  }
+  return [];
+});
 
 const addOrder = (order: Omit<Order, 'owner'>) => {
   props.client.moves.addOrder(order);
@@ -116,7 +130,10 @@ const undoLastOrder = () => {
           v-for="(cell, index) in props.state.G.cells"
           :key="index"
           class="board-square"
-          :class="{ hoveredCell: cellHover === index }"
+          :class="{
+            hoveredCell: cellHover === index,
+            highlightedCell: highlightedSquares.includes(index),
+          }"
           @click="handleCellClick(cell)"
           @mouseover="handleCellHover(index)"
         />
@@ -211,6 +228,11 @@ button {
 
 .hoveredCell {
   box-shadow: inset 0 0 5px cyan, inset 0 0 10px cyan;
+}
+
+.highlightedCell {
+  background-color: cyan;
+  opacity: 0.3;
 }
 
 .order-button-group {

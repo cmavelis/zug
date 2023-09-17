@@ -132,22 +132,22 @@ export function isValidPlaceOrder(order: PlaceOrder): boolean {
 }
 
 export function getValidSquaresForOrder({
-  origin,
-  order,
+  // origin,
+  // order,
   board,
 }: {
-  origin: Coordinates;
-  order: PlaceOrder; // needs to be ordertype or order?
+  // origin: Coordinates;
+  // order: PlaceOrder; // needs to be ordertype or order?
   board: Coordinates;
 }) {
   const config = ORDER_CONFIG.place;
   // get valid X
   const xArray =
-    config.xAllowed || Array.from({ length: board.x + 1 }, (v, i) => i);
+    config.xAllowed || Array.from({ length: board.x }, (v, i) => i);
   // get valid Y
   // todo invert y for playerID = 1
   const yArray =
-    config.yAllowed || Array.from({ length: board.y + 1 }, (v, i) => i);
+    config.yAllowed || Array.from({ length: board.y }, (v, i) => i);
 
   const allCoords: Coordinates[] = xArray.flatMap((xVal) => {
     return yArray.map((yVal) => {
@@ -156,25 +156,3 @@ export function getValidSquaresForOrder({
   });
   return allCoords;
 }
-//
-// export function getValidSquaresForOrder({
-//   origin,
-//   order,
-//   board,
-// }: {
-//   origin: Coordinates;
-//   order: PlaceOrder; // needs to be ordertype or order?
-//   board: Coordinates;
-// }) {
-//   const xArray = Array.from({ length: board.x }, (v, i) => i);
-//   const yArray = Array.from({ length: board.y }, (v, i) => i);
-//   const allCoords: Coordinates[] = xArray.flatMap((xVal) => {
-//     return yArray.map((yVal) => {
-//       return { x: xVal, y: yVal };
-//     });
-//   });
-//
-//   return allCoords.filter((testCoord) => {
-//     return isValidPlaceOrder({ order });
-//   });
-// }
