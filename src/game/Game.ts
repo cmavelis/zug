@@ -12,6 +12,12 @@ export interface GameState {
   orders: { [playerID: number]: Orders };
   pieces: Piece[];
   score: { [playerID: number]: number };
+  events?: GameEvent[];
+}
+
+interface GameEvent {
+  type: 'score';
+  sourcePieceId: number;
 }
 
 export type GObject = {

@@ -27,8 +27,8 @@ const points = computed(() => {
   );
   if (maybePiece) {
     const { x: x1, y: y1 } = coordsToPixels(maybePiece.position, sideLength);
-    let x2 = 0;
-    let y2 = 0;
+    let x2 = x1;
+    let y2 = y1;
     if ('toTarget' in order) {
       x2 = x1 + order.toTarget.x * sideLength;
       y2 = y1 + order.toTarget.y * sideLength;
@@ -57,6 +57,12 @@ const lineColor = computed(() => {
     props.order.type === 'push-straight'
   ) {
     return 'yellow';
+  }
+  if (
+    // @ts-expect-error hacking in score for now
+    props.order.type === 'score'
+  ) {
+    return 'hotpink';
   }
   return 'darkcyan';
 });

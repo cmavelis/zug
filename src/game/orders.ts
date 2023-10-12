@@ -406,7 +406,6 @@ export function orderResolver({ G }: { G: GObject }) {
   // score & remove pieces in the goal
   const toRemove: number[] = [];
   pieces.forEach((p) => {
-    // TODO: add note to history
     if (p.owner === 0 && p.position.y === 3) {
       toRemove.push(p.id);
       G.score[0] += 1;
@@ -415,6 +414,20 @@ export function orderResolver({ G }: { G: GObject }) {
       G.score[1] += 1;
     }
   });
+
+  // add score events to history
+  turnHistory.push(
+    cloneDeep({
+      cells,
+      orders: [],
+      pieces,
+      score,
+      events: toRemove.map((id) => ({
+        type: 'score',
+        sourcePieceId: id,
+      })),
+    })
+  );
   removePieces(G, toRemove);
 
   return G;
