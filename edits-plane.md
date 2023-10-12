@@ -3,7 +3,8 @@
 # Checklist for next milestone
  - indication of scored piece in replay
  - `place` action clarity
-   - after adding the order
-   - in review
+   - [x] after adding the order
+   - [x] in review
    - validation when attempting
+   - (could look nicer)
  - victory condition (score of 4?)

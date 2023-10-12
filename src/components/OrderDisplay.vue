@@ -40,6 +40,11 @@ const points = computed(() => {
       y2,
     };
   }
+  if ('toTarget' in order) {
+    // "place" action
+    const { x: x1, y: y1 } = coordsToPixels(order.toTarget, sideLength);
+    return { x1, x2: x1, y1, y2: y1 };
+  }
   return { x1: 0, y1: 0, x2: 0, y2: 0 };
 });
 
