@@ -33,6 +33,7 @@ const props = defineProps<BoardProps>();
 const highlightedSquares: Ref<number[]> = computed(() => {
   if (selectedAction.value === 'place') {
     return getValidSquaresForOrder({
+      playerID: props.playerID,
       board: props.state.G.board,
     }).map((coord) => coordinatesToArray(coord, props.state.G.board));
   }

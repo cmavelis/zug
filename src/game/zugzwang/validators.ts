@@ -133,11 +133,12 @@ export function isValidPlaceOrder(order: PlaceOrder): boolean {
 
 export function getValidSquaresForOrder({
   // origin,
-  // order,
+  playerID,
   board,
 }: {
   // origin: Coordinates;
   // order: PlaceOrder; // needs to be ordertype or order?
+  playerID: number;
   board: Coordinates;
 }) {
   const config = ORDER_CONFIG.place;
@@ -145,9 +146,13 @@ export function getValidSquaresForOrder({
   const xArray =
     config.xAllowed || Array.from({ length: board.x }, (v, i) => i);
   // get valid Y
-  // todo invert y for playerID = 1
-  const yArray =
-    config.yAllowed || Array.from({ length: board.y }, (v, i) => i);
+  // invert y for player 2
+  let yAllowed = config.yAllowed;
+  if (playerID === 1 && yAllowed) {
+    yAllowed = yAllowed.map((y) => board.y - 1 - y);
+  }
+
+  const yArray = yAllowed || Array.from({ length: board.y }, (v, i) => i);
 
   const allCoords: Coordinates[] = xArray.flatMap((xVal) => {
     return yArray.map((yVal) => {

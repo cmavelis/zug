@@ -39,6 +39,7 @@ test('attackValidator invalid', () => {
 test('getSquares for place order', () => {
   expect(
     getValidSquaresForOrder({
+      playerID: 0,
       board: {
         x: 4,
         y: 4,
@@ -49,5 +50,22 @@ test('getSquares for place order', () => {
     { x: 1, y: 0 },
     { x: 2, y: 0 },
     { x: 3, y: 0 },
+  ]);
+});
+
+test('getSquares for place order, player 2', () => {
+  expect(
+    getValidSquaresForOrder({
+      playerID: 1,
+      board: {
+        x: 4,
+        y: 4,
+      },
+    })
+  ).toEqual([
+    { x: 0, y: 3 },
+    { x: 1, y: 3 },
+    { x: 2, y: 3 },
+    { x: 3, y: 3 },
   ]);
 });
