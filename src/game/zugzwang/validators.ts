@@ -2,9 +2,11 @@
  */
 import type { Piece } from '@/game/pieces';
 import type {
-  AttackOrder,
   MoveDiagonalOrder,
   MoveStraightOrder,
+  Order,
+  OrderTypes,
+  PlaceOrder,
 } from '@/game/orders';
 import type { Coordinates } from '@/game/common';
 
@@ -25,6 +27,81 @@ export function isStraight(vector: Coordinates): boolean {
     return vector.x === 0;
   }
   return false;
+}
+
+interface MoveConfig {
+  angle: 'straight' | 'diagonal' | 'area'; // rename "shape?"
+  xAllowed?: number[];
+  yAllowed?: number[]; // remember to invert this for player 2
+}
+
+type ConfigOrderType = Exclude<OrderTypes, 'defend'>;
+
+const ORDER_CONFIG: {
+  [T in ConfigOrderType]: MoveConfig;
+} = {
+  attack: {
+    angle: 'diagonal',
+    xAllowed: [1, -1],
+    yAllowed: [1],
+  },
+  'move-straight': {
+    angle: 'straight',
+    xAllowed: [0],
+    yAllowed: [1],
+  },
+  'move-diagonal': {
+    angle: 'diagonal',
+    xAllowed: [1, -1],
+    yAllowed: [1, -1],
+  },
+  'push-straight': {
+    angle: 'straight',
+    xAllowed: [1, 0, -1],
+    yAllowed: [1, 0, -1],
+  },
+  'push-diagonal': {
+    angle: 'diagonal',
+    xAllowed: [1, -1],
+    yAllowed: [1, -1],
+  },
+  place: {
+    angle: 'area',
+    yAllowed: [0],
+  },
+};
+
+export function isValidOrder(piece: Piece, order: Order): boolean {
+  const config = ORDER_CONFIG[order.type as ConfigOrderType];
+  const { angle, xAllowed, yAllowed } = config;
+
+  if (order.type === 'defend') {
+    return false;
+  }
+
+  const yRelative = order.toTarget.y;
+  const yChange = piece.owner === 0 ? yRelative : -yRelative;
+
+  const xChange = order.toTarget.x;
+
+  let angleValid = true;
+  if (angle === 'straight') {
+    angleValid = isStraight(order.toTarget);
+  }
+  if (angle === 'diagonal') {
+    angleValid = isDiagonal(order.toTarget);
+  }
+
+  let xValid = true;
+  let yValid = true;
+  if (xAllowed) {
+    xValid = xAllowed.some((i) => i === xChange);
+  }
+  if (yAllowed) {
+    yValid = yAllowed.some((i) => i === yChange);
+  }
+
+  return xValid && yValid && angleValid;
 }
 
 export function isValidMoveDiagonal(
@@ -48,14 +125,39 @@ export function isValidMoveStraight(
   return yChange === yChangeAllowed && xChange === xChangeAllowed;
 }
 
-export function isValidAttack(piece: Piece, attack: AttackOrder): boolean {
-  // assume attacks can only go one direction
-  const yChangeAllowed = piece.owner === 0 ? 1 : -1;
-  // attack is diagonal
-  const xChangesAllowed = [-1, 1];
+export function isValidPlaceOrder(order: PlaceOrder): boolean {
+  const yChangeAllowed = order.owner === 0 ? 0 : 3; // place is relative to 0, 0
+  const yChange = order.toTarget.y;
+  return yChange === yChangeAllowed;
+}
 
-  const yChange = attack.toTarget.y;
-  const xChange = attack.toTarget.x;
+export function getValidSquaresForOrder({
+  // origin,
+  playerID,
+  board,
+}: {
+  // origin: Coordinates;
+  // order: PlaceOrder; // needs to be ordertype or order?
+  playerID: number;
+  board: Coordinates;
+}) {
+  const config = ORDER_CONFIG.place;
+  // get valid X
+  const xArray =
+    config.xAllowed || Array.from({ length: board.x }, (v, i) => i);
+  // get valid Y
+  // invert y for player 2
+  let yAllowed = config.yAllowed;
+  if (playerID === 1 && yAllowed) {
+    yAllowed = yAllowed.map((y) => board.y - 1 - y);
+  }
 
-  return yChange === yChangeAllowed && xChangesAllowed.includes(xChange);
+  const yArray = yAllowed || Array.from({ length: board.y }, (v, i) => i);
+
+  const allCoords: Coordinates[] = xArray.flatMap((xVal) => {
+    return yArray.map((yVal) => {
+      return { x: xVal, y: yVal };
+    });
+  });
+  return allCoords;
 }

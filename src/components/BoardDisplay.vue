@@ -42,6 +42,13 @@ logProxy(props);
             :order="order"
             :G="props.state.G"
           />
+          <!--          different from BoardComponent-->
+          <OrderDisplay
+            v-for="event in props.state.G.events"
+            :key="event"
+            :order="event"
+            :G="props.state.G"
+          />
         </svg>
       </div>
     </div>

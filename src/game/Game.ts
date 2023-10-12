@@ -4,12 +4,20 @@ import { createPiece, type Piece } from '@/game/pieces';
 import type { Order, Orders } from '@/game/orders';
 import { orderResolver } from '@/game/orders';
 import type { Coordinates } from '@/game/common';
+import { isValidOrder } from '@/game/zugzwang/validators';
 
 export interface GameState {
   board: Coordinates;
   cells: Array<null | number>;
   orders: { [playerID: number]: Orders };
   pieces: Piece[];
+  score: { [playerID: number]: number };
+  events?: GameEvent[];
+}
+
+interface GameEvent {
+  type: 'score';
+  sourcePieceId: number;
 }
 
 export type GObject = {
@@ -33,6 +41,7 @@ export const SimulChess: Game<GObject> = {
       pieces: [],
       orders: { 0: [], 1: [] },
       history: [],
+      score: { 0: 0, 1: 0 },
     };
 
     if (hostname === 'localhost' && port === '5173') {
@@ -87,24 +96,33 @@ export const SimulChess: Game<GObject> = {
               order: Order
             ) => {
               const playerNumber = +playerID;
-              const movedPiece = G.pieces.find(
-                (p) => p.id === order.sourcePieceId
-              );
+              if (order.sourcePieceId >= 0) {
+                // negative values don't reference a real source piece
+                const movedPiece = G.pieces.find(
+                  (p) => p.id === order.sourcePieceId
+                );
 
-              // only order your pieces
-              if (movedPiece?.owner !== playerNumber) {
-                return INVALID_MOVE;
+                // only order your pieces
+                if (movedPiece?.owner !== playerNumber) {
+                  return INVALID_MOVE;
+                }
+
+                // one order per piece
+                if (
+                  G.orders[playerNumber].find(
+                    (currentOrders) =>
+                      currentOrders.sourcePieceId === order.sourcePieceId
+                  )
+                ) {
+                  return INVALID_MOVE;
+                }
+
+                // validate type/direction
+                if (!isValidOrder(movedPiece, order)) {
+                  return INVALID_MOVE;
+                }
               }
 
-              // one order per piece
-              if (
-                G.orders[playerNumber].find(
-                  (currentOrders) =>
-                    currentOrders.sourcePieceId === order.sourcePieceId
-                )
-              ) {
-                return INVALID_MOVE;
-              }
               G.orders[playerNumber].push(order);
             },
             // Prevents the move counting towards a player’s number of moves.
@@ -145,14 +163,11 @@ export const SimulChess: Game<GObject> = {
     },
   },
 
-  // endIf: ({ G, ctx }) => {
-  //   if (IsVictory(G.cells)) {
-  //     return { winner: ctx.currentPlayer };
-  //   }
-  //   if (IsDraw(G.cells)) {
-  //     return { draw: true };
-  //   }
-  // },
+  endIf: ({ G, ctx }) => {
+    if (Object.values(G.score).some((i) => i > 3)) {
+      return { winner: 0 }; // TODO: actually get the right one
+    }
+  },
 };
 
 export interface moveAddOrder {}

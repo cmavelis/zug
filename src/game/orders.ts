@@ -8,25 +8,33 @@ import {
 } from '@/game/common';
 import type { GameState, GObject } from '@/game/Game';
 import {
-  isValidAttack,
   isValidMoveDiagonal,
   isValidMoveStraight,
+  isValidOrder,
 } from '@/game/zugzwang/validators';
 import { logProxy } from '@/utils';
 import type { Piece } from '@/game/pieces';
+import { createPiece } from '@/game/pieces';
+
+// CONFIG
+const MOVES_CAN_PUSH = false;
 
 // orders are stored with displacement from piece to target
 export interface OrderBase {
   sourcePieceId: number;
   toTarget: Coordinates;
+  owner: number;
   priority: number;
 }
 
 const ORDER_PRIORITIES = {
   defend: 1,
-  'move-straight': 2,
+  'move-straight': 1,
+  'push-straight': 2,
   attack: 3,
-  'move-diagonal': 4,
+  'move-diagonal': 3,
+  'push-diagonal': 4,
+  place: 5,
 };
 
 export type OrderTypes = keyof typeof ORDER_PRIORITIES;
@@ -39,6 +47,14 @@ export interface MoveDiagonalOrder extends OrderBase {
   type: 'move-diagonal';
 }
 
+export interface PushStraightOrder extends OrderBase {
+  type: 'push-straight';
+}
+
+export interface PushDiagonalOrder extends OrderBase {
+  type: 'push-diagonal';
+}
+
 export interface AttackOrder extends OrderBase {
   type: 'attack';
 }
@@ -47,9 +63,19 @@ export interface DefendOrder extends Omit<OrderBase, 'toTarget'> {
   type: 'defend';
 }
 
+export interface PlaceOrder extends OrderBase {
+  type: 'place';
+}
+
 type MoveOrder = MoveStraightOrder | MoveDiagonalOrder;
 
-export type Order = MoveOrder | AttackOrder | DefendOrder;
+export type Order =
+  | MoveOrder
+  | AttackOrder
+  | DefendOrder
+  | PushDiagonalOrder
+  | PushStraightOrder
+  | PlaceOrder;
 
 export type Orders = Order[];
 
@@ -90,7 +116,7 @@ function movePieces(G: GameState, moveArray: Move[]) {
 }
 
 export function orderResolver({ G }: { G: GObject }) {
-  const { cells, orders, pieces } = G;
+  const { cells, orders, pieces, score } = G;
 
   const turnHistory = [];
 
@@ -114,16 +140,12 @@ export function orderResolver({ G }: { G: GObject }) {
           cells,
           orders: ordersUsed,
           pieces,
+          score,
         })
       );
     }
 
-    // concurrent move resolution (for now)
-    // if same priority
-    //  if attack
-    //   mark both attacked, wait to cleanup after
-    //  if move
-    //   if same square, destroy
+    // concurrent move resolution
     if (
       ordersToResolve[0] &&
       ordersToResolve[1] &&
@@ -136,12 +158,11 @@ export function orderResolver({ G }: { G: GObject }) {
           pieceIDsToRemove.push(applyAttack(ordersToResolve[1]));
           break;
         case 'move-straight':
-        case 'move-diagonal':
+        case 'move-diagonal': {
           // @ts-ignore -- Haven't explicitly checked the type of [1], but order priorities are unique
           if (didMovesBounce(ordersToResolve[0], ordersToResolve[1])) {
             break;
           }
-          // eslint-disable-next-line no-case-declarations
           const pushArray = [];
           pushArray.push(...applyMove(ordersToResolve[0]));
           // @ts-ignore -- Haven't explicitly checked the type of [1], but order priorities are unique
@@ -149,10 +170,30 @@ export function orderResolver({ G }: { G: GObject }) {
           // TODO: special handling for concurrent pushes
           pushArray.forEach((push) => movePieces(G, push));
           break;
+        }
+        case 'push-diagonal':
+        case 'push-straight': {
+          // @ts-ignore -- Haven't explicitly checked the type of [1], but order priorities are unique
+          if (didMovesBounce(ordersToResolve[0], ordersToResolve[1])) {
+            break;
+          }
+          const pushArray = [];
+          pushArray.push(...applyPush(ordersToResolve[0]));
+          // @ts-ignore -- Haven't explicitly checked the type of [1], but order priorities are unique
+          pushArray.push(...applyPush(ordersToResolve[1]));
+          // TODO: special handling for concurrent pushes
+          pushArray.forEach((push) => movePieces(G, push));
+          break;
+        }
         case 'defend':
           applyDefend(ordersToResolve[0]);
           // @ts-ignore -- Haven't explicitly checked the type of [1], but order priorities are unique
           applyDefend(ordersToResolve[1]);
+          break;
+        case 'place':
+          applyPlace(ordersToResolve[0]);
+          // @ts-ignore -- Haven't explicitly checked the type of [1], but order priorities are unique
+          applyPlace(ordersToResolve[1]);
       }
       pieceIDsToRemove.push(...findDisallowedPieces(G));
       removePieces(G, pieceIDsToRemove);
@@ -170,9 +211,15 @@ export function orderResolver({ G }: { G: GObject }) {
           case 'move-diagonal':
             applyMove(order).forEach((push) => movePieces(G, push));
             break;
+          case 'push-straight':
+          case 'push-diagonal':
+            applyPush(order).forEach((push) => movePieces(G, push));
+            break;
           case 'defend':
             applyDefend(order);
             break;
+          case 'place':
+            applyPlace(order);
         }
         pieceIDsToRemove.push(...findDisallowedPieces(G));
         removePieces(G, pieceIDsToRemove);
@@ -187,7 +234,7 @@ export function orderResolver({ G }: { G: GObject }) {
   }
 
   // return array of "pushes" to be applied
-  function applyMove(order: MoveStraightOrder | MoveDiagonalOrder) {
+  function applyMove(order: MoveStraightOrder | MoveDiagonalOrder): Move[][] {
     const movedPiece = pieces.find((p) => p.id === order.sourcePieceId);
     // piece might be removed prior to action
     if (!movedPiece) {
@@ -212,31 +259,40 @@ export function orderResolver({ G }: { G: GObject }) {
     }
 
     // apply effects
-    if (movedPiece) {
-      const pushesArray: Move[][] = [];
-      const checkPush = (
-        currentArray: Move[] = [],
-        pushingPiece: Piece,
-        vector: Coordinates
-      ) => {
-        const newPosition = addDisplacement(pushingPiece.position, vector);
-        currentArray.push({ id: pushingPiece.id, newPosition });
-        const maybePiece = pieces.find((p) => isEqual(p.position, newPosition));
-
-        if (maybePiece) {
-          checkPush(currentArray, maybePiece, vector);
-        } else {
-          pushesArray.push(currentArray);
-        }
-      };
-      checkPush([], movedPiece, order.toTarget);
+    if (MOVES_CAN_PUSH) {
+      const pushesArray = getPushes(movedPiece, order.toTarget);
       console.log('pushesArray', pushesArray);
 
       // do another check?
       return pushesArray;
+    } else {
+      const newPosition = addDisplacement(movedPiece.position, order.toTarget);
+      const maybePiece = pieces.find((p) => isEqual(p.position, newPosition));
+      if (maybePiece) {
+        return [];
+      }
+      return [[{ id: movedPiece.id, newPosition }]];
+    }
+  }
+
+  // return array of "pushes" to be applied
+  function applyPush(order: PushStraightOrder | PushDiagonalOrder): Move[][] {
+    const pushingPiece = pieces.find((p) => p.id === order.sourcePieceId);
+    // piece might be removed prior to action
+    if (!pushingPiece) {
+      console.log('piece ', order.sourcePieceId, ' no longer exists');
+      return [];
     }
 
-    return [];
+    // todo validate
+
+    // apply effects
+    const pushesArray = getPushes(pushingPiece, order.toTarget);
+    pushesArray.forEach((a) => a.shift());
+    console.log('pushesArray', pushesArray);
+
+    // do another check?
+    return pushesArray;
   }
 
   // returns attacked piece ID
@@ -249,7 +305,7 @@ export function orderResolver({ G }: { G: GObject }) {
         return;
       }
 
-      if (!(actingPiece && isValidAttack(actingPiece, order))) {
+      if (!(actingPiece && isValidOrder(actingPiece, order))) {
         console.log(order && JSON.parse(JSON.stringify(order)));
         console.log(actingPiece && JSON.parse(JSON.stringify(actingPiece)));
         reportError('Invalid action received');
@@ -274,6 +330,37 @@ export function orderResolver({ G }: { G: GObject }) {
       return;
     }
     actingPiece.isDefending = true;
+  }
+
+  function applyPlace(order: PlaceOrder) {
+    createPiece({
+      G,
+      pieceToCreate: { owner: order.owner, position: order.toTarget },
+    });
+  }
+
+  function getPushes(pushingPiece: Piece, vector: Coordinates) {
+    const pushesArray: Move[][] = [];
+    const checkPush = (
+      currentArray: Move[] = [],
+      pushingPiece: Piece,
+      vector: Coordinates
+    ) => {
+      const newPosition = addDisplacement(pushingPiece.position, vector);
+      currentArray.push({ id: pushingPiece.id, newPosition });
+      const maybePiece = pieces.find((p) => isEqual(p.position, newPosition));
+
+      if (maybePiece) {
+        checkPush(currentArray, maybePiece, vector);
+      } else {
+        pushesArray.push(currentArray);
+      }
+    };
+    checkPush([], pushingPiece, vector);
+    console.log('pushesArray', pushesArray);
+
+    // do another check?
+    return pushesArray;
   }
 
   function didMovesBounce(order1: MoveOrder, order2: MoveOrder) {
@@ -315,6 +402,33 @@ export function orderResolver({ G }: { G: GObject }) {
     .forEach((p) => {
       p.isDefending = false;
     });
+
+  // score & remove pieces in the goal
+  const toRemove: number[] = [];
+  pieces.forEach((p) => {
+    if (p.owner === 0 && p.position.y === 3) {
+      toRemove.push(p.id);
+      G.score[0] += 1;
+    } else if (p.owner === 1 && p.position.y === 0) {
+      toRemove.push(p.id);
+      G.score[1] += 1;
+    }
+  });
+
+  // add score events to history
+  turnHistory.push(
+    cloneDeep({
+      cells,
+      orders: [],
+      pieces,
+      score,
+      events: toRemove.map((id) => ({
+        type: 'score',
+        sourcePieceId: id,
+      })),
+    })
+  );
+  removePieces(G, toRemove);
 
   return G;
 }

@@ -27,8 +27,8 @@ const points = computed(() => {
   );
   if (maybePiece) {
     const { x: x1, y: y1 } = coordsToPixels(maybePiece.position, sideLength);
-    let x2 = 0;
-    let y2 = 0;
+    let x2 = x1;
+    let y2 = y1;
     if ('toTarget' in order) {
       x2 = x1 + order.toTarget.x * sideLength;
       y2 = y1 + order.toTarget.y * sideLength;
@@ -40,12 +40,29 @@ const points = computed(() => {
       y2,
     };
   }
+  if ('toTarget' in order) {
+    // "place" action
+    const { x: x1, y: y1 } = coordsToPixels(order.toTarget, sideLength);
+    return { x1, x2: x1, y1, y2: y1 };
+  }
   return { x1: 0, y1: 0, x2: 0, y2: 0 };
 });
 
 const lineColor = computed(() => {
   if (props.order.type === 'attack') {
     return 'red';
+  }
+  if (
+    props.order.type === 'push-diagonal' ||
+    props.order.type === 'push-straight'
+  ) {
+    return 'yellow';
+  }
+  if (
+    // @ts-expect-error hacking in score for now
+    props.order.type === 'score'
+  ) {
+    return 'hotpink';
   }
   return 'darkcyan';
 });

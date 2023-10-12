@@ -1,14 +1,21 @@
 <script setup lang="ts">
-import { ref } from 'vue';
+import { computed, ref } from 'vue';
 import type { Ref } from 'vue';
 import type { _ClientImpl } from 'boardgame.io/dist/types/src/client/client';
 import BoardPiece from '@/components/BoardPiece.vue';
 import type { GameState } from '@/game/Game';
 import type { Order, OrderTypes } from '@/game/orders';
-import { arrayToCoordinates, getDisplacement } from '@/game/common';
+import {
+  arrayToCoordinates,
+  coordinatesToArray,
+  getDisplacement,
+} from '@/game/common';
 import { createOrder } from '@/game/orders';
+import { getValidSquaresForOrder } from '@/game/zugzwang/validators';
 
 import OrderDisplay from '@/components/OrderDisplay.vue';
+
+const NUMBER_PIECES = 4;
 
 // TODO: display-only board, no client prop
 interface BoardProps {
@@ -23,7 +30,17 @@ const cellHover: Ref<null | number> = ref(null);
 
 const props = defineProps<BoardProps>();
 
-const addOrder = (order: Order) => {
+const highlightedSquares: Ref<number[]> = computed(() => {
+  if (selectedAction.value === 'place') {
+    return getValidSquaresForOrder({
+      playerID: props.playerID,
+      board: props.state.G.board,
+    }).map((coord) => coordinatesToArray(coord, props.state.G.board));
+  }
+  return [];
+});
+
+const addOrder = (order: Omit<Order, 'owner'>) => {
   props.client.moves.addOrder(order);
 };
 
@@ -41,6 +58,10 @@ const getPieceCoords = (pieceID: number, G: GameState) => {
   return piece.position;
 };
 
+const getNumberPiecesMissing = (G: GameState, playerID: number) => {
+  return NUMBER_PIECES - G.pieces.filter((p) => p.owner === playerID).length;
+};
+
 // select piece, then action, then cell
 const handleCellClick = (pieceID?: number) => {
   if (selectedPiece.value === null && typeof pieceID === 'number') {
@@ -52,7 +73,11 @@ const handleCellClick = (pieceID?: number) => {
     selectedAction.value &&
     typeof cellHover.value === 'number'
   ) {
-    const pieceCoords = getPieceCoords(selectedPiece.value, props.state.G);
+    let pieceCoords = { x: 0, y: 0 };
+    // negative value is nonexistent piece, use absolute coords
+    if (selectedPiece.value >= 0) {
+      pieceCoords = getPieceCoords(selectedPiece.value, props.state.G);
+    }
     const targetCoords = arrayToCoordinates(
       cellHover.value,
       props.state.G.board
@@ -61,6 +86,7 @@ const handleCellClick = (pieceID?: number) => {
     const toTarget = getDisplacement(pieceCoords, targetCoords);
     const order = createOrder(
       {
+        owner: props.playerID,
         sourcePieceId: selectedPiece.value,
         toTarget,
       },
@@ -82,6 +108,9 @@ const handleEndTurn = () => {
 
 const selectAction = (action: OrderTypes) => {
   selectedAction.value = action;
+  if (action === 'place') {
+    selectedPiece.value = -1;
+  }
 };
 
 const clearAction = () => {
@@ -102,7 +131,10 @@ const undoLastOrder = () => {
           v-for="(cell, index) in props.state.G.cells"
           :key="index"
           class="board-square"
-          :class="{ hoveredCell: cellHover === index }"
+          :class="{
+            hoveredCell: cellHover === index,
+            highlightedCell: highlightedSquares.includes(index),
+          }"
           @click="handleCellClick(cell)"
           @mouseover="handleCellHover(index)"
         />
@@ -123,10 +155,15 @@ const undoLastOrder = () => {
         </svg>
       </div>
       <div class="order-button-group">
-        <button @click="selectAction('defend')">defend</button>
         <button @click="selectAction('move-straight')">move (straight)</button>
-        <button @click="selectAction('attack')">attack</button>
+        <button @click="selectAction('push-straight')">push (straight)</button>
         <button @click="selectAction('move-diagonal')">move (diagonal)</button>
+        <button @click="selectAction('push-diagonal')">push (diagonal)</button>
+        <div>
+          <button @click="selectAction('place')">place new piece</button> ({{
+            getNumberPiecesMissing(props.state.G, playerID)
+          }})
+        </div>
         <button @click="clearAction()">clear</button>
       </div>
     </div>
@@ -192,6 +229,11 @@ button {
 
 .hoveredCell {
   box-shadow: inset 0 0 5px cyan, inset 0 0 10px cyan;
+}
+
+.highlightedCell {
+  background-color: cyan;
+  opacity: 0.3;
 }
 
 .order-button-group {

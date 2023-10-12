@@ -1,5 +1,8 @@
 import { test, expect } from 'vitest';
-import { isValidAttack } from '@/game/zugzwang/validators';
+import {
+  getValidSquaresForOrder,
+  isValidOrder,
+} from '@/game/zugzwang/validators';
 import type { Piece } from '@/game/pieces';
 import type { AttackOrder } from '@/game/orders';
 
@@ -21,13 +24,48 @@ const testAttack1: AttackOrder = {
   sourcePieceId: 0,
   toTarget: { x: 1, y: -1 },
   type: 'attack',
+  owner: 0,
   priority: 1,
 };
 
 test('attackValidator valid', () => {
-  expect(isValidAttack(testPiece, testAttack1)).toEqual(true);
+  expect(isValidOrder(testPiece, testAttack1)).toEqual(true);
 });
 
 test('attackValidator invalid', () => {
-  expect(isValidAttack(testPiece2, testAttack1)).toEqual(false);
+  expect(isValidOrder(testPiece2, testAttack1)).toEqual(false);
+});
+
+test('getSquares for place order', () => {
+  expect(
+    getValidSquaresForOrder({
+      playerID: 0,
+      board: {
+        x: 4,
+        y: 4,
+      },
+    })
+  ).toEqual([
+    { x: 0, y: 0 },
+    { x: 1, y: 0 },
+    { x: 2, y: 0 },
+    { x: 3, y: 0 },
+  ]);
+});
+
+test('getSquares for place order, player 2', () => {
+  expect(
+    getValidSquaresForOrder({
+      playerID: 1,
+      board: {
+        x: 4,
+        y: 4,
+      },
+    })
+  ).toEqual([
+    { x: 0, y: 3 },
+    { x: 1, y: 3 },
+    { x: 2, y: 3 },
+    { x: 3, y: 3 },
+  ]);
 });

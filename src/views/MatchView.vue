@@ -71,8 +71,12 @@ matchClientTwo.client.subscribe(updateGameStateTwo);
 
 <template>
   <main>
-    <input type="radio" v-model="playerID" :value="0" /> player 1
-    <input type="radio" v-model="playerID" :value="1" /> player 2
+    <input type="radio" v-model="playerID" :value="0" />
+    <span :class="{ checked: !playerID }"> player 1</span> ({{
+      gameState.G.score[0]
+    }}) - ({{ gameState.G.score[1] }})
+    <span :class="{ checked: playerID }">player 2</span>
+    <input type="radio" v-model="playerID" :value="1" />
     <p>phase: {{ gameState.ctx.activePlayers[playerID] }}</p>
 
     <BoardComponent
@@ -116,5 +120,9 @@ main {
 #history-order-number-display {
   display: inline-block;
   width: 2rem;
+}
+
+.checked {
+  color: var(--color-theme-green);
 }
 </style>
