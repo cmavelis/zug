@@ -11,6 +11,11 @@ import BoardDisplay from '@/components/BoardDisplay.vue';
 import { SimulChessClient } from '@/game/App';
 import type { GameState, GObject } from '@/game/Game';
 
+interface ReactiveGameState {
+  G: GameState | {};
+  ctx: Ctx | {};
+}
+
 const playerID = ref(0);
 const route = useRoute();
 let matchID: string;
@@ -23,7 +28,7 @@ if (typeof route.params.matchID === 'string') {
 const matchClientOne = new SimulChessClient('0', matchID);
 const matchClientTwo = new SimulChessClient('1', matchID);
 
-const gameState = reactive({ G: {}, ctx: {} });
+const gameState: ReactiveGameState = reactive({ G: {}, ctx: {} });
 const gameStateLoaded = ref(false);
 const updateGameState = (state: ClientState<{ G: GameState; ctx: Ctx }>) => {
   if (state) {
@@ -77,7 +82,14 @@ matchClientTwo.client.subscribe(updateGameStateTwo);
     }}) - ({{ gameState.G.score[1] }})
     <span :class="{ checked: playerID }">player 2</span>
     <input type="radio" v-model="playerID" :value="1" />
-    <p>phase: {{ gameState.ctx.activePlayers[playerID] }}</p>
+    <p>
+      phase:
+      {{
+        gameState.ctx.activePlayers
+          ? gameState.ctx.activePlayers[playerID]
+          : 'end!'
+      }}
+    </p>
 
     <BoardComponent
       v-if="playerID === 0 && gameStateLoaded"

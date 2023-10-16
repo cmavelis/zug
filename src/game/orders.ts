@@ -160,7 +160,7 @@ export function orderResolver({ G }: { G: GObject }) {
         case 'move-straight':
         case 'move-diagonal': {
           // @ts-ignore -- Haven't explicitly checked the type of [1], but order priorities are unique
-          if (didMovesBounce(ordersToResolve[0], ordersToResolve[1])) {
+          if (didMovesCancel(ordersToResolve[0], ordersToResolve[1])) {
             break;
           }
           const pushArray = [];
@@ -174,7 +174,7 @@ export function orderResolver({ G }: { G: GObject }) {
         case 'push-diagonal':
         case 'push-straight': {
           // @ts-ignore -- Haven't explicitly checked the type of [1], but order priorities are unique
-          if (didMovesBounce(ordersToResolve[0], ordersToResolve[1])) {
+          if (didMovesCancel(ordersToResolve[0], ordersToResolve[1])) {
             break;
           }
           const pushArray = [];
@@ -363,7 +363,7 @@ export function orderResolver({ G }: { G: GObject }) {
     return pushesArray;
   }
 
-  function didMovesBounce(order1: MoveOrder, order2: MoveOrder) {
+  function didMovesCancel(order1: MoveOrder, order2: MoveOrder) {
     const movedPiece1 = pieces.find((p) => p.id === order1.sourcePieceId);
     if (!movedPiece1) {
       return false;
@@ -380,6 +380,8 @@ export function orderResolver({ G }: { G: GObject }) {
       isEqual(target1, movedPiece2.position) &&
       isEqual(target2, movedPiece1.position);
     const targetSameSquare = isEqual(target1, target2);
+
+    // todo: check for push chains that conflict
 
     // noinspection RedundantIfStatementJS
     if (targetEachOther || targetSameSquare) {
