@@ -177,12 +177,60 @@ export function orderResolver({ G }: { G: GObject }) {
           if (didMovesCancel(ordersToResolve[0], ordersToResolve[1])) {
             break;
           }
-          const pushArray: Move[] = [];
-          pushArray.push(...applyPush(ordersToResolve[0]));
+          const pushArrayOne = applyPush(ordersToResolve[0]);
           // @ts-ignore -- Haven't explicitly checked the type of [1], but order priorities are unique
-          pushArray.push(...applyPush(ordersToResolve[1]));
+          const pushArrayTwo = applyPush(ordersToResolve[1]);
+          /**
+           * *** filtering push arrays
+           * situation 1:
+           * - slide past
+           * - - if `id` has already been moved => skip rest of array
+           * situation 2:
+           * - target same square
+           * - - if same space targeted at same time, cancel moves (for now, maybe add vectors in future)
+           */
 
-          movePieces(G, pushArray);
+          const movesToApply: Move[] = [];
+          let applyMovesOne = true;
+          let applyMovesTwo = true;
+
+          let i = 0;
+          while (i >= 0) {
+            const moveOne: Move | undefined = pushArrayOne[i];
+            const moveTwo: Move | undefined = pushArrayTwo[i];
+
+            // target same spot => cancel all pushes
+            if (
+              moveOne &&
+              moveTwo &&
+              isEqual(moveOne.newPosition, moveTwo.newPosition)
+            ) {
+              break;
+            }
+
+            // exit loop if nothing left
+            if (!moveOne && !moveTwo) {
+              break;
+            }
+
+            // if id has already been moved, prevent rest of chain
+            if (movesToApply.some((move) => move.id === moveOne?.id)) {
+              applyMovesOne = false;
+            }
+            if (movesToApply.some((move) => move.id === moveTwo?.id)) {
+              applyMovesTwo = false;
+            }
+
+            // queue up moves
+            if (moveOne && applyMovesOne) movesToApply.push(moveOne);
+            if (moveTwo && applyMovesTwo) movesToApply.push(moveTwo);
+
+            i++;
+          }
+
+          console.log('applying moves:');
+          logProxy(movesToApply);
+          movePieces(G, movesToApply);
           break;
         }
         case 'defend':
