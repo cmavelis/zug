@@ -177,9 +177,11 @@ export function orderResolver({ G }: { G: GObject }) {
           if (didMovesCancel(ordersToResolve[0], ordersToResolve[1])) {
             break;
           }
-          const pushArray = [];
+          const pushArray: Move[] = [];
           pushArray.push(...applyPush(ordersToResolve[0]));
           // @ts-ignore -- Haven't explicitly checked the type of [1], but order priorities are unique
+          pushArray.push(...applyPush(ordersToResolve[1]));
+
           movePieces(G, pushArray);
           break;
         }
@@ -351,11 +353,10 @@ export function orderResolver({ G }: { G: GObject }) {
       if (maybePiece) {
         checkPush(currentArray, maybePiece, vector);
       } else {
-        pushesArray.concat(currentArray);
+        pushesArray.push(...currentArray);
       }
     };
     checkPush([], pushingPiece, vector);
-    console.log('pushesArray', pushesArray);
 
     // do another check?
     return pushesArray;
