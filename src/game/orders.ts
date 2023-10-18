@@ -168,7 +168,7 @@ export function orderResolver({ G }: { G: GObject }) {
           // @ts-ignore -- Haven't explicitly checked the type of [1], but order priorities are unique
           pushArray.push(...applyMove(ordersToResolve[1]));
           // TODO: special handling for concurrent pushes
-          pushArray.forEach((push) => movePieces(G, push));
+          movePieces(G, pushArray);
           break;
         }
         case 'push-diagonal':
@@ -177,12 +177,60 @@ export function orderResolver({ G }: { G: GObject }) {
           if (didMovesCancel(ordersToResolve[0], ordersToResolve[1])) {
             break;
           }
-          const pushArray = [];
-          pushArray.push(...applyPush(ordersToResolve[0]));
+          const pushArrayOne = applyPush(ordersToResolve[0]);
           // @ts-ignore -- Haven't explicitly checked the type of [1], but order priorities are unique
-          pushArray.push(...applyPush(ordersToResolve[1]));
-          // TODO: special handling for concurrent pushes
-          pushArray.forEach((push) => movePieces(G, push));
+          const pushArrayTwo = applyPush(ordersToResolve[1]);
+          /**
+           * *** filtering push arrays
+           * situation 1:
+           * - slide past
+           * - - if `id` has already been moved => skip rest of array
+           * situation 2:
+           * - target same square
+           * - - if same space targeted at same time, cancel moves (for now, maybe add vectors in future)
+           */
+
+          const movesToApply: Move[] = [];
+          let applyMovesOne = true;
+          let applyMovesTwo = true;
+
+          let i = 0;
+          while (i >= 0) {
+            const moveOne: Move | undefined = pushArrayOne[i];
+            const moveTwo: Move | undefined = pushArrayTwo[i];
+
+            // target same spot => cancel all pushes
+            if (
+              moveOne &&
+              moveTwo &&
+              isEqual(moveOne.newPosition, moveTwo.newPosition)
+            ) {
+              break;
+            }
+
+            // exit loop if nothing left
+            if (!moveOne && !moveTwo) {
+              break;
+            }
+
+            // if id has already been moved, prevent rest of chain
+            if (movesToApply.some((move) => move.id === moveOne?.id)) {
+              applyMovesOne = false;
+            }
+            if (movesToApply.some((move) => move.id === moveTwo?.id)) {
+              applyMovesTwo = false;
+            }
+
+            // queue up moves
+            if (moveOne && applyMovesOne) movesToApply.push(moveOne);
+            if (moveTwo && applyMovesTwo) movesToApply.push(moveTwo);
+
+            i++;
+          }
+
+          console.log('applying moves:');
+          logProxy(movesToApply);
+          movePieces(G, movesToApply);
           break;
         }
         case 'defend':
@@ -209,11 +257,11 @@ export function orderResolver({ G }: { G: GObject }) {
             break;
           case 'move-straight':
           case 'move-diagonal':
-            applyMove(order).forEach((push) => movePieces(G, push));
+            movePieces(G, applyMove(order));
             break;
           case 'push-straight':
           case 'push-diagonal':
-            applyPush(order).forEach((push) => movePieces(G, push));
+            movePieces(G, applyPush(order));
             break;
           case 'defend':
             applyDefend(order);
@@ -234,7 +282,7 @@ export function orderResolver({ G }: { G: GObject }) {
   }
 
   // return array of "pushes" to be applied
-  function applyMove(order: MoveStraightOrder | MoveDiagonalOrder): Move[][] {
+  function applyMove(order: MoveStraightOrder | MoveDiagonalOrder): Move[] {
     const movedPiece = pieces.find((p) => p.id === order.sourcePieceId);
     // piece might be removed prior to action
     if (!movedPiece) {
@@ -271,12 +319,12 @@ export function orderResolver({ G }: { G: GObject }) {
       if (maybePiece) {
         return [];
       }
-      return [[{ id: movedPiece.id, newPosition }]];
+      return [{ id: movedPiece.id, newPosition }];
     }
   }
 
   // return array of "pushes" to be applied
-  function applyPush(order: PushStraightOrder | PushDiagonalOrder): Move[][] {
+  function applyPush(order: PushStraightOrder | PushDiagonalOrder): Move[] {
     const pushingPiece = pieces.find((p) => p.id === order.sourcePieceId);
     // piece might be removed prior to action
     if (!pushingPiece) {
@@ -288,7 +336,7 @@ export function orderResolver({ G }: { G: GObject }) {
 
     // apply effects
     const pushesArray = getPushes(pushingPiece, order.toTarget);
-    pushesArray.forEach((a) => a.shift());
+    pushesArray.shift();
     console.log('pushesArray', pushesArray);
 
     // do another check?
@@ -340,7 +388,7 @@ export function orderResolver({ G }: { G: GObject }) {
   }
 
   function getPushes(pushingPiece: Piece, vector: Coordinates) {
-    const pushesArray: Move[][] = [];
+    const pushesArray: Move[] = [];
     const checkPush = (
       currentArray: Move[] = [],
       pushingPiece: Piece,
@@ -353,11 +401,10 @@ export function orderResolver({ G }: { G: GObject }) {
       if (maybePiece) {
         checkPush(currentArray, maybePiece, vector);
       } else {
-        pushesArray.push(currentArray);
+        pushesArray.push(...currentArray);
       }
     };
     checkPush([], pushingPiece, vector);
-    console.log('pushesArray', pushesArray);
 
     // do another check?
     return pushesArray;
