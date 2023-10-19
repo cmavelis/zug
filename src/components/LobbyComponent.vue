@@ -34,13 +34,9 @@ const createMatch = async () => {
     </p>
     <button @click="createMatch()">Create new match</button>
 
-    <h2>Current matches:</h2>
+    <h2>Open matches:</h2>
 
-    <section
-      v-bind:key="match.matchID"
-      v-for="match in matches"
-      class="matches-list"
-    >
+    <section :key="match.matchID" v-for="match in matches" class="matches-list">
       <div class="match-name">{{ match.matchID }}</div>
       <RouterLink class="match-link" :to="`/match/${match.matchID}`"
         >join match</RouterLink
