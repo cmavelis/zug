@@ -9,6 +9,7 @@ import {
   arrayToCoordinates,
   coordinatesToArray,
   getDisplacement,
+  getPiece,
 } from '@/game/common';
 import { createOrder } from '@/game/orders';
 import { getValidSquaresForOrder } from '@/game/zugzwang/validators';
@@ -45,9 +46,15 @@ const addOrder = (order: Omit<Order, 'owner'>) => {
 };
 
 const handlePieceClick = (id: number) => {
-  if (typeof selectedPiece.value !== 'number') {
-    selectedPiece.value = id;
+  const piece = getPiece(props.state.G, id);
+  if (!piece) return;
+
+  // ignore selecting oppo piece
+  if (piece.owner !== props.playerID) {
+    return;
   }
+
+  selectedPiece.value = id;
 };
 
 const getPieceCoords = (pieceID: number, G: GameState) => {
@@ -64,7 +71,7 @@ const getNumberPiecesMissing = (G: GameState, playerID: number) => {
 
 // select piece, then action, then cell
 const handleCellClick = (pieceID?: number) => {
-  if (selectedPiece.value === null && typeof pieceID === 'number') {
+  if (selectedAction.value === null && typeof pieceID === 'number') {
     handlePieceClick(pieceID);
     return;
   }
