@@ -34,10 +34,31 @@ const createMatch = async () => {
     </p>
     <button @click="createMatch()">Create new match</button>
 
-    <section v-bind:key="match.matchID" v-for="match in matches">
-      <div>{{ match.matchID }}</div>
+    <h2>Current matches:</h2>
+
+    <section
+      v-bind:key="match.matchID"
+      v-for="match in matches"
+      class="matches-list"
+    >
+      <div class="match-name">{{ match.matchID }}</div>
+      <RouterLink class="match-link" :to="`/match/${match.matchID}`"
+        >join match</RouterLink
+      >
     </section>
   </main>
 </template>
 
-<style scoped></style>
+<style scoped>
+.matches-list {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+.match-name {
+  justify-self: right;
+}
+.match-link {
+  justify-self: left;
+}
+</style>
