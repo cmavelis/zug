@@ -1,3 +1,5 @@
+import type { GameState } from '@/game/Game';
+
 export interface Coordinates {
   x: number;
   y: number;
@@ -33,3 +35,7 @@ export const addDisplacement = (
 export function reportError(e: string) {
   console.error(e);
 }
+
+export const getPiece = (G: GameState, id: number) => {
+  return G.pieces.find((p) => p.id === id);
+};
