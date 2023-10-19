@@ -16,8 +16,16 @@ interface ReactiveGameState {
   ctx: Ctx | {};
 }
 
-const playerID = ref(0);
 const route = useRoute();
+let playerIDDefault = 0;
+const showPlayerSelect = ref(true);
+
+if (route.query.player) {
+  playerIDDefault = Number(route.query.player) - 1;
+  showPlayerSelect.value = false;
+}
+const playerID = ref(playerIDDefault);
+
 let matchID: string;
 
 if (typeof route.params.matchID === 'string') {
@@ -76,12 +84,12 @@ matchClientTwo.client.subscribe(updateGameStateTwo);
 
 <template>
   <main>
-    <input type="radio" v-model="playerID" :value="0" />
+    <input type="radio" v-if="showPlayerSelect" v-model="playerID" :value="0" />
     <span :class="{ checked: !playerID }"> player 1</span> ({{
       gameState.G.score[0]
     }}) - ({{ gameState.G.score[1] }})
     <span :class="{ checked: playerID }">player 2</span>
-    <input type="radio" v-model="playerID" :value="1" />
+    <input type="radio" v-if="showPlayerSelect" v-model="playerID" :value="1" />
     <p>
       phase:
       {{
@@ -136,5 +144,6 @@ main {
 
 .checked {
   color: var(--color-theme-green);
+  font-weight: bold;
 }
 </style>
