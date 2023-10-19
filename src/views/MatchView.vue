@@ -6,7 +6,7 @@ import type { ClientState } from 'boardgame.io/dist/types/src/client/client';
 import type { Ctx } from 'boardgame.io/dist/types/src/types';
 import { isEqual } from 'lodash';
 
-import BoardComponent from '../components/BoardComponent.vue';
+import BoardComponent from '@/components/BoardComponent.vue';
 import BoardDisplay from '@/components/BoardDisplay.vue';
 import { SimulChessClient } from '@/game/App';
 import type { GameState, GObject } from '@/game/Game';
