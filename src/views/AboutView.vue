@@ -1,10 +1,49 @@
 <script setup lang="ts">
+import BoardDisplay from '@/components/BoardDisplay.vue';
+import type { GameState } from '@/game/Game';
+
 const orders = [
   'move-straight',
-  'move-diagonal',
-  'push-straight',
-  'push-diagonal',
+  // 'move-diagonal',
+  // 'push-straight',
+  // 'push-diagonal',
 ];
+
+const mockGameState: { G: Omit<GameState, 'board'> } = {
+  G: {
+    cells: [
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      0,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+    ],
+    orders: {
+      0: [
+        {
+          type: 'move-straight',
+          sourcePieceId: 0,
+          toTarget: { x: 0, y: 1 },
+          priority: 1,
+          owner: 0,
+        },
+      ],
+    },
+    pieces: [{ id: 0, owner: 0, position: { x: 1, y: 1 }, isDefending: false }],
+    score: { 0: 0, 1: 0 },
+  },
+};
 </script>
 
 <template>
@@ -26,11 +65,11 @@ const orders = [
       making it good, not just throwaway practice. I hope you like it!
     </p>
     <br />
-    <h2>How to play:</h2>
+    <h2>Order configuration:</h2>
     <section class="grid">
       <template v-for="order in orders" :key="order">
         <p>{{ order }}</p>
-        <p>graphic here</p>
+        <BoardDisplay :state="mockGameState" />
         <p>desc here</p>
       </template>
     </section>
