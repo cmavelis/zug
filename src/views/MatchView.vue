@@ -17,14 +17,15 @@ interface ReactiveGameState {
 }
 
 const route = useRoute();
-let playerIDDefault = 0;
-const showPlayerSelect = ref(true);
+let playerIDDefault = -1;
 
 if (route.query.player) {
   playerIDDefault = Number(route.query.player) - 1;
-  showPlayerSelect.value = false;
 }
 const playerID = ref(playerIDDefault);
+const isPlayerSelected = computed(() => {
+  return playerID.value === 0 || playerID.value === 1;
+});
 
 let matchID: string;
 
@@ -84,12 +85,23 @@ matchClientTwo.client.subscribe(updateGameStateTwo);
 
 <template>
   <main>
-    <input type="radio" v-if="showPlayerSelect" v-model="playerID" :value="0" />
-    <span :class="{ checked: !playerID }"> player 1</span> ({{
-      gameState.G.score[0]
-    }}) - ({{ gameState.G.score[1] }})
-    <span :class="{ checked: playerID }">player 2</span>
-    <input type="radio" v-if="showPlayerSelect" v-model="playerID" :value="1" />
+    <p v-if="!isPlayerSelected">Choose a player</p>
+    <input
+      type="radio"
+      v-if="!isPlayerSelected"
+      v-model="playerID"
+      :value="0"
+    />
+    <span :class="{ checked: playerID === 0 }"> player 1</span> ({{
+      gameState.G.score ? gameState.G.score[0] : '?'
+    }}) - ({{ gameState.G.score ? gameState.G.score[1] : '?' }})
+    <span :class="{ checked: playerID === 1 }">player 2 </span>
+    <input
+      type="radio"
+      v-if="!isPlayerSelected"
+      v-model="playerID"
+      :value="1"
+    />
     <p>
       phase:
       {{
@@ -98,18 +110,19 @@ matchClientTwo.client.subscribe(updateGameStateTwo);
           : 'end!'
       }}
     </p>
-
     <BoardComponent
-      v-if="playerID === 0 && gameStateLoaded"
+      v-if="playerID !== 1 && gameStateLoaded"
       :client="matchClientOne.client"
       :state="gameState"
       :playerID="playerID"
+      :showOrders="isPlayerSelected"
     />
     <BoardComponent
       v-if="playerID === 1 && gameStateTwoLoaded"
       :client="matchClientTwo.client"
       :state="gameStateTwo"
       :playerID="playerID"
+      :showOrders="isPlayerSelected"
     />
     <div v-if="gameLastTurn">
       <div>LAST TURN</div>

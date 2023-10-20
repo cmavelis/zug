@@ -38,9 +38,13 @@ const createMatch = async () => {
 
     <section :key="match.matchID" v-for="match in matches" class="matches-list">
       <div class="match-name">{{ match.matchID }}</div>
-      <RouterLink class="match-link" :to="`/match/${match.matchID}`"
-        >join match</RouterLink
-      >
+      <div class="match-link">
+        <RouterLink :to="`/match/${match.matchID}?player=1`"
+          >player 1</RouterLink
+        ><RouterLink :to="`/match/${match.matchID}?player=2`"
+          >player 2</RouterLink
+        >
+      </div>
     </section>
   </main>
 </template>
@@ -49,12 +53,14 @@ const createMatch = async () => {
 .matches-list {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 10px;
+  gap: 8px;
 }
 .match-name {
   justify-self: right;
 }
 .match-link {
+  display: flex;
+  gap: 8px;
   justify-self: left;
 }
 </style>
