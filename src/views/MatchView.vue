@@ -6,7 +6,7 @@ import type { ClientState } from 'boardgame.io/dist/types/src/client/client';
 import type { Ctx } from 'boardgame.io/dist/types/src/types';
 import { isEqual } from 'lodash';
 
-import BoardComponent from '../components/BoardComponent.vue';
+import BoardComponent from '@/components/BoardComponent.vue';
 import BoardDisplay from '@/components/BoardDisplay.vue';
 import { SimulChessClient } from '@/game/App';
 import type { GameState, GObject } from '@/game/Game';
@@ -16,8 +16,22 @@ interface ReactiveGameState {
   ctx: Ctx | {};
 }
 
-const playerID = ref(0);
 const route = useRoute();
+let playerIDDefault = -1;
+let isDebug = false;
+
+if (route.query.player) {
+  if ([1, 2].includes(Number(route.query.player))) {
+    playerIDDefault = Number(route.query.player) - 1;
+  } else {
+    isDebug = true;
+  }
+}
+const playerID = ref(playerIDDefault);
+const isPlayerSelected = computed(() => {
+  return playerID.value === 0 || playerID.value === 1;
+});
+
 let matchID: string;
 
 if (typeof route.params.matchID === 'string') {
@@ -76,12 +90,23 @@ matchClientTwo.client.subscribe(updateGameStateTwo);
 
 <template>
   <main>
-    <input type="radio" v-model="playerID" :value="0" />
-    <span :class="{ checked: !playerID }"> player 1</span> ({{
-      gameState.G.score[0]
-    }}) - ({{ gameState.G.score[1] }})
-    <span :class="{ checked: playerID }">player 2</span>
-    <input type="radio" v-model="playerID" :value="1" />
+    <p v-if="!isPlayerSelected">Choose a player</p>
+    <input
+      type="radio"
+      v-if="isDebug || !isPlayerSelected"
+      v-model="playerID"
+      :value="0"
+    />
+    <span :class="{ checked: playerID === 0 }"> player 1</span> ({{
+      gameState.G.score ? gameState.G.score[0] : '?'
+    }}) - ({{ gameState.G.score ? gameState.G.score[1] : '?' }})
+    <span :class="{ checked: playerID === 1 }">player 2 </span>
+    <input
+      type="radio"
+      v-if="isDebug || !isPlayerSelected"
+      v-model="playerID"
+      :value="1"
+    />
     <p>
       phase:
       {{
@@ -90,18 +115,19 @@ matchClientTwo.client.subscribe(updateGameStateTwo);
           : 'end!'
       }}
     </p>
-
     <BoardComponent
-      v-if="playerID === 0 && gameStateLoaded"
+      v-if="playerID !== 1 && gameStateLoaded"
       :client="matchClientOne.client"
       :state="gameState"
       :playerID="playerID"
+      :showOrders="isPlayerSelected"
     />
     <BoardComponent
       v-if="playerID === 1 && gameStateTwoLoaded"
       :client="matchClientTwo.client"
       :state="gameStateTwo"
       :playerID="playerID"
+      :showOrders="isPlayerSelected"
     />
     <div v-if="gameLastTurn">
       <div>LAST TURN</div>
@@ -136,5 +162,6 @@ main {
 
 .checked {
   color: var(--color-theme-green);
+  font-weight: bold;
 }
 </style>

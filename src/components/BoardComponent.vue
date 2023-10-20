@@ -23,6 +23,7 @@ interface BoardProps {
   client: _ClientImpl<GameState>;
   state: { G: GameState };
   playerID: number;
+  showOrders: boolean;
 }
 
 const selectedPiece: Ref<null | number> = ref(null);
@@ -152,7 +153,7 @@ const undoLastOrder = () => {
           v-bind="piece"
           @click="handlePieceClick(piece.id)"
         />
-        <svg width="200" height="200">
+        <svg v-if="props.showOrders" width="200" height="200">
           <OrderDisplay
             v-for="order in props.state.G.orders[props.playerID]"
             :key="order"
@@ -174,7 +175,7 @@ const undoLastOrder = () => {
         <button @click="clearAction()">clear</button>
       </div>
     </div>
-    <div>
+    <div v-if="props.showOrders">
       <p>
         piece:
         {{
