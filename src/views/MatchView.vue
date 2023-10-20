@@ -18,9 +18,14 @@ interface ReactiveGameState {
 
 const route = useRoute();
 let playerIDDefault = -1;
+let isDebug = false;
 
 if (route.query.player) {
-  playerIDDefault = Number(route.query.player) - 1;
+  if ([1, 2].includes(Number(route.query.player))) {
+    playerIDDefault = Number(route.query.player) - 1;
+  } else {
+    isDebug = true;
+  }
 }
 const playerID = ref(playerIDDefault);
 const isPlayerSelected = computed(() => {
@@ -88,7 +93,7 @@ matchClientTwo.client.subscribe(updateGameStateTwo);
     <p v-if="!isPlayerSelected">Choose a player</p>
     <input
       type="radio"
-      v-if="!isPlayerSelected"
+      v-if="isDebug || !isPlayerSelected"
       v-model="playerID"
       :value="0"
     />
@@ -98,7 +103,7 @@ matchClientTwo.client.subscribe(updateGameStateTwo);
     <span :class="{ checked: playerID === 1 }">player 2 </span>
     <input
       type="radio"
-      v-if="!isPlayerSelected"
+      v-if="isDebug || !isPlayerSelected"
       v-model="playerID"
       :value="1"
     />
