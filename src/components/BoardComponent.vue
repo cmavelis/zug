@@ -72,6 +72,8 @@ const getNumberPiecesMissing = (G: GameState, playerID: number) => {
 
 // select piece, then action, then cell
 const handleCellClick = (pieceID: number) => {
+  // TODO: find pieceID by using cellID
+
   if (selectedAction.value === null || selectedPiece.value === null) {
     handlePieceClick(pieceID);
     return;

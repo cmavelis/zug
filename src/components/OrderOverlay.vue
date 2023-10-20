@@ -6,7 +6,7 @@ import type { GameState } from '@/game/Game';
 import type { Coordinates } from '@/game/common';
 
 interface Props {
-  G: GameState;
+  G: GameState; // TODO: change to pieces, all we need from G
   order: Order;
 }
 
