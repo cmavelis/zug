@@ -71,8 +71,8 @@ const getNumberPiecesMissing = (G: GameState, playerID: number) => {
 };
 
 // select piece, then action, then cell
-const handleCellClick = (pieceID?: number) => {
-  if (selectedAction.value === null && typeof pieceID === 'number') {
+const handleCellClick = (pieceID: number) => {
+  if (selectedAction.value === null || selectedPiece.value === null) {
     handlePieceClick(pieceID);
     return;
   }
@@ -186,6 +186,8 @@ const undoLastOrder = () => {
       </p>
       <p>action: {{ selectedAction || 'none selected' }}</p>
       <p>ORDERS</p>
+      <button @click="undoLastOrder()">undo last order</button>
+      <button @click="handleEndTurn">end turn</button>
       <template
         v-for="order in props.state.G.orders[client.playerID]"
         :key="order.sourcePieceId"
@@ -195,8 +197,6 @@ const undoLastOrder = () => {
           {{ order.toTarget }}
         </p>
       </template>
-      <button @click="undoLastOrder()">undo last order</button>
-      <button @click="handleEndTurn">end turn</button>
     </div>
   </section>
   <!--  <p>{{ props.state }}</p>-->
