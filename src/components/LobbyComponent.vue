@@ -5,8 +5,10 @@ import { LobbyClient } from 'boardgame.io/client';
 import { LobbyAPI } from 'boardgame.io/src/types';
 
 const matches: Ref<LobbyAPI.Match[]> = ref([]);
+const { protocol, hostname, port } = window.location;
+const server = `${protocol}//${hostname}:${port}`;
 
-const lobbyClient = new LobbyClient({ server: 'http://localhost:8000' });
+const lobbyClient = new LobbyClient({ server });
 lobbyClient
   .listMatches('zug')
   .then((matchList) => {
