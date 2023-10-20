@@ -14,7 +14,7 @@ import {
 import { createOrder } from '@/game/orders';
 import { getValidSquaresForOrder } from '@/game/zugzwang/validators';
 
-import OrderDisplay from '@/components/OrderDisplay.vue';
+import OrderDisplay from '@/components/OrderOverlay.vue';
 
 const NUMBER_PIECES = 4;
 

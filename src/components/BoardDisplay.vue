@@ -4,7 +4,7 @@
 import BoardPiece from '@/components/BoardPiece.vue';
 import type { GameState } from '@/game/Game';
 
-import OrderDisplay from '@/components/OrderDisplay.vue';
+import OrderDisplay from '@/components/OrderOverlay.vue';
 import { logProxy } from '@/utils';
 
 interface BoardProps {
