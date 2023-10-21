@@ -1,49 +1,27 @@
 <script setup lang="ts">
-import BoardDisplay from '@/components/BoardDisplay.vue';
-import type { GameState } from '@/game/Game';
+import BoardDisplay from '@/components/BoardDisplayV2.vue';
 
-const orders = [
+const orderNames = [
   'move-straight',
   // 'move-diagonal',
   // 'push-straight',
   // 'push-diagonal',
 ];
 
-const mockGameState: { G: Omit<GameState, 'board'> } = {
-  G: {
-    cells: [
-      null,
-      null,
-      null,
-      null,
-      null,
-      null,
-      null,
-      null,
-      0,
-      null,
-      null,
-      null,
-      null,
-      null,
-      null,
-      null,
-    ],
-    orders: {
-      0: [
-        {
-          type: 'move-straight',
-          sourcePieceId: 0,
-          toTarget: { x: 0, y: 1 },
-          priority: 1,
-          owner: 0,
-        },
-      ],
-    },
-    pieces: [{ id: 0, owner: 0, position: { x: 1, y: 1 }, isDefending: false }],
-    score: { 0: 0, 1: 0 },
+const orders = [
+  {
+    type: 'move-straight',
+    sourcePieceId: 0,
+    toTarget: { x: 0, y: 1 },
+    priority: 1,
+    owner: 0,
   },
-};
+];
+const pieces = [
+  { id: 0, owner: 0, position: { x: 1, y: 1 }, isDefending: false },
+];
+
+const board = { x: 3, y: 3 };
 </script>
 
 <template>
@@ -67,9 +45,9 @@ const mockGameState: { G: Omit<GameState, 'board'> } = {
     <br />
     <h2>Order configuration:</h2>
     <section class="grid">
-      <template v-for="order in orders" :key="order">
+      <template v-for="order in orderNames" :key="order">
         <p>{{ order }}</p>
-        <BoardDisplay :state="mockGameState" />
+        <BoardDisplay :pieces="pieces" :board="board" :orders="orders" />
         <p>desc here</p>
       </template>
     </section>

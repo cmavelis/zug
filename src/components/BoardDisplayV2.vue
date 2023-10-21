@@ -4,6 +4,7 @@ import type { Piece } from '@/game/pieces';
 import type { Order } from '@/game/orders';
 import BoardPiece from './BoardPiece.vue';
 import OrderOverlay from './OrderOverlay.vue';
+import { computed } from 'vue';
 
 interface BoardDisplayV2Props {
   board: Coordinates;
@@ -18,9 +19,17 @@ interface BoardDisplayV2Props {
   selectedPieceId?: number;
 }
 
-const props = defineProps<BoardDisplayV2Props>();
+const props = withDefaults(defineProps<BoardDisplayV2Props>(), {
+  showOrders: true,
+  highlightedCells: () => [],
+  handleCellClick: () => {},
+  handleCellHover: () => {},
+  handlePieceClick: () => {},
+});
 
 const boardCells = Array(props.board.x * props.board.y);
+const cols = computed(() => props.board.x);
+const rows = computed(() => props.board.y);
 </script>
 
 <template>
@@ -61,9 +70,11 @@ button {
 }
 
 .board-container {
+  --cols: v-bind('cols');
+  --rows: v-bind('rows');
   display: grid;
-  grid-template-columns: repeat(4, var(--square-size));
-  grid-template-rows: repeat(4, var(--square-size));
+  grid-template-columns: repeat(var(--cols, 4), var(--square-size, 50px));
+  grid-template-rows: repeat(var(--rows, 4), var(--square-size, 50px));
   border: 1px solid blanchedalmond;
   width: fit-content;
   height: fit-content;
