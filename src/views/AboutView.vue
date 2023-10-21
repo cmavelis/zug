@@ -55,14 +55,6 @@ const board = { x: 3, y: 3 };
 </template>
 
 <style>
-@media (min-width: 1024px) {
-  .about {
-    min-height: 100vh;
-    display: flex;
-    align-items: center;
-  }
-}
-
 .grid {
   display: grid;
   grid-template-columns: 1fr 1fr 1fr;
