@@ -143,6 +143,7 @@ export function getValidSquaresForOrder({
   board: Coordinates;
   orderType: ConfigOrderType;
 }) {
+  // TODO: translate before inverting
   const config = ORDER_CONFIG[orderType];
   // get valid X
   const xArray =

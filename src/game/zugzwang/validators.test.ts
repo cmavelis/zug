@@ -92,3 +92,24 @@ test('getSquares for move-diagonal order, player 1', () => {
     ])
   );
 });
+
+test('getSquares for move-diagonal order, player 2', () => {
+  expect(
+    getValidSquaresForOrder({
+      origin: { x: 2, y: 2 },
+      playerID: 1,
+      board: {
+        x: 4,
+        y: 4,
+      },
+      orderType: 'move-diagonal',
+    })
+  ).toEqual(
+    expect.arrayContaining([
+      { x: 1, y: 1 },
+      { x: 1, y: 3 },
+      { x: 3, y: 1 },
+      { x: 3, y: 3 },
+    ])
+  );
+});
