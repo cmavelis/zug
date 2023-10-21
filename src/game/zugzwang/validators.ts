@@ -131,23 +131,25 @@ export function isValidPlaceOrder(order: PlaceOrder): boolean {
   return yChange === yChangeAllowed;
 }
 
+// TODO does the origin solve the need for other order info?
 export function getValidSquaresForOrder({
-  // origin,
+  origin = { x: 0, y: 0 },
   playerID,
   board,
+  orderType,
 }: {
-  // origin: Coordinates;
-  // order: PlaceOrder; // needs to be ordertype or order?
+  origin?: Coordinates;
   playerID: number;
   board: Coordinates;
+  orderType: ConfigOrderType;
 }) {
-  const config = ORDER_CONFIG.place;
+  const config = ORDER_CONFIG[orderType];
   // get valid X
   const xArray =
     config.xAllowed || Array.from({ length: board.x }, (v, i) => i);
   // get valid Y
-  // invert y for player 2
   let yAllowed = config.yAllowed;
+  // invert y for player 2
   if (playerID === 1 && yAllowed) {
     yAllowed = yAllowed.map((y) => board.y - 1 - y);
   }
@@ -156,7 +158,7 @@ export function getValidSquaresForOrder({
 
   const allCoords: Coordinates[] = xArray.flatMap((xVal) => {
     return yArray.map((yVal) => {
-      return { x: xVal, y: yVal };
+      return { x: xVal + origin.x, y: yVal + origin.y };
     });
   });
   return allCoords;
