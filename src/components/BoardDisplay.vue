@@ -34,20 +34,20 @@ logProxy(props);
             v-for="order in props.state.G.orders[0]"
             :key="order"
             :order="order"
-            :G="props.state.G"
+            :pieces="props.state.G.pieces"
           />
           <OrderDisplay
             v-for="order in props.state.G.orders[1]"
             :key="order"
             :order="order"
-            :G="props.state.G"
+            :pieces="props.state.G.pieces"
           />
           <!--          different from BoardComponent-->
           <OrderDisplay
             v-for="event in props.state.G.events"
             :key="event"
             :order="event"
-            :G="props.state.G"
+            :pieces="props.state.G.pieces"
           />
         </svg>
       </div>
@@ -98,24 +98,11 @@ logProxy(props);
   z-index: 3; /* want this above the order overlay for hover events */
 }
 
-.hoveredCell {
-  box-shadow: inset 0 0 5px cyan, inset 0 0 10px cyan;
-}
-
-.order-button-group {
-  display: flex;
-  flex-direction: column;
-}
-
 section {
   display: flex;
   flex-direction: row;
   justify-content: space-evenly;
   padding: 1rem;
-}
-
-.selected {
-  box-shadow: 0 0 10px coral, 0 0 5px coral;
 }
 
 svg {

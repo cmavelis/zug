@@ -2,7 +2,7 @@
 import type { Coordinates } from '@/game/common';
 import type { Piece } from '@/game/pieces';
 import type { Order } from '@/game/orders';
-import BoardPiece from 'BoardPiece.vue';
+import BoardPiece from './BoardPiece.vue';
 import OrderOverlay from './OrderOverlay.vue';
 
 interface BoardDisplayV2Props {
@@ -10,7 +10,7 @@ interface BoardDisplayV2Props {
   pieces: Piece[];
   orders: Order[];
   showOrders?: boolean;
-  handleCellClick?: (index: number) => void;
+  handleCellClick?: (cellID: number) => void;
   handleCellHover?: (index: number) => void;
   handlePieceClick?: (id: number) => void;
   hoveredCell?: number;
@@ -24,35 +24,33 @@ const boardCells = Array(props.board.x * props.board.y);
 </script>
 
 <template>
-  <div class="board-wrapper">
-    <div class="board-container">
-      <div
-        v-for="(_, index) in boardCells"
-        :key="index"
-        class="board-square"
-        :class="{
-          hoveredCell: props.hoveredCell === index,
-          highlightedCell: props.highlightedCells.includes(index),
-        }"
-        @click="handleCellClick(index)"
-        @mouseover="handleCellHover(index)"
+  <div class="board-container">
+    <div
+      v-for="(_, index) in boardCells"
+      :key="index"
+      class="board-square"
+      :class="{
+        hoveredCell: props.hoveredCell === index,
+        highlightedCell: props.highlightedCells.includes(index),
+      }"
+      @click="handleCellClick(index)"
+      @mouseover="handleCellHover(index)"
+    />
+    <BoardPiece
+      v-for="piece in props.pieces"
+      :key="piece.position"
+      :class="{ selected: props.selectedPieceId === piece.id }"
+      v-bind="piece"
+      @click="handlePieceClick(piece.id)"
+    />
+    <svg v-if="props.showOrders" width="200" height="200">
+      <OrderOverlay
+        v-for="order in props.orders"
+        :key="order"
+        :order="order"
+        :pieces="props.pieces"
       />
-      <BoardPiece
-        v-for="piece in props.pieces"
-        :key="piece.position"
-        :class="{ selected: props.selectedPieceId === piece.id }"
-        v-bind="piece"
-        @click="handlePieceClick(piece.id)"
-      />
-      <svg v-if="props.showOrders" width="200" height="200">
-        <OrderOverlay
-          v-for="order in props.orders"
-          :key="order"
-          :order="order"
-          :G="props.state.G"
-        />
-      </svg>
-    </div>
+    </svg>
   </div>
 </template>
 
@@ -60,15 +58,6 @@ const boardCells = Array(props.board.x * props.board.y);
 button {
   -webkit-appearance: none;
   min-height: 2.5rem;
-}
-
-.board-wrapper {
-  --square-size: 50px;
-  position: relative;
-  display: flex;
-  flex-direction: row;
-  justify-content: center;
-  gap: 8px;
 }
 
 .board-container {

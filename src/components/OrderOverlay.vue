@@ -2,11 +2,11 @@
 import { computed } from 'vue';
 import type { Order } from '@/game/orders';
 import { isEqual } from 'lodash';
-import type { GameState } from '@/game/Game';
 import type { Coordinates } from '@/game/common';
+import type { Piece } from '@/game/pieces';
 
 interface Props {
-  G: GameState; // TODO: change to pieces, all we need from G
+  pieces: Piece[];
   order: Order;
 }
 
@@ -22,7 +22,7 @@ const coordsToPixels = (coordinates: Coordinates, squareLength: number) => {
 
 const points = computed(() => {
   const { order } = props;
-  const maybePiece = props.G.pieces.find((p) =>
+  const maybePiece = props.pieces.find((p) =>
     isEqual(p.id, order.sourcePieceId)
   );
   if (maybePiece) {
