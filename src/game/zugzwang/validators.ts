@@ -33,6 +33,7 @@ interface MoveConfig {
   shape: 'straight' | 'diagonal' | 'area';
   xAllowed?: number[];
   yAllowed?: number[]; // remember to invert this for player 2
+  absolute?: boolean;
 }
 
 type ConfigOrderType = Exclude<OrderTypes, 'defend'>;
@@ -68,6 +69,7 @@ const ORDER_CONFIG: {
   place: {
     shape: 'area',
     yAllowed: [0],
+    absolute: true,
   },
 };
 
@@ -153,7 +155,11 @@ export function getValidSquaresForOrder({
   let yAllowed = config.yAllowed?.map((y) => origin.y + y);
   // invert y for player 2
   if (playerID === 1 && config.yAllowed) {
-    yAllowed = config.yAllowed.map((y) => origin.y - y);
+    if (config.absolute) {
+      yAllowed = config.yAllowed.map((y) => board.y - 1 - y);
+    } else {
+      yAllowed = config.yAllowed.map((y) => origin.y - y);
+    }
   }
 
   const yArray = yAllowed || Array.from({ length: board.y }, (v, i) => i);
