@@ -113,3 +113,41 @@ test('getSquares for move-diagonal order, player 2', () => {
     ])
   );
 });
+
+test('getSquares for push-straight order, player 1', () => {
+  expect(
+    getValidSquaresForOrder({
+      origin: { x: 2, y: 2 },
+      playerID: 0,
+      board: {
+        x: 4,
+        y: 4,
+      },
+      orderType: 'push-straight',
+    })
+  ).toEqual(
+    expect.arrayContaining([
+      { x: 2, y: 1 },
+      { x: 2, y: 3 },
+      { x: 1, y: 2 },
+      { x: 3, y: 2 },
+    ])
+  );
+
+  expect(
+    getValidSquaresForOrder({
+      origin: { x: 2, y: 2 },
+      playerID: 0,
+      board: {
+        x: 4,
+        y: 4,
+      },
+      orderType: 'push-straight',
+    })
+  ).not.toEqual(
+    expect.arrayContaining([
+      { x: 3, y: 3 },
+      { x: 1, y: 1 },
+    ])
+  );
+});
