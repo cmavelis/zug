@@ -30,7 +30,7 @@ export function isStraight(vector: Coordinates): boolean {
 }
 
 interface MoveConfig {
-  angle: 'straight' | 'diagonal' | 'area'; // rename "shape?"
+  shape: 'straight' | 'diagonal' | 'area';
   xAllowed?: number[];
   yAllowed?: number[]; // remember to invert this for player 2
 }
@@ -41,39 +41,39 @@ const ORDER_CONFIG: {
   [T in ConfigOrderType]: MoveConfig;
 } = {
   attack: {
-    angle: 'diagonal',
+    shape: 'diagonal',
     xAllowed: [1, -1],
     yAllowed: [1],
   },
   'move-straight': {
-    angle: 'straight',
+    shape: 'straight',
     xAllowed: [0],
     yAllowed: [1],
   },
   'move-diagonal': {
-    angle: 'diagonal',
+    shape: 'diagonal',
     xAllowed: [1, -1],
     yAllowed: [1, -1],
   },
   'push-straight': {
-    angle: 'straight',
+    shape: 'straight',
     xAllowed: [1, 0, -1],
     yAllowed: [1, 0, -1],
   },
   'push-diagonal': {
-    angle: 'diagonal',
+    shape: 'diagonal',
     xAllowed: [1, -1],
     yAllowed: [1, -1],
   },
   place: {
-    angle: 'area',
+    shape: 'area',
     yAllowed: [0],
   },
 };
 
 export function isValidOrder(piece: Piece, order: Order): boolean {
   const config = ORDER_CONFIG[order.type as ConfigOrderType];
-  const { angle, xAllowed, yAllowed } = config;
+  const { shape, xAllowed, yAllowed } = config;
 
   if (order.type === 'defend') {
     return false;
@@ -85,10 +85,10 @@ export function isValidOrder(piece: Piece, order: Order): boolean {
   const xChange = order.toTarget.x;
 
   let angleValid = true;
-  if (angle === 'straight') {
+  if (shape === 'straight') {
     angleValid = isStraight(order.toTarget);
   }
-  if (angle === 'diagonal') {
+  if (shape === 'diagonal') {
     angleValid = isDiagonal(order.toTarget);
   }
 
