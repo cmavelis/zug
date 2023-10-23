@@ -1,27 +1,38 @@
 <script setup lang="ts">
 import BoardDisplay from '@/components/BoardDisplayV2.vue';
+import {
+  ConfigOrderType,
+  getValidSquaresForOrder,
+} from '@/game/zugzwang/validators';
 
-const orderNames = [
+const orderNames: ConfigOrderType[] = [
   'move-straight',
-  // 'move-diagonal',
-  // 'push-straight',
-  // 'push-diagonal',
+  'move-diagonal',
+  'push-straight',
+  'push-diagonal',
 ];
 
-const orders = [
-  {
-    type: 'move-straight',
-    sourcePieceId: 0,
-    toTarget: { x: 0, y: 1 },
-    priority: 1,
-    owner: 0,
-  },
-];
-const pieces = [
-  { id: 0, owner: 0, position: { x: 1, y: 1 }, isDefending: false },
-];
+const position = { x: 1, y: 1 };
+
+const pieces = [{ id: 0, owner: 0, position, isDefending: false }];
 
 const board = { x: 3, y: 3 };
+
+let ordersDict = {};
+
+orderNames.forEach((name) => {
+  ordersDict[name] = getValidSquaresForOrder({
+    playerID: 0,
+    board,
+    orderType: name,
+  }).map((coord) => ({
+    type: name,
+    sourcePieceId: 0,
+    toTarget: coord,
+    priority: 1,
+    owner: 0,
+  }));
+});
 </script>
 
 <template>
@@ -49,7 +60,11 @@ const board = { x: 3, y: 3 };
     <section class="grid">
       <template v-for="order in orderNames" :key="order">
         <p>{{ order }}</p>
-        <BoardDisplay :pieces="pieces" :board="board" :orders="orders" />
+        <BoardDisplay
+          :pieces="pieces"
+          :board="board"
+          :orders="ordersDict[order]"
+        />
         <p>desc here</p>
       </template>
     </section>

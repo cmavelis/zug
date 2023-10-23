@@ -36,7 +36,7 @@ interface MoveConfig {
   absolute?: boolean;
 }
 
-type ConfigOrderType = Exclude<OrderTypes, 'defend'>;
+export type ConfigOrderType = Exclude<OrderTypes, 'defend'>;
 
 const ORDER_CONFIG: {
   [T in ConfigOrderType]: MoveConfig;
