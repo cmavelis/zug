@@ -143,23 +143,24 @@ export function getValidSquaresForOrder({
   board: Coordinates;
   orderType: ConfigOrderType;
 }) {
-  // TODO: translate before inverting
   const config = ORDER_CONFIG[orderType];
   // get valid X
   const xArray =
-    config.xAllowed || Array.from({ length: board.x }, (v, i) => i);
+    config.xAllowed?.map((x) => x + origin.x) ||
+    Array.from({ length: board.x }, (v, i) => i);
+
   // get valid Y
-  let yAllowed = config.yAllowed;
+  let yAllowed = config.yAllowed?.map((y) => origin.y + y);
   // invert y for player 2
-  if (playerID === 1 && yAllowed) {
-    yAllowed = yAllowed.map((y) => board.y - 1 - y);
+  if (playerID === 1 && config.yAllowed) {
+    yAllowed = config.yAllowed.map((y) => origin.y - y);
   }
 
   const yArray = yAllowed || Array.from({ length: board.y }, (v, i) => i);
 
   const allCoords: Coordinates[] = xArray.flatMap((xVal) => {
     return yArray.map((yVal) => {
-      return { x: xVal + origin.x, y: yVal + origin.y };
+      return { x: xVal, y: yVal };
     });
   });
   return allCoords;
