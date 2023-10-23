@@ -28,6 +28,7 @@ const props = withDefaults(defineProps<BoardDisplayV2Props>(), {
 });
 
 const boardCells = Array(props.board.x * props.board.y);
+// cols, rows, used by css
 const cols = computed(() => props.board.x);
 const rows = computed(() => props.board.y);
 </script>
