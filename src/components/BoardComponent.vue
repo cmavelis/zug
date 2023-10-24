@@ -183,8 +183,6 @@ const undoLastOrder = () => {
       >
         <p>
           piece {{ order.sourcePieceId }}: {{ order.type }} with vector
-          <!--    @vue-expect-error[TS2339]  Property 'toTarget' does not exist on type 'Order'.   -->
-
           {{ order.toTarget }}
         </p>
       </template>

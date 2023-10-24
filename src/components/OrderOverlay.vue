@@ -71,14 +71,14 @@ const lineColor = computed(() => {
 
 <template>
   <g class="order">
-    <circle
-      v-if="order.type === 'defend'"
-      :cx="points.x1"
-      :cy="points.y1"
-      r="27"
-      fill="darkcyan"
-    ></circle>
-    <template v-else>
+    <!--    <circle-->
+    <!--      v-if="order.type === 'defend'"-->
+    <!--      :cx="points.x1"-->
+    <!--      :cy="points.y1"-->
+    <!--      r="27"-->
+    <!--      fill="darkcyan"-->
+    <!--    ></circle>-->
+    <template>
       <line
         :x1="points.x1"
         :y1="points.y1"

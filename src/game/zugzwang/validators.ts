@@ -78,10 +78,6 @@ export function isValidOrder(piece: Piece, order: Order): boolean {
   const config = ORDER_CONFIG[order.type as ConfigOrderType];
   const { shape, xAllowed, yAllowed } = config;
 
-  if (order.type === 'defend') {
-    return false;
-  }
-
   const yRelative = order.toTarget.y;
   const yChange = piece.owner === 0 ? yRelative : -yRelative;
 
@@ -109,14 +105,14 @@ export function isValidOrder(piece: Piece, order: Order): boolean {
 
 export function isValidMoveDiagonal(
   piece: Piece,
-  move: MoveDiagonalOrder
+  move: MoveDiagonalOrder,
 ): boolean {
   return isDiagonal(move.toTarget);
 }
 
 export function isValidMoveStraight(
   piece: Piece,
-  move: MoveStraightOrder
+  move: MoveStraightOrder,
 ): boolean {
   // assume moves can only go one direction
   const yChangeAllowed = piece.owner === 0 ? 1 : -1;
@@ -154,7 +150,7 @@ export function getValidSquaresForOrder({
     config.xAllowed?.forEach((x) => rawVectors.push({ x, y: 0 }));
     config.yAllowed?.forEach((y) =>
       // invert as we create
-      rawVectors.push({ x: 0, y: playerID === 0 ? y : -y })
+      rawVectors.push({ x: 0, y: playerID === 0 ? y : -y }),
     );
 
     const translatedVectors = rawVectors.map((vector) => {
