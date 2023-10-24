@@ -5,6 +5,7 @@ import {
   getValidSquaresForOrder,
 } from '@/game/zugzwang/validators';
 import { ORDER_PRIORITIES } from '@/game/orders';
+import { coordinatesToArray } from '@/game/common';
 
 const orderNames: ConfigOrderType[] = [
   'move-straight',
@@ -18,6 +19,7 @@ const position = { x: 1, y: 1 };
 const pieces = [{ id: 0, owner: 0, position, isDefending: false }];
 
 const board = { x: 3, y: 3 };
+const fullBoard = { x: 4, y: 4 };
 
 let ordersDict = {};
 
@@ -34,6 +36,12 @@ orderNames.forEach((name) => {
     owner: 0,
   }));
 });
+
+const placeActionSquares = getValidSquaresForOrder({
+  playerID: 0,
+  board: fullBoard,
+  orderType: 'place',
+}).map((coord) => coordinatesToArray(coord, fullBoard));
 </script>
 
 <template>
@@ -81,11 +89,29 @@ orderNames.forEach((name) => {
           </p>
         </div>
       </template>
+      <p>place</p>
+      <BoardDisplay
+        :pieces="[]"
+        :orders="[]"
+        :board="{ x: 4, y: 4 }"
+        :highlighted-cells="placeActionSquares"
+      />
+      <div>
+        <p>priority: {{ ORDER_PRIORITIES.place }}</p>
+        <p>
+          For each of your pieces that are missing, you may place a new piece on
+          your home row during your turn. If there is a piece in that square,
+          <strong>both will be destroyed!</strong>
+        </p>
+      </div>
     </section>
   </main>
 </template>
 
 <style>
+strong {
+  font-weight: bold;
+}
 .grid {
   display: grid;
   grid-template-columns: 1fr 1fr 1fr;
