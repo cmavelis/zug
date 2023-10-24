@@ -9,6 +9,7 @@ import type {
   PlaceOrder,
 } from '@/game/orders';
 import type { Coordinates } from '@/game/common';
+import { addDisplacement } from '@/game/common';
 
 export function isDiagonal(vector: Coordinates): boolean {
   const xChangesAllowed = [-1, 1];
@@ -30,50 +31,52 @@ export function isStraight(vector: Coordinates): boolean {
 }
 
 interface MoveConfig {
-  angle: 'straight' | 'diagonal' | 'area'; // rename "shape?"
+  shape: 'straight' | 'diagonal' | 'area';
   xAllowed?: number[];
   yAllowed?: number[]; // remember to invert this for player 2
+  absolute?: boolean;
 }
 
-type ConfigOrderType = Exclude<OrderTypes, 'defend'>;
+export type ConfigOrderType = Exclude<OrderTypes, 'defend'>;
 
 const ORDER_CONFIG: {
   [T in ConfigOrderType]: MoveConfig;
 } = {
   attack: {
-    angle: 'diagonal',
+    shape: 'diagonal',
     xAllowed: [1, -1],
     yAllowed: [1],
   },
   'move-straight': {
-    angle: 'straight',
+    shape: 'straight',
     xAllowed: [0],
     yAllowed: [1],
   },
   'move-diagonal': {
-    angle: 'diagonal',
+    shape: 'diagonal',
+    xAllowed: [1, -1],
+    yAllowed: [1],
+  },
+  'push-straight': {
+    shape: 'straight',
     xAllowed: [1, -1],
     yAllowed: [1, -1],
   },
-  'push-straight': {
-    angle: 'straight',
-    xAllowed: [1, 0, -1],
-    yAllowed: [1, 0, -1],
-  },
   'push-diagonal': {
-    angle: 'diagonal',
+    shape: 'diagonal',
     xAllowed: [1, -1],
     yAllowed: [1, -1],
   },
   place: {
-    angle: 'area',
+    shape: 'area',
     yAllowed: [0],
+    absolute: true,
   },
 };
 
 export function isValidOrder(piece: Piece, order: Order): boolean {
   const config = ORDER_CONFIG[order.type as ConfigOrderType];
-  const { angle, xAllowed, yAllowed } = config;
+  const { shape, xAllowed, yAllowed } = config;
 
   if (order.type === 'defend') {
     return false;
@@ -85,10 +88,10 @@ export function isValidOrder(piece: Piece, order: Order): boolean {
   const xChange = order.toTarget.x;
 
   let angleValid = true;
-  if (angle === 'straight') {
+  if (shape === 'straight') {
     angleValid = isStraight(order.toTarget);
   }
-  if (angle === 'diagonal') {
+  if (shape === 'diagonal') {
     angleValid = isDiagonal(order.toTarget);
   }
 
@@ -131,25 +134,50 @@ export function isValidPlaceOrder(order: PlaceOrder): boolean {
   return yChange === yChangeAllowed;
 }
 
+// TODO does the origin solve the need for other order info?
 export function getValidSquaresForOrder({
-  // origin,
+  origin = { x: 0, y: 0 },
   playerID,
   board,
+  orderType,
 }: {
-  // origin: Coordinates;
-  // order: PlaceOrder; // needs to be ordertype or order?
+  origin?: Coordinates;
   playerID: number;
   board: Coordinates;
+  orderType: ConfigOrderType;
 }) {
-  const config = ORDER_CONFIG.place;
+  // TODO:  make vectors, invert, translate
+
+  const config = ORDER_CONFIG[orderType];
+  let rawVectors: Coordinates[] = [];
+  if (config.shape === 'straight') {
+    config.xAllowed?.forEach((x) => rawVectors.push({ x, y: 0 }));
+    config.yAllowed?.forEach((y) =>
+      // invert as we create
+      rawVectors.push({ x: 0, y: playerID === 0 ? y : -y })
+    );
+
+    const translatedVectors = rawVectors.map((vector) => {
+      return addDisplacement(vector, origin);
+    });
+
+    return translatedVectors;
+  }
+
   // get valid X
   const xArray =
-    config.xAllowed || Array.from({ length: board.x }, (v, i) => i);
+    config.xAllowed?.map((x) => x + origin.x) ||
+    Array.from({ length: board.x }, (v, i) => i);
+
   // get valid Y
+  let yAllowed = config.yAllowed?.map((y) => origin.y + y);
   // invert y for player 2
-  let yAllowed = config.yAllowed;
-  if (playerID === 1 && yAllowed) {
-    yAllowed = yAllowed.map((y) => board.y - 1 - y);
+  if (playerID === 1 && config.yAllowed) {
+    if (config.absolute) {
+      yAllowed = config.yAllowed.map((y) => board.y - 1 - y);
+    } else {
+      yAllowed = config.yAllowed.map((y) => origin.y - y);
+    }
   }
 
   const yArray = yAllowed || Array.from({ length: board.y }, (v, i) => i);

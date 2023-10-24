@@ -4,12 +4,12 @@
 import BoardPiece from '@/components/BoardPiece.vue';
 import type { GameState } from '@/game/Game';
 
-import OrderDisplay from '@/components/OrderDisplay.vue';
+import OrderDisplay from '@/components/OrderOverlay.vue';
 import { logProxy } from '@/utils';
 
 interface BoardProps {
   state: { G: Omit<GameState, 'board'> };
-  orderNumber: number;
+  orderNumber?: number;
 }
 const props = defineProps<BoardProps>();
 logProxy(props);
@@ -34,25 +34,25 @@ logProxy(props);
             v-for="order in props.state.G.orders[0]"
             :key="order"
             :order="order"
-            :G="props.state.G"
+            :pieces="props.state.G.pieces"
           />
           <OrderDisplay
             v-for="order in props.state.G.orders[1]"
             :key="order"
             :order="order"
-            :G="props.state.G"
+            :pieces="props.state.G.pieces"
           />
           <!--          different from BoardComponent-->
           <OrderDisplay
             v-for="event in props.state.G.events"
             :key="event"
             :order="event"
-            :G="props.state.G"
+            :pieces="props.state.G.pieces"
           />
         </svg>
       </div>
     </div>
-    <div>
+    <div v-if="props.orderNumber">
       <p>ORDERS: step {{ props.orderNumber }}</p>
       <template v-for="playerID in [0, 1]" :key="playerID">
         <p>Player {{ playerID + 1 }}</p>
@@ -98,24 +98,11 @@ logProxy(props);
   z-index: 3; /* want this above the order overlay for hover events */
 }
 
-.hoveredCell {
-  box-shadow: inset 0 0 5px cyan, inset 0 0 10px cyan;
-}
-
-.order-button-group {
-  display: flex;
-  flex-direction: column;
-}
-
 section {
   display: flex;
   flex-direction: row;
   justify-content: space-evenly;
   padding: 1rem;
-}
-
-.selected {
-  box-shadow: 0 0 10px coral, 0 0 5px coral;
 }
 
 svg {

@@ -44,6 +44,7 @@ test('getSquares for place order', () => {
         x: 4,
         y: 4,
       },
+      orderType: 'place',
     })
   ).toEqual([
     { x: 0, y: 0 },
@@ -61,6 +62,7 @@ test('getSquares for place order, player 2', () => {
         x: 4,
         y: 4,
       },
+      orderType: 'place',
     })
   ).toEqual([
     { x: 0, y: 3 },
@@ -68,4 +70,80 @@ test('getSquares for place order, player 2', () => {
     { x: 2, y: 3 },
     { x: 3, y: 3 },
   ]);
+});
+
+test('getSquares for move-diagonal order, player 1', () => {
+  expect(
+    getValidSquaresForOrder({
+      origin: { x: 2, y: 2 },
+      playerID: 0,
+      board: {
+        x: 4,
+        y: 4,
+      },
+      orderType: 'move-diagonal',
+    })
+  ).toEqual(
+    expect.arrayContaining([
+      { x: 1, y: 3 },
+      { x: 3, y: 3 },
+    ])
+  );
+});
+
+test('getSquares for move-diagonal order, player 2', () => {
+  expect(
+    getValidSquaresForOrder({
+      origin: { x: 2, y: 2 },
+      playerID: 1,
+      board: {
+        x: 4,
+        y: 4,
+      },
+      orderType: 'move-diagonal',
+    })
+  ).toEqual(
+    expect.arrayContaining([
+      { x: 1, y: 1 },
+      { x: 3, y: 1 },
+    ])
+  );
+});
+
+test('getSquares for push-straight order, player 1', () => {
+  expect(
+    getValidSquaresForOrder({
+      origin: { x: 2, y: 2 },
+      playerID: 0,
+      board: {
+        x: 4,
+        y: 4,
+      },
+      orderType: 'push-straight',
+    })
+  ).toEqual(
+    expect.arrayContaining([
+      { x: 2, y: 1 },
+      { x: 2, y: 3 },
+      { x: 1, y: 2 },
+      { x: 3, y: 2 },
+    ])
+  );
+
+  expect(
+    getValidSquaresForOrder({
+      origin: { x: 2, y: 2 },
+      playerID: 0,
+      board: {
+        x: 4,
+        y: 4,
+      },
+      orderType: 'push-straight',
+    })
+  ).toEqual(
+    expect.not.arrayContaining([
+      { x: 3, y: 3 },
+      { x: 1, y: 1 },
+    ])
+  );
 });

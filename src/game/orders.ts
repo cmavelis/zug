@@ -27,7 +27,7 @@ export interface OrderBase {
   priority: number;
 }
 
-const ORDER_PRIORITIES = {
+export const ORDER_PRIORITIES = {
   defend: 1,
   'move-straight': 1,
   'push-straight': 2,
