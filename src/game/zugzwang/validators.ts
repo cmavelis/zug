@@ -86,6 +86,9 @@ export function isValidOrder(piece: Piece, order: Order): boolean {
   let angleValid = true;
   if (shape === 'straight') {
     angleValid = isStraight(order.toTarget);
+    // could technically be [0,0] with this
+    if (xAllowed) xAllowed.push(0);
+    if (yAllowed) yAllowed.push(0);
   }
   if (shape === 'diagonal') {
     angleValid = isDiagonal(order.toTarget);
