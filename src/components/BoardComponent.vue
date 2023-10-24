@@ -29,7 +29,7 @@ const selectedAction: Ref<undefined | OrderTypes> = ref(undefined);
 const cellHover: Ref<undefined | number> = ref(undefined);
 
 const props = defineProps<BoardProps>();
-const flatOrders = computed(() => props.state.G.orders[props.playerID]);
+const flatOrders = computed(() => props.state.G.orders[props.playerID] || []);
 
 const highlightedSquares: Ref<number[]> = computed(() => {
   if (selectedAction.value === 'place') {
