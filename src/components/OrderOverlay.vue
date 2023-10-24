@@ -4,10 +4,11 @@ import type { Order } from '@/game/orders';
 import { isEqual } from 'lodash';
 import type { Coordinates } from '@/game/common';
 import type { Piece } from '@/game/pieces';
+import type { GameEvent } from '@/game/Game';
 
 interface Props {
   pieces: Piece[];
-  order: Order;
+  order: Order | GameEvent;
 }
 
 const props = defineProps<Props>();
@@ -23,7 +24,7 @@ const coordsToPixels = (coordinates: Coordinates, squareLength: number) => {
 const points = computed(() => {
   const { order } = props;
   const maybePiece = props.pieces.find((p) =>
-    isEqual(p.id, order.sourcePieceId)
+    isEqual(p.id, order.sourcePieceId),
   );
   if (maybePiece) {
     const { x: x1, y: y1 } = coordsToPixels(maybePiece.position, sideLength);
@@ -59,7 +60,7 @@ const lineColor = computed(() => {
     return 'yellow';
   }
   if (
-    // @ts-expect-error hacking in score for now
+    // hacking in score for now as Event type
     props.order.type === 'score'
   ) {
     return 'hotpink';

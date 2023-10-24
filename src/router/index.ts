@@ -3,6 +3,7 @@ import HomeView from '../views/HomeView.vue';
 import MatchView from '../views/MatchView.vue';
 
 const router = createRouter({
+  //@ts-expect-error[TS1343] The 'import.meta' meta-property is only allowed when the '--module' option is 'es2020', 'es2022', 'esnext', 'system', 'node16', or 'nodenext'.
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
     {

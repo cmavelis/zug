@@ -5,7 +5,6 @@ import BoardPiece from '@/components/BoardPiece.vue';
 import type { GameState } from '@/game/Game';
 
 import OrderDisplay from '@/components/OrderOverlay.vue';
-import type { Order } from '@/game/orders';
 import { logProxy } from '@/utils';
 
 interface BoardProps {
@@ -44,7 +43,6 @@ logProxy(props);
             :pieces="props.state.G.pieces"
           />
           <!--          different from BoardComponent-->
-          <!-- @vue-expect-error [TS2322] Type 'GameEvent' is not assignable to type 'Order'. -->
           <OrderDisplay
             v-for="event in props.state.G.events"
             :key="event.toString()"

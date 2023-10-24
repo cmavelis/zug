@@ -3,7 +3,7 @@ import { computed, reactive, ref } from 'vue';
 import { useRoute } from 'vue-router';
 
 import type { ClientState } from 'boardgame.io/dist/types/src/client/client';
-import type { Game, Ctx } from 'boardgame.io/dist/types/src/types';
+import type { Ctx } from 'boardgame.io/dist/types/src/types';
 import { isEqual } from 'lodash';
 
 import BoardComponent from '@/components/BoardComponent.vue';
@@ -50,7 +50,7 @@ const gameStateLoaded = ref(false);
 const updateGameState = (state: ClientState<{ G: GameState; ctx: Ctx }>) => {
   if (state) {
     gameStateLoaded.value = true;
-    gameState.G = state.G;
+    gameState.G = state.G as unknown as GameState;
     gameState.ctx = state.ctx;
   } else {
     console.error('A null game state update was received');
@@ -81,7 +81,7 @@ const gameStateTwoLoaded = ref(false);
 
 const updateGameStateTwo = (state: ClientState<{ G: GameState; ctx: Ctx }>) => {
   if (state) {
-    gameStateTwo.G = state.G;
+    gameStateTwo.G = state.G as unknown as GameState;
     gameStateTwo.ctx = state.ctx;
     gameStateTwoLoaded.value = true;
   } else {

@@ -13,14 +13,13 @@ import {
 } from '@/game/common';
 import { createOrder } from '@/game/orders';
 import { getValidSquaresForOrder } from '@/game/zugzwang/validators';
-import type { Ctx } from 'boardgame.io/dist/types/src/types';
 
 const NUMBER_PIECES = 4;
 
 // TODO: display-only board, no client prop
 interface BoardProps {
   client: _ClientImpl<GameState>;
-  state: { G: GameState; ctx: Ctx };
+  state: { G: GameState };
   playerID: number;
   showOrders: boolean;
 }
@@ -94,7 +93,7 @@ const handleCellClick = (cellID: number) => {
     }
     const targetCoords = arrayToCoordinates(
       cellHover.value,
-      props.state.G.board
+      props.state.G.board,
     );
 
     const toTarget = getDisplacement(pieceCoords, targetCoords);
@@ -104,7 +103,7 @@ const handleCellClick = (cellID: number) => {
         sourcePieceId: selectedPiece.value,
         toTarget,
       },
-      selectedAction.value
+      selectedAction.value,
     );
     addOrder(order);
     clearAction();
