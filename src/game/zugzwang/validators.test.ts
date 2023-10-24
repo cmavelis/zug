@@ -144,8 +144,8 @@ test('getSquares for push-straight order, player 1', () => {
       },
       orderType: 'push-straight',
     })
-  ).not.toEqual(
-    expect.arrayContaining([
+  ).toEqual(
+    expect.not.arrayContaining([
       { x: 3, y: 3 },
       { x: 1, y: 1 },
     ])

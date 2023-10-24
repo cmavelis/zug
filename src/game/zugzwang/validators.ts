@@ -9,6 +9,7 @@ import type {
   PlaceOrder,
 } from '@/game/orders';
 import type { Coordinates } from '@/game/common';
+import { addDisplacement } from '@/game/common';
 
 export function isDiagonal(vector: Coordinates): boolean {
   const xChangesAllowed = [-1, 1];
@@ -58,8 +59,8 @@ const ORDER_CONFIG: {
   },
   'push-straight': {
     shape: 'straight',
-    xAllowed: [1, 0, -1],
-    yAllowed: [1, 0, -1],
+    xAllowed: [1, -1],
+    yAllowed: [1, -1],
   },
   'push-diagonal': {
     shape: 'diagonal',
@@ -145,7 +146,24 @@ export function getValidSquaresForOrder({
   board: Coordinates;
   orderType: ConfigOrderType;
 }) {
+  // TODO:  make vectors, invert, translate
+
   const config = ORDER_CONFIG[orderType];
+  let rawVectors: Coordinates[] = [];
+  if (config.shape === 'straight') {
+    config.xAllowed?.forEach((x) => rawVectors.push({ x, y: 0 }));
+    config.yAllowed?.forEach((y) =>
+      // invert as we create
+      rawVectors.push({ x: 0, y: playerID === 0 ? y : -y })
+    );
+
+    const translatedVectors = rawVectors.map((vector) => {
+      return addDisplacement(vector, origin);
+    });
+
+    return translatedVectors;
+  }
+
   // get valid X
   const xArray =
     config.xAllowed?.map((x) => x + origin.x) ||
