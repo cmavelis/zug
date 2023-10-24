@@ -36,6 +36,7 @@ const highlightedSquares: Ref<number[]> = computed(() => {
     return getValidSquaresForOrder({
       playerID: props.playerID,
       board: props.state.G.board,
+      orderType: 'place',
     }).map((coord) => coordinatesToArray(coord, props.state.G.board));
   }
   return [];
