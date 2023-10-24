@@ -48,7 +48,7 @@ const rows = computed(() => props.board.y);
     />
     <BoardPiece
       v-for="piece in props.pieces"
-      :key="piece.position"
+      :key="piece.position.toString()"
       :class="{ selected: props.selectedPieceId === piece.id }"
       v-bind="piece"
       @click="handlePieceClick(piece.id)"
@@ -56,7 +56,7 @@ const rows = computed(() => props.board.y);
     <svg v-if="props.showOrders" width="200" height="200">
       <OrderOverlay
         v-for="order in props.orders"
-        :key="order"
+        :key="order.toString()"
         :order="order"
         :pieces="props.pieces"
       />

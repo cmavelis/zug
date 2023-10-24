@@ -13,20 +13,21 @@ import {
 } from '@/game/common';
 import { createOrder } from '@/game/orders';
 import { getValidSquaresForOrder } from '@/game/zugzwang/validators';
+import type { Ctx } from 'boardgame.io/dist/types/src/types';
 
 const NUMBER_PIECES = 4;
 
 // TODO: display-only board, no client prop
 interface BoardProps {
   client: _ClientImpl<GameState>;
-  state: { G: GameState };
+  state: { G: GameState; ctx: Ctx };
   playerID: number;
   showOrders: boolean;
 }
 
-const selectedPiece: Ref<null | number> = ref(null);
-const selectedAction: Ref<null | OrderTypes> = ref(null);
-const cellHover: Ref<null | number> = ref(null);
+const selectedPiece: Ref<undefined | number> = ref(undefined);
+const selectedAction: Ref<undefined | OrderTypes> = ref(undefined);
+const cellHover: Ref<undefined | number> = ref(undefined);
 
 const props = defineProps<BoardProps>();
 const flatOrders = computed(() => props.state.G.orders[props.playerID]);
@@ -76,7 +77,7 @@ const handleCellClick = (cellID: number) => {
 
   if (
     typeof pieceID === 'number' &&
-    (selectedAction.value === null || selectedPiece.value === null)
+    (selectedAction.value === undefined || selectedPiece.value === undefined)
   ) {
     handlePieceClick(pieceID);
     return;
@@ -127,8 +128,8 @@ const selectAction = (action: OrderTypes) => {
 };
 
 const clearAction = () => {
-  selectedAction.value = null;
-  selectedPiece.value = null;
+  selectedAction.value = undefined;
+  selectedPiece.value = undefined;
 };
 
 const undoLastOrder = () => {

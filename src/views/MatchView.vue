@@ -3,7 +3,7 @@ import { computed, reactive, ref } from 'vue';
 import { useRoute } from 'vue-router';
 
 import type { ClientState } from 'boardgame.io/dist/types/src/client/client';
-import type { Ctx } from 'boardgame.io/dist/types/src/types';
+import type { Game, Ctx } from 'boardgame.io/dist/types/src/types';
 import { isEqual } from 'lodash';
 
 import BoardComponent from '@/components/BoardComponent.vue';
@@ -12,8 +12,8 @@ import { SimulChessClient } from '@/game/App';
 import type { GameState, GObject } from '@/game/Game';
 
 interface ReactiveGameState {
-  G: GameState | {};
-  ctx: Ctx | {};
+  G: GameState;
+  ctx: Ctx;
 }
 
 const route = useRoute();
@@ -42,7 +42,10 @@ if (typeof route.params.matchID === 'string') {
 const matchClientOne = new SimulChessClient('0', matchID);
 const matchClientTwo = new SimulChessClient('1', matchID);
 
-const gameState: ReactiveGameState = reactive({ G: {}, ctx: {} });
+const gameState: ReactiveGameState = reactive({
+  G: {} as GameState,
+  ctx: {} as Ctx,
+});
 const gameStateLoaded = ref(false);
 const updateGameState = (state: ClientState<{ G: GameState; ctx: Ctx }>) => {
   if (state) {
@@ -73,7 +76,7 @@ function decrementHistory() {
   historyOrderNumber.value--;
 }
 
-const gameStateTwo = reactive({ G: {}, ctx: {} });
+const gameStateTwo = reactive({ G: {} as GameState, ctx: {} as Ctx });
 const gameStateTwoLoaded = ref(false);
 
 const updateGameStateTwo = (state: ClientState<{ G: GameState; ctx: Ctx }>) => {

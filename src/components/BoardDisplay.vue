@@ -5,6 +5,7 @@ import BoardPiece from '@/components/BoardPiece.vue';
 import type { GameState } from '@/game/Game';
 
 import OrderDisplay from '@/components/OrderOverlay.vue';
+import type { Order } from '@/game/orders';
 import { logProxy } from '@/utils';
 
 interface BoardProps {
@@ -26,26 +27,27 @@ logProxy(props);
         />
         <BoardPiece
           v-for="piece in props.state.G.pieces"
-          :key="piece.position"
+          :key="piece.position.toString()"
           v-bind="piece"
         />
         <svg width="200" height="200">
           <OrderDisplay
             v-for="order in props.state.G.orders[0]"
-            :key="order"
+            :key="order.toString()"
             :order="order"
             :pieces="props.state.G.pieces"
           />
           <OrderDisplay
             v-for="order in props.state.G.orders[1]"
-            :key="order"
+            :key="order.toString()"
             :order="order"
             :pieces="props.state.G.pieces"
           />
           <!--          different from BoardComponent-->
+          <!-- @vue-expect-error [TS2322] Type 'GameEvent' is not assignable to type 'Order'. -->
           <OrderDisplay
             v-for="event in props.state.G.events"
-            :key="event"
+            :key="event.toString()"
             :order="event"
             :pieces="props.state.G.pieces"
           />
@@ -62,7 +64,8 @@ logProxy(props);
         >
           <p>
             piece {{ order.sourcePieceId }}: {{ order.type }} with vector
-            {{ order.toTarget }}
+            <!-- @vue-expect-error[TS2339] Type 'GameEvent' is not assignable to type 'Order'. -->
+            {{ order.toTarget || 'n/a' }}
           </p>
         </template>
       </template>
