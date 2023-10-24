@@ -68,6 +68,10 @@ const placeActionSquares = getValidSquaresForOrder({
       </p>
     </section>
     <h2>Orders</h2>
+    <p class="text">
+      These are the currently configured orders in the game, showing all
+      possible directions you can assign them.
+    </p>
     <section class="grid">
       <template v-for="order in orderNames" :key="order">
         <p>{{ order }}</p>
@@ -122,5 +126,6 @@ strong {
 .text {
   max-width: 800px;
   margin: 0 auto;
+  padding-bottom: 1rem;
 }
 </style>
