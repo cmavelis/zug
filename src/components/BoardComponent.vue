@@ -178,11 +178,13 @@ const undoLastOrder = () => {
       <button @click="undoLastOrder()">undo last order</button>
       <button @click="handleEndTurn">end turn</button>
       <template
-        v-for="order in props.state.G.orders[client.playerID]"
+        v-for="order in props.state.G.orders[props.playerID]"
         :key="order.sourcePieceId"
       >
         <p>
           piece {{ order.sourcePieceId }}: {{ order.type }} with vector
+          <!--    @vue-expect-error[TS2339]  Property 'toTarget' does not exist on type 'Order'.   -->
+
           {{ order.toTarget }}
         </p>
       </template>
