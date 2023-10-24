@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue';
+import { computed, ref, onMounted, onUnmounted } from 'vue';
 import type { Ref } from 'vue';
 import type { _ClientImpl } from 'boardgame.io/dist/types/src/client/client';
 import BoardDisplay from '@/components/BoardDisplayV2.vue';
@@ -134,6 +134,20 @@ const clearAction = () => {
 const undoLastOrder = () => {
   props.client.moves.removeLastOrder();
 };
+
+const keyListener = (e: KeyboardEvent) => {
+  if (e.key === '3') {
+    handleEndTurn();
+  }
+};
+
+onMounted(() => {
+  window.addEventListener('keydown', keyListener);
+});
+
+onUnmounted(() => {
+  window.removeEventListener('keydown', keyListener);
+});
 </script>
 
 <template>

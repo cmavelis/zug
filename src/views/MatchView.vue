@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, reactive, ref } from 'vue';
+import { computed, reactive, ref, onMounted, onUnmounted } from 'vue';
 import { useRoute } from 'vue-router';
 
 import type { ClientState } from 'boardgame.io/dist/types/src/client/client';
@@ -10,6 +10,14 @@ import BoardComponent from '@/components/BoardComponent.vue';
 import BoardDisplay from '@/components/BoardDisplay.vue';
 import { SimulChessClient } from '@/game/App';
 import type { GameState, GObject } from '@/game/Game';
+
+onMounted(() => {
+  window.addEventListener('keydown', keyListener);
+});
+
+onUnmounted(() => {
+  window.removeEventListener('keydown', keyListener);
+});
 
 interface ReactiveGameState {
   G: GameState;
@@ -31,6 +39,20 @@ const playerID = ref(playerIDDefault);
 const isPlayerSelected = computed(() => {
   return playerID.value === 0 || playerID.value === 1;
 });
+const keyListener = (event: KeyboardEvent) => {
+  switch (event.key) {
+    case '1': {
+      if (isDebug) playerID.value = 0;
+      break;
+    }
+    case '2': {
+      if (isDebug) playerID.value = 1;
+      break;
+    }
+    default:
+      break;
+  }
+};
 
 let matchID: string;
 
