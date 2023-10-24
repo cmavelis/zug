@@ -4,6 +4,7 @@ import {
   ConfigOrderType,
   getValidSquaresForOrder,
 } from '@/game/zugzwang/validators';
+import { ORDER_PRIORITIES } from '@/game/orders';
 
 const orderNames: ConfigOrderType[] = [
   'move-straight',
@@ -65,7 +66,20 @@ orderNames.forEach((name) => {
           :board="board"
           :orders="ordersDict[order]"
         />
-        <p>desc here</p>
+        <div>
+          <p>priority: {{ ORDER_PRIORITIES[order] }}</p>
+          <p v-if="order === 'move-straight'">
+            "move" actions are designed to always advance toward the opponent's
+            side. If the target square of a "move" action is occupied when it's
+            supposed to occur, nothing happens.
+          </p>
+          <p v-if="order === 'push-straight'">
+            "push" actions leave the acting piece in place. This action pushes a
+            piece on the target square away, along with any others in the path.
+            Think of a sliding puzzle. Any pieces pushed off the board are
+            destroyed.
+          </p>
+        </div>
       </template>
     </section>
   </main>
@@ -75,6 +89,7 @@ orderNames.forEach((name) => {
 .grid {
   display: grid;
   grid-template-columns: 1fr 1fr 1fr;
+  row-gap: 1rem;
 }
 .text {
   max-width: 800px;
