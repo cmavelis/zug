@@ -54,13 +54,15 @@ const placeActionSquares = getValidSquaresForOrder({
         side 4 times. During each turn, both players are creating a list of
         "orders" that their pieces will execute in the order they were assigned.
         Each piece must take one action per turn, and each action must only be
-        assigned once.
+        assigned once. When both players assign all their orders and end their
+        "planning" phase, the game will resolve the orders from both players and
+        generate a new board state. This signals the start of a new turn.
         <br /><br />
-        The list of orders for both players are lined up and resolved at the
-        same time. During each step, actions will occur in "priority" order
+        During "resolution", the list of orders from both players are applied
+        step-by-step. During each step, actions will occur in "priority" order
         (1=highest priority). I've added a "last turn" viewer that you can use
-        to step through how it was resolved, which should help clarify this
-        process.
+        to step through how the previous turn was resolved, which should help
+        clarify this process.
         <br /><br />
         If a piece is on the opponent's home row at the end of the turn, then it
         will be scored and removed from play. It may be placed back on the board
