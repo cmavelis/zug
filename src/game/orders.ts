@@ -362,15 +362,6 @@ export function orderResolver({ G }: { G: GObject }) {
     }
   }
 
-  function applyDefend(order: DefendOrder) {
-    const actingPiece = pieces.find((p) => p.id === order.sourcePieceId);
-    if (!actingPiece) {
-      console.log('piece ', order.sourcePieceId, ' no longer exists');
-      return;
-    }
-    actingPiece.isDefending = true;
-  }
-
   function applyPlace(order: PlaceOrder) {
     createPiece({
       G,

@@ -20,7 +20,7 @@ logProxy(props);
     <div class="board-wrapper">
       <div class="board-container">
         <div
-          v-for="(cell, index) in props.state.G.cells"
+          v-for="({}, index) in props.state.G.cells"
           :key="index"
           class="board-square"
         />
