@@ -15,7 +15,7 @@ export interface GameState {
   events?: GameEvent[];
 }
 
-interface GameEvent {
+export interface GameEvent {
   type: 'score';
   sourcePieceId: number;
 }
@@ -49,14 +49,14 @@ export const SimulChess: Game<GObject> = {
         createPiece({
           G: initialGame,
           pieceToCreate: { owner: 0, position: { x, y: 0 } },
-        })
+        }),
       );
 
       [0, 1, 2].forEach((x) =>
         createPiece({
           G: initialGame,
           pieceToCreate: { owner: 1, position: { x, y: 2 } },
-        })
+        }),
       );
       createPiece({
         G: initialGame,
@@ -67,14 +67,14 @@ export const SimulChess: Game<GObject> = {
         createPiece({
           G: initialGame,
           pieceToCreate: { owner: 0, position: { x, y: 0 } },
-        })
+        }),
       );
 
       [0, 1, 2, 3].forEach((x) =>
         createPiece({
           G: initialGame,
           pieceToCreate: { owner: 1, position: { x, y: 3 } },
-        })
+        }),
       );
     }
 
@@ -93,13 +93,13 @@ export const SimulChess: Game<GObject> = {
           addOrder: {
             move: (
               { G, playerID }: { G: GameState; playerID: string },
-              order: Order
+              order: Order,
             ) => {
               const playerNumber = +playerID;
               if (order.sourcePieceId >= 0) {
                 // negative values don't reference a real source piece
                 const movedPiece = G.pieces.find(
-                  (p) => p.id === order.sourcePieceId
+                  (p) => p.id === order.sourcePieceId,
                 );
 
                 // only order your pieces
@@ -111,7 +111,7 @@ export const SimulChess: Game<GObject> = {
                 if (
                   G.orders[playerNumber].find(
                     (currentOrders) =>
-                      currentOrders.sourcePieceId === order.sourcePieceId
+                      currentOrders.sourcePieceId === order.sourcePieceId,
                   )
                 ) {
                   return INVALID_MOVE;
@@ -143,7 +143,7 @@ export const SimulChess: Game<GObject> = {
     endIf: ({ ctx }) => {
       if (ctx.activePlayers)
         return Object.values(ctx.activePlayers).every(
-          (p) => p === 'resolution'
+          (p) => p === 'resolution',
         );
     },
     onEnd: ({ G }) => {
@@ -154,7 +154,7 @@ export const SimulChess: Game<GObject> = {
   moves: {
     clickCell: (
       { G, playerID }: { G: GameState; playerID: string },
-      id: number
+      id: number,
     ) => {
       if (G.cells[id] !== null) {
         return INVALID_MOVE;

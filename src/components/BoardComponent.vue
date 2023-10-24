@@ -24,9 +24,9 @@ interface BoardProps {
   showOrders: boolean;
 }
 
-const selectedPiece: Ref<null | number> = ref(null);
-const selectedAction: Ref<null | OrderTypes> = ref(null);
-const cellHover: Ref<null | number> = ref(null);
+const selectedPiece: Ref<undefined | number> = ref(undefined);
+const selectedAction: Ref<undefined | OrderTypes> = ref(undefined);
+const cellHover: Ref<undefined | number> = ref(undefined);
 
 const props = defineProps<BoardProps>();
 const flatOrders = computed(() => props.state.G.orders[props.playerID]);
@@ -36,6 +36,7 @@ const highlightedSquares: Ref<number[]> = computed(() => {
     return getValidSquaresForOrder({
       playerID: props.playerID,
       board: props.state.G.board,
+      orderType: 'place',
     }).map((coord) => coordinatesToArray(coord, props.state.G.board));
   }
   return [];
@@ -75,7 +76,7 @@ const handleCellClick = (cellID: number) => {
 
   if (
     typeof pieceID === 'number' &&
-    (selectedAction.value === null || selectedPiece.value === null)
+    (selectedAction.value === undefined || selectedPiece.value === undefined)
   ) {
     handlePieceClick(pieceID);
     return;
@@ -92,7 +93,7 @@ const handleCellClick = (cellID: number) => {
     }
     const targetCoords = arrayToCoordinates(
       cellHover.value,
-      props.state.G.board
+      props.state.G.board,
     );
 
     const toTarget = getDisplacement(pieceCoords, targetCoords);
@@ -102,7 +103,7 @@ const handleCellClick = (cellID: number) => {
         sourcePieceId: selectedPiece.value,
         toTarget,
       },
-      selectedAction.value
+      selectedAction.value,
     );
     addOrder(order);
     clearAction();
@@ -126,8 +127,8 @@ const selectAction = (action: OrderTypes) => {
 };
 
 const clearAction = () => {
-  selectedAction.value = null;
-  selectedPiece.value = null;
+  selectedAction.value = undefined;
+  selectedPiece.value = undefined;
 };
 
 const undoLastOrder = () => {
@@ -177,11 +178,13 @@ const undoLastOrder = () => {
       <button @click="undoLastOrder()">undo last order</button>
       <button @click="handleEndTurn">end turn</button>
       <template
-        v-for="order in props.state.G.orders[client.playerID]"
+        v-for="order in props.state.G.orders[props.playerID]"
         :key="order.sourcePieceId"
       >
         <p>
           piece {{ order.sourcePieceId }}: {{ order.type }} with vector
+          <!--    @vue-expect-error[TS2339]  Property 'toTarget' does not exist on type 'Order'.   -->
+
           {{ order.toTarget }}
         </p>
       </template>

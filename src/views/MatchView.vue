@@ -12,8 +12,8 @@ import { SimulChessClient } from '@/game/App';
 import type { GameState, GObject } from '@/game/Game';
 
 interface ReactiveGameState {
-  G: GameState | {};
-  ctx: Ctx | {};
+  G: GameState;
+  ctx: Ctx;
 }
 
 const route = useRoute();
@@ -42,12 +42,15 @@ if (typeof route.params.matchID === 'string') {
 const matchClientOne = new SimulChessClient('0', matchID);
 const matchClientTwo = new SimulChessClient('1', matchID);
 
-const gameState: ReactiveGameState = reactive({ G: {}, ctx: {} });
+const gameState: ReactiveGameState = reactive({
+  G: {} as GameState,
+  ctx: {} as Ctx,
+});
 const gameStateLoaded = ref(false);
 const updateGameState = (state: ClientState<{ G: GameState; ctx: Ctx }>) => {
   if (state) {
     gameStateLoaded.value = true;
-    gameState.G = state.G;
+    gameState.G = state.G as unknown as GameState;
     gameState.ctx = state.ctx;
   } else {
     console.error('A null game state update was received');
@@ -73,12 +76,12 @@ function decrementHistory() {
   historyOrderNumber.value--;
 }
 
-const gameStateTwo = reactive({ G: {}, ctx: {} });
+const gameStateTwo = reactive({ G: {} as GameState, ctx: {} as Ctx });
 const gameStateTwoLoaded = ref(false);
 
 const updateGameStateTwo = (state: ClientState<{ G: GameState; ctx: Ctx }>) => {
   if (state) {
-    gameStateTwo.G = state.G;
+    gameStateTwo.G = state.G as unknown as GameState;
     gameStateTwo.ctx = state.ctx;
     gameStateTwoLoaded.value = true;
   } else {

@@ -1,13 +1,14 @@
 <script setup lang="ts">
 import BoardDisplay from '@/components/BoardDisplayV2.vue';
-import {
-  ConfigOrderType,
-  getValidSquaresForOrder,
-} from '@/game/zugzwang/validators';
+import type { ConfigOrderType } from '@/game/zugzwang/validators';
+import { getValidSquaresForOrder } from '@/game/zugzwang/validators';
 import { ORDER_PRIORITIES } from '@/game/orders';
 import { coordinatesToArray } from '@/game/common';
+import type { Order } from '@/game/orders';
 
-const orderNames: ConfigOrderType[] = [
+type OrdersHere = Exclude<ConfigOrderType, 'attack' | 'place'>;
+
+const orderNames: OrdersHere[] = [
   'move-straight',
   'move-diagonal',
   'push-straight',
@@ -21,7 +22,8 @@ const pieces = [{ id: 0, owner: 0, position, isDefending: false }];
 const board = { x: 3, y: 3 };
 const fullBoard = { x: 4, y: 4 };
 
-let ordersDict = {};
+type OrdersDict = { [OrderName in OrdersHere]: Order[] };
+let ordersDict: OrdersDict = {} as OrdersDict;
 
 orderNames.forEach((name) => {
   ordersDict[name] = getValidSquaresForOrder({
