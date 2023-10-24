@@ -17,7 +17,7 @@
         I first decided to make this game as a stepping-stone to a bigger and
         more complicated game that's been brewing in my head for over 10 years.
         Now, I feel like it's interesting enough that I'm committed to making it
-        good in its own right before moving on. I hope you like it!
+        good in its own right. I hope you like it!
       </p>
     </section>
   </main>
