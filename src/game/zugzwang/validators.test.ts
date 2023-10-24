@@ -85,9 +85,7 @@ test('getSquares for move-diagonal order, player 1', () => {
     })
   ).toEqual(
     expect.arrayContaining([
-      { x: 1, y: 1 },
       { x: 1, y: 3 },
-      { x: 3, y: 1 },
       { x: 3, y: 3 },
     ])
   );
@@ -107,9 +105,7 @@ test('getSquares for move-diagonal order, player 2', () => {
   ).toEqual(
     expect.arrayContaining([
       { x: 1, y: 1 },
-      { x: 1, y: 3 },
       { x: 3, y: 1 },
-      { x: 3, y: 3 },
     ])
   );
 });

@@ -55,7 +55,7 @@ const ORDER_CONFIG: {
   'move-diagonal': {
     shape: 'diagonal',
     xAllowed: [1, -1],
-    yAllowed: [1, -1],
+    yAllowed: [1],
   },
   'push-straight': {
     shape: 'straight',
