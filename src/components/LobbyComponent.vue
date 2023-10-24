@@ -2,7 +2,7 @@
 import { ref, Ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { LobbyClient } from 'boardgame.io/client';
-import { LobbyAPI } from 'boardgame.io/src/types';
+import { LobbyAPI } from 'boardgame.io/dist/types/src/types';
 
 const matches: Ref<LobbyAPI.Match[]> = ref([]);
 const { protocol, hostname, port } = window.location;
