@@ -19,6 +19,7 @@ export class SimulChessClient {
             }),
       playerID,
       matchID,
+      debug: false,
     });
     this.client.start();
   }

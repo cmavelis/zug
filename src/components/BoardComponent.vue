@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue';
+import { computed, ref, onMounted, onUnmounted } from 'vue';
 import type { Ref } from 'vue';
 import type { _ClientImpl } from 'boardgame.io/dist/types/src/client/client';
 import BoardDisplay from '@/components/BoardDisplayV2.vue';
@@ -12,7 +12,10 @@ import {
   getPiece,
 } from '@/game/common';
 import { createOrder } from '@/game/orders';
-import { getValidSquaresForOrder } from '@/game/zugzwang/validators';
+import {
+  getValidSquaresForOrder,
+  isValidPlaceOrder,
+} from '@/game/zugzwang/validators';
 
 const NUMBER_PIECES = 4;
 
@@ -27,9 +30,16 @@ interface BoardProps {
 const selectedPiece: Ref<undefined | number> = ref(undefined);
 const selectedAction: Ref<undefined | OrderTypes> = ref(undefined);
 const cellHover: Ref<undefined | number> = ref(undefined);
+const endTurnMessage = ref('');
 
 const props = defineProps<BoardProps>();
-const flatOrders = computed(() => props.state.G.orders[props.playerID]);
+const flatOrders = computed(() => props.state.G.orders[props.playerID] || []);
+const actionsUsed = computed(() => flatOrders.value.map((order) => order.type));
+const piecesToPlace = computed(
+  () =>
+    getNumberPiecesMissing(props.state.G, props.playerID) -
+    flatOrders.value.filter((order) => order.type === 'place').length,
+);
 
 const highlightedSquares: Ref<number[]> = computed(() => {
   if (selectedAction.value === 'place') {
@@ -73,6 +83,7 @@ const getNumberPiecesMissing = (G: GameState, playerID: number) => {
 // select piece, then action, then cell
 const handleCellClick = (cellID: number) => {
   const pieceID = props.state.G.cells[cellID];
+  endTurnMessage.value = '';
 
   if (
     typeof pieceID === 'number' &&
@@ -105,6 +116,14 @@ const handleCellClick = (cellID: number) => {
       },
       selectedAction.value,
     );
+    // check order for validity
+    if (order.type === 'place') {
+      if (!isValidPlaceOrder(order)) {
+        return;
+      }
+    }
+
+    // if invalid, early return && msg
     addOrder(order);
     clearAction();
   }
@@ -116,6 +135,11 @@ const handleCellHover = (cellId: number) => {
 
 const handleEndTurn = () => {
   const { endStage } = props.client.events;
+  if (flatOrders.value.length < 4) {
+    endTurnMessage.value =
+      'Cannot end turn yet. You must use all available actions. (zug)';
+    return;
+  }
   if (endStage) endStage();
 };
 
@@ -134,6 +158,20 @@ const clearAction = () => {
 const undoLastOrder = () => {
   props.client.moves.removeLastOrder();
 };
+
+const keyListener = (e: KeyboardEvent) => {
+  if (e.key === '3') {
+    handleEndTurn();
+  }
+};
+
+onMounted(() => {
+  window.addEventListener('keydown', keyListener);
+});
+
+onUnmounted(() => {
+  window.removeEventListener('keydown', keyListener);
+});
 </script>
 
 <template>
@@ -152,14 +190,38 @@ const undoLastOrder = () => {
         :show-orders="props.showOrders"
       />
       <div class="order-button-group">
-        <button @click="selectAction('move-straight')">move (straight)</button>
-        <button @click="selectAction('push-straight')">push (straight)</button>
-        <button @click="selectAction('move-diagonal')">move (diagonal)</button>
-        <button @click="selectAction('push-diagonal')">push (diagonal)</button>
+        <button
+          :disabled="actionsUsed.includes('move-straight')"
+          @click="selectAction('move-straight')"
+        >
+          move (straight)
+        </button>
+        <button
+          :disabled="actionsUsed.includes('push-straight')"
+          @click="selectAction('push-straight')"
+        >
+          push (straight)
+        </button>
+        <button
+          :disabled="actionsUsed.includes('move-diagonal')"
+          @click="selectAction('move-diagonal')"
+        >
+          move (diagonal)
+        </button>
+        <button
+          :disabled="actionsUsed.includes('push-diagonal')"
+          @click="selectAction('push-diagonal')"
+        >
+          push (diagonal)
+        </button>
         <div>
-          <button @click="selectAction('place')">place new piece</button> ({{
-            getNumberPiecesMissing(props.state.G, playerID)
-          }})
+          <button
+            :disabled="piecesToPlace === 0"
+            @click="selectAction('place')"
+          >
+            place new piece
+          </button>
+          ({{ piecesToPlace }})
         </div>
         <button @click="clearAction()">clear</button>
       </div>
@@ -177,14 +239,13 @@ const undoLastOrder = () => {
       <p>ORDERS</p>
       <button @click="undoLastOrder()">undo last order</button>
       <button @click="handleEndTurn">end turn</button>
+      <p v-if="endTurnMessage" class="info-message">{{ endTurnMessage }}</p>
       <template
         v-for="order in props.state.G.orders[props.playerID]"
         :key="order.sourcePieceId"
       >
         <p>
           piece {{ order.sourcePieceId }}: {{ order.type }} with vector
-          <!--    @vue-expect-error[TS2339]  Property 'toTarget' does not exist on type 'Order'.   -->
-
           {{ order.toTarget }}
         </p>
       </template>
@@ -211,6 +272,11 @@ button {
   flex-direction: row;
   justify-content: center;
   gap: 8px;
+}
+
+.info-message {
+  color: coral;
+  font-weight: bold;
 }
 
 .order-button-group {

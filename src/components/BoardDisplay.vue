@@ -62,7 +62,6 @@ logProxy(props);
         >
           <p>
             piece {{ order.sourcePieceId }}: {{ order.type }} with vector
-            <!-- @vue-expect-error[TS2339] Type 'GameEvent' is not assignable to type 'Order'. -->
             {{ order.toTarget || 'n/a' }}
           </p>
         </template>

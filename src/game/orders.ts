@@ -28,7 +28,7 @@ export interface OrderBase {
 }
 
 export const ORDER_PRIORITIES = {
-  defend: 1,
+  // defend: 1,
   'move-straight': 1,
   'push-straight': 2,
   attack: 3,
@@ -72,7 +72,6 @@ type MoveOrder = MoveStraightOrder | MoveDiagonalOrder;
 export type Order =
   | MoveOrder
   | AttackOrder
-  | DefendOrder
   | PushDiagonalOrder
   | PushStraightOrder
   | PlaceOrder;
@@ -124,7 +123,7 @@ export function orderResolver({ G }: { G: GObject }) {
   for (let i = 0; i < 4; i++) {
     // rank orders by priority
     const ordersToResolve = [orders[0][i], orders[1][i]].sort(
-      (a, b) => a.priority - b.priority
+      (a, b) => a.priority - b.priority,
     );
     logProxy(ordersToResolve);
 
@@ -141,7 +140,7 @@ export function orderResolver({ G }: { G: GObject }) {
           orders: ordersUsed,
           pieces,
           score,
-        })
+        }),
       );
     }
 
@@ -233,11 +232,6 @@ export function orderResolver({ G }: { G: GObject }) {
           movePieces(G, movesToApply);
           break;
         }
-        case 'defend':
-          applyDefend(ordersToResolve[0]);
-          // @ts-ignore -- Haven't explicitly checked the type of [1], but order priorities are unique
-          applyDefend(ordersToResolve[1]);
-          break;
         case 'place':
           applyPlace(ordersToResolve[0]);
           // @ts-ignore -- Haven't explicitly checked the type of [1], but order priorities are unique
@@ -262,9 +256,6 @@ export function orderResolver({ G }: { G: GObject }) {
           case 'push-straight':
           case 'push-diagonal':
             movePieces(G, applyPush(order));
-            break;
-          case 'defend':
-            applyDefend(order);
             break;
           case 'place':
             applyPlace(order);
@@ -361,7 +352,7 @@ export function orderResolver({ G }: { G: GObject }) {
 
       const targetSquare = addDisplacement(
         actingPiece.position,
-        order.toTarget
+        order.toTarget,
       );
       const targetPiece = pieces.find((p) => isEqual(p.position, targetSquare));
 
@@ -369,15 +360,6 @@ export function orderResolver({ G }: { G: GObject }) {
         return targetPiece.id;
       }
     }
-  }
-
-  function applyDefend(order: DefendOrder) {
-    const actingPiece = pieces.find((p) => p.id === order.sourcePieceId);
-    if (!actingPiece) {
-      console.log('piece ', order.sourcePieceId, ' no longer exists');
-      return;
-    }
-    actingPiece.isDefending = true;
   }
 
   function applyPlace(order: PlaceOrder) {
@@ -392,7 +374,7 @@ export function orderResolver({ G }: { G: GObject }) {
     const checkPush = (
       currentArray: Move[] = [],
       pushingPiece: Piece,
-      vector: Coordinates
+      vector: Coordinates,
     ) => {
       const newPosition = addDisplacement(pushingPiece.position, vector);
       currentArray.push({ id: pushingPiece.id, newPosition });
@@ -475,7 +457,7 @@ export function orderResolver({ G }: { G: GObject }) {
         type: 'score',
         sourcePieceId: id,
       })),
-    })
+    }),
   );
   removePieces(G, toRemove);
 
@@ -484,7 +466,7 @@ export function orderResolver({ G }: { G: GObject }) {
 
 export function createOrder(
   order: Omit<OrderBase, 'priority'>,
-  type: OrderTypes
+  type: OrderTypes,
 ): Order {
   return {
     ...order,
@@ -506,7 +488,7 @@ function findDisallowedPieces(G: GameState): number[] {
 
   // overlapping pieces -- should I not allow this to happen in the first place?
   const overlapPositions = countBy(G.pieces, (p) =>
-    coordinatesToArray(p.position, G.board)
+    coordinatesToArray(p.position, G.board),
   );
   forOwn(overlapPositions, (v, k) => {
     // if 2 pieces found at position
@@ -514,7 +496,7 @@ function findDisallowedPieces(G: GameState): number[] {
       // key is the position as an array index, so convert to coord
       const overlapCoordinate = arrayToCoordinates(Number(k), G.board);
       const filterPieces = G.pieces.filter((p) =>
-        isEqual(p.position, overlapCoordinate)
+        isEqual(p.position, overlapCoordinate),
       );
       filterPieces.forEach((p) => pieceIDs.push(p.id));
     }
