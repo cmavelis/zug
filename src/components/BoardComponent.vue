@@ -30,6 +30,12 @@ const cellHover: Ref<undefined | number> = ref(undefined);
 
 const props = defineProps<BoardProps>();
 const flatOrders = computed(() => props.state.G.orders[props.playerID] || []);
+const actionsUsed = computed(() => flatOrders.value.map((order) => order.type));
+const piecesToPlace = computed(
+  () =>
+    getNumberPiecesMissing(props.state.G, props.playerID) -
+    flatOrders.value.filter((order) => order.type === 'place').length,
+);
 
 const highlightedSquares: Ref<number[]> = computed(() => {
   if (selectedAction.value === 'place') {
@@ -105,6 +111,9 @@ const handleCellClick = (cellID: number) => {
       },
       selectedAction.value,
     );
+    // check order for validity
+
+    // if invalid, early return && msg
     addOrder(order);
     clearAction();
   }
@@ -166,14 +175,38 @@ onUnmounted(() => {
         :show-orders="props.showOrders"
       />
       <div class="order-button-group">
-        <button @click="selectAction('move-straight')">move (straight)</button>
-        <button @click="selectAction('push-straight')">push (straight)</button>
-        <button @click="selectAction('move-diagonal')">move (diagonal)</button>
-        <button @click="selectAction('push-diagonal')">push (diagonal)</button>
+        <button
+          :disabled="actionsUsed.includes('move-straight')"
+          @click="selectAction('move-straight')"
+        >
+          move (straight)
+        </button>
+        <button
+          :disabled="actionsUsed.includes('push-straight')"
+          @click="selectAction('push-straight')"
+        >
+          push (straight)
+        </button>
+        <button
+          :disabled="actionsUsed.includes('move-diagonal')"
+          @click="selectAction('move-diagonal')"
+        >
+          move (diagonal)
+        </button>
+        <button
+          :disabled="actionsUsed.includes('push-diagonal')"
+          @click="selectAction('push-diagonal')"
+        >
+          push (diagonal)
+        </button>
         <div>
-          <button @click="selectAction('place')">place new piece</button> ({{
-            getNumberPiecesMissing(props.state.G, playerID)
-          }})
+          <button
+            :disabled="piecesToPlace === 0"
+            @click="selectAction('place')"
+          >
+            place new piece
+          </button>
+          ({{ piecesToPlace }})
         </div>
         <button @click="clearAction()">clear</button>
       </div>
