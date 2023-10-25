@@ -111,6 +111,15 @@ const updateGameStateTwo = (state: ClientState<{ G: GameState; ctx: Ctx }>) => {
   }
 };
 matchClientTwo.client.subscribe(updateGameStateTwo);
+
+const gamePhase = computed(() => {
+  if (gameState.ctx.activePlayers) {
+    console.log(gameState.ctx.activePlayers);
+    return gameState.ctx.activePlayers[playerID.value] || '?';
+  } else {
+    return 'end';
+  }
+});
 </script>
 
 <template>
@@ -134,11 +143,10 @@ matchClientTwo.client.subscribe(updateGameStateTwo);
     />
     <p>
       phase:
-      {{
-        gameState.ctx.activePlayers
-          ? gameState.ctx.activePlayers[playerID]
-          : 'end!'
-      }}
+      {{ gamePhase }}
+    </p>
+    <p v-if="gamePhase === 'resolution'" class="info-message">
+      Waiting for opponent to finish turn...
     </p>
     <BoardComponent
       v-if="playerID !== 1 && gameStateLoaded"
@@ -178,6 +186,10 @@ matchClientTwo.client.subscribe(updateGameStateTwo);
 <style>
 main {
   padding: 1rem 0;
+}
+
+.info-message {
+  color: coral;
 }
 
 #history-order-number-display {
