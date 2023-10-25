@@ -1,17 +1,20 @@
 <script setup lang="ts">
-import { reactive } from 'vue';
+import { computed } from 'vue';
 import type { Piece } from '@/game/pieces';
 
 const props = defineProps<Piece>();
 
 const squareSize = 50;
 
-const translateX = `${props.position.x * squareSize}px`;
-const translateY = `${props.position.y * squareSize}px`;
-const styleObject = reactive({
-  transform: `translate(${translateX}, ${translateY})`,
-  width: squareSize + 'px',
-  height: squareSize + 'px',
+const styleObject = computed(() => {
+  const translateX = `${props.position.x * squareSize}px`;
+  const translateY = `${props.position.y * squareSize}px`;
+
+  return {
+    transform: `translate(${translateX}, ${translateY})`,
+    width: squareSize + 'px',
+    height: squareSize + 'px',
+  };
 });
 
 const pieceColor = props.owner === 0 ? '#729bf1' : '#62d368';

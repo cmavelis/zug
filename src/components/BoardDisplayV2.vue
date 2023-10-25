@@ -48,7 +48,7 @@ const rows = computed(() => props.board.y);
     />
     <BoardPiece
       v-for="piece in props.pieces"
-      :key="piece.position.toString()"
+      :key="piece.id"
       :class="{ selected: props.selectedPieceId === piece.id }"
       v-bind="piece"
       @click="handlePieceClick(piece.id)"
@@ -87,7 +87,9 @@ button {
 }
 
 .hoveredCell {
-  box-shadow: inset 0 0 5px cyan, inset 0 0 10px cyan;
+  box-shadow:
+    inset 0 0 5px cyan,
+    inset 0 0 10px cyan;
 }
 
 .highlightedCell {
@@ -103,7 +105,9 @@ section {
 }
 
 .selected {
-  box-shadow: 0 0 10px coral, 0 0 5px coral;
+  box-shadow:
+    0 0 10px coral,
+    0 0 5px coral;
 }
 
 svg {
