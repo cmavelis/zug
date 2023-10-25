@@ -138,7 +138,9 @@ export const SimulChess: Game<GObject> = {
         },
         next: 'resolution',
       },
-      resolution: {},
+      resolution: {
+        next: 'resolution',
+      },
     },
     endIf: ({ ctx }) => {
       if (ctx.activePlayers)
