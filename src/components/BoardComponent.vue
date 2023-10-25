@@ -12,7 +12,10 @@ import {
   getPiece,
 } from '@/game/common';
 import { createOrder } from '@/game/orders';
-import { getValidSquaresForOrder } from '@/game/zugzwang/validators';
+import {
+  getValidSquaresForOrder,
+  isValidPlaceOrder,
+} from '@/game/zugzwang/validators';
 
 const NUMBER_PIECES = 4;
 
@@ -27,6 +30,7 @@ interface BoardProps {
 const selectedPiece: Ref<undefined | number> = ref(undefined);
 const selectedAction: Ref<undefined | OrderTypes> = ref(undefined);
 const cellHover: Ref<undefined | number> = ref(undefined);
+const endTurnMessage = ref('');
 
 const props = defineProps<BoardProps>();
 const flatOrders = computed(() => props.state.G.orders[props.playerID] || []);
@@ -79,6 +83,7 @@ const getNumberPiecesMissing = (G: GameState, playerID: number) => {
 // select piece, then action, then cell
 const handleCellClick = (cellID: number) => {
   const pieceID = props.state.G.cells[cellID];
+  endTurnMessage.value = '';
 
   if (
     typeof pieceID === 'number' &&
@@ -112,6 +117,11 @@ const handleCellClick = (cellID: number) => {
       selectedAction.value,
     );
     // check order for validity
+    if (order.type === 'place') {
+      if (!isValidPlaceOrder(order)) {
+        return;
+      }
+    }
 
     // if invalid, early return && msg
     addOrder(order);
@@ -125,6 +135,11 @@ const handleCellHover = (cellId: number) => {
 
 const handleEndTurn = () => {
   const { endStage } = props.client.events;
+  if (flatOrders.value.length < 4) {
+    endTurnMessage.value =
+      'Cannot end turn yet. You must use all available actions. (zug)';
+    return;
+  }
   if (endStage) endStage();
 };
 
@@ -224,6 +239,7 @@ onUnmounted(() => {
       <p>ORDERS</p>
       <button @click="undoLastOrder()">undo last order</button>
       <button @click="handleEndTurn">end turn</button>
+      <p v-if="endTurnMessage" class="info-message">{{ endTurnMessage }}</p>
       <template
         v-for="order in props.state.G.orders[props.playerID]"
         :key="order.sourcePieceId"
@@ -256,6 +272,11 @@ button {
   flex-direction: row;
   justify-content: center;
   gap: 8px;
+}
+
+.info-message {
+  color: coral;
+  font-weight: bold;
 }
 
 .order-button-group {
