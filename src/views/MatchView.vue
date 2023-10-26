@@ -114,7 +114,6 @@ matchClientTwo.client.subscribe(updateGameStateTwo);
 
 const gamePhase = computed(() => {
   if (gameState.ctx.activePlayers) {
-    console.log(gameState.ctx.activePlayers);
     return gameState.ctx.activePlayers[playerID.value] || '?';
   } else {
     return 'end';
