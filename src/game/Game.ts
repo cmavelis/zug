@@ -173,7 +173,7 @@ export const SimulChess: Game<GObject> = {
     },
   },
 
-  endIf: ({ G, ctx }) => {
+  endIf: ({ G }) => {
     if (Object.values(G.score).some((i) => i > 3)) {
       return { winner: 0 }; // TODO: actually get the right one
     }
