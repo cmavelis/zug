@@ -8,8 +8,11 @@ export interface Coordinates {
 // assumes everything starts at 0
 export const coordinatesToArray = (
   coordinates: Coordinates,
-  shape: Coordinates
+  shape: Coordinates,
 ) => {
+  if (coordinates.y < 0 || coordinates.x < 0) {
+    return -999;
+  }
   return shape.x * coordinates.y + coordinates.x;
 };
 
@@ -27,7 +30,7 @@ export const getDisplacement = (start: Coordinates, end: Coordinates) => {
 
 export const addDisplacement = (
   start: Coordinates,
-  displacement: Coordinates
+  displacement: Coordinates,
 ) => {
   return { x: start.x + displacement.x, y: start.y + displacement.y };
 };

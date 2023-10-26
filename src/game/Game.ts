@@ -45,6 +45,7 @@ export const SimulChess: Game<GObject> = {
     };
 
     if (hostname === 'localhost' && port === '5173') {
+      // todo add empty board option with matchID
       [0, 1, 2].forEach((x) =>
         createPiece({
           G: initialGame,

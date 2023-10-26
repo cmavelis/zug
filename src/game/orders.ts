@@ -483,6 +483,7 @@ function findDisallowedPieces(G: GameState): number[] {
   G.pieces.forEach((p) => {
     if (!isPositionOnBoard(G, p.position)) {
       pieceIDs.push(p.id);
+      console.log(p.id, 'is not on board');
     }
   });
 
@@ -495,10 +496,17 @@ function findDisallowedPieces(G: GameState): number[] {
     if (v > 1) {
       // key is the position as an array index, so convert to coord
       const overlapCoordinate = arrayToCoordinates(Number(k), G.board);
-      const filterPieces = G.pieces.filter((p) =>
-        isEqual(p.position, overlapCoordinate),
-      );
-      filterPieces.forEach((p) => pieceIDs.push(p.id));
+      const filterPieces = G.pieces.filter((p) => {
+        if (isEqual(p.position, overlapCoordinate)) {
+          console.log('overlap:', overlapCoordinate);
+          logProxy(p);
+          return true;
+        }
+      });
+      filterPieces.forEach((p) => {
+        pieceIDs.push(p.id);
+        console.log(p.id, 'overlaps another piece');
+      });
     }
   });
 
