@@ -1,5 +1,10 @@
 # zug
 
+## Testing flags
+
+- ?player=3 (or greater) to control both players, turn off rules
+- ?empty=1 (anything truthy) to start with empty board
+
 ## Project Setup
 
 ```sh
