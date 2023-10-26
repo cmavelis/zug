@@ -164,6 +164,9 @@ const keyListener = (e: KeyboardEvent) => {
   if (e.key === '3') {
     handleEndTurn();
   }
+  if (e.key === 'p') {
+    selectAction('place');
+  }
 };
 
 onMounted(() => {
