@@ -196,24 +196,28 @@ onUnmounted(() => {
       <div class="order-button-group">
         <button
           :disabled="actionsUsed.includes('move-straight')"
+          :class="{ highlight: selectedAction === 'move-straight' }"
           @click="selectAction('move-straight')"
         >
           move (straight)
         </button>
         <button
           :disabled="actionsUsed.includes('push-straight')"
+          :class="{ highlight: selectedAction === 'push-straight' }"
           @click="selectAction('push-straight')"
         >
           push (straight)
         </button>
         <button
           :disabled="actionsUsed.includes('move-diagonal')"
+          :class="{ highlight: selectedAction === 'move-diagonal' }"
           @click="selectAction('move-diagonal')"
         >
           move (diagonal)
         </button>
         <button
           :disabled="actionsUsed.includes('push-diagonal')"
+          :class="{ highlight: selectedAction === 'push-diagonal' }"
           @click="selectAction('push-diagonal')"
         >
           push (diagonal)
@@ -221,6 +225,7 @@ onUnmounted(() => {
         <div>
           <button
             :disabled="piecesToPlace === 0"
+            :class="{ highlight: selectedAction === 'place' }"
             @click="selectAction('place')"
           >
             place new piece
@@ -276,6 +281,10 @@ button {
   flex-direction: row;
   justify-content: center;
   gap: 8px;
+}
+
+.highlight {
+  box-shadow: inset 0 0 9px var(--color-theme-green);
 }
 
 .info-message {
