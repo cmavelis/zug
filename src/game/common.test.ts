@@ -13,6 +13,14 @@ test('2,3 coords, 3,4 shape', () => {
   expect(coordinatesToArray({ x: 2, y: 3 }, { x: 3, y: 4 })).toEqual(11);
 });
 
+test('3,3 coords, 4,4 shape', () => {
+  expect(coordinatesToArray({ x: 3, y: 3 }, { x: 4, y: 4 })).toEqual(15);
+});
+
+test('-1,4 coords, 4,4 shape', () => {
+  expect(coordinatesToArray({ x: -1, y: 4 }, { x: 4, y: 4 })).not.toEqual(15);
+});
+
 // TEST ARRAY => COORDS
 
 test('0 index, 3,4 shape', () => {

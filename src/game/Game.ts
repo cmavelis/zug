@@ -26,9 +26,14 @@ export type GObject = {
 
 let hostname: any;
 let port: any;
+let empty = false;
 if (typeof window !== 'undefined' && window?.location) {
   hostname = window.location.hostname;
   port = window.location.port;
+
+  const queryString = window.location.search; // Returns:'?q=123'
+  const params = new URLSearchParams(queryString);
+  empty = Boolean(params.get('empty'));
 }
 
 export const SimulChess: Game<GObject> = {
@@ -44,6 +49,9 @@ export const SimulChess: Game<GObject> = {
       score: { 0: 0, 1: 0 },
     };
 
+    if (empty) {
+      return initialGame;
+    }
     if (hostname === 'localhost' && port === '5173') {
       [0, 1, 2].forEach((x) =>
         createPiece({
@@ -165,7 +173,7 @@ export const SimulChess: Game<GObject> = {
     },
   },
 
-  endIf: ({ G, ctx }) => {
+  endIf: ({ G }) => {
     if (Object.values(G.score).some((i) => i > 3)) {
       return { winner: 0 }; // TODO: actually get the right one
     }

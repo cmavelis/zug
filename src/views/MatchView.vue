@@ -10,6 +10,7 @@ import BoardComponent from '@/components/BoardComponent.vue';
 import BoardDisplay from '@/components/BoardDisplay.vue';
 import { SimulChessClient } from '@/game/App';
 import type { GameState, GObject } from '@/game/Game';
+import { store } from '@/store';
 
 onMounted(() => {
   window.addEventListener('keydown', keyListener);
@@ -26,13 +27,12 @@ interface ReactiveGameState {
 
 const route = useRoute();
 let playerIDDefault = -1;
-let isDebug = false;
 
 if (route.query.player) {
   if ([1, 2].includes(Number(route.query.player))) {
     playerIDDefault = Number(route.query.player) - 1;
   } else {
-    isDebug = true;
+    store.setIsDebug();
   }
 }
 const playerID = ref(playerIDDefault);
@@ -42,11 +42,11 @@ const isPlayerSelected = computed(() => {
 const keyListener = (event: KeyboardEvent) => {
   switch (event.key) {
     case '1': {
-      if (isDebug) playerID.value = 0;
+      if (store.isDebug) playerID.value = 0;
       break;
     }
     case '2': {
-      if (isDebug) playerID.value = 1;
+      if (store.isDebug) playerID.value = 1;
       break;
     }
     default:
@@ -114,7 +114,6 @@ matchClientTwo.client.subscribe(updateGameStateTwo);
 
 const gamePhase = computed(() => {
   if (gameState.ctx.activePlayers) {
-    console.log(gameState.ctx.activePlayers);
     return gameState.ctx.activePlayers[playerID.value] || '?';
   } else {
     return 'end';
@@ -127,7 +126,7 @@ const gamePhase = computed(() => {
     <p v-if="!isPlayerSelected">Choose a player</p>
     <input
       type="radio"
-      v-if="isDebug || !isPlayerSelected"
+      v-if="store.isDebug || !isPlayerSelected"
       v-model="playerID"
       :value="0"
     />
@@ -137,7 +136,7 @@ const gamePhase = computed(() => {
     <span :class="{ checked: playerID === 1 }">player 2 </span>
     <input
       type="radio"
-      v-if="isDebug || !isPlayerSelected"
+      v-if="store.isDebug || !isPlayerSelected"
       v-model="playerID"
       :value="1"
     />
