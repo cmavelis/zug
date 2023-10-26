@@ -26,7 +26,7 @@ logProxy(props);
         />
         <BoardPiece
           v-for="piece in props.state.G.pieces"
-          :key="piece.position.toString()"
+          :key="piece.id"
           v-bind="piece"
         />
         <svg width="200" height="200">
