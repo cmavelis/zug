@@ -16,6 +16,7 @@ import {
   getValidSquaresForOrder,
   isValidPlaceOrder,
 } from '@/game/zugzwang/validators';
+import { store } from '@/store';
 
 const NUMBER_PIECES = 4;
 
@@ -118,7 +119,7 @@ const handleCellClick = (cellID: number) => {
     );
     // check order for validity
     if (order.type === 'place') {
-      if (!isValidPlaceOrder(order)) {
+      if (!isValidPlaceOrder(order) && !store.isDebug) {
         return;
       }
     }
@@ -135,7 +136,7 @@ const handleCellHover = (cellId: number) => {
 
 const handleEndTurn = () => {
   const { endStage } = props.client.events;
-  if (flatOrders.value.length < 4) {
+  if (flatOrders.value.length < 4 && !store.isDebug) {
     endTurnMessage.value =
       'Cannot end turn yet. You must use all available actions. (zug)';
     return;
