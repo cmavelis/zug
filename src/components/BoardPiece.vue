@@ -17,6 +17,8 @@ const styleObject = computed(() => {
   };
 });
 
+// need this? //const pieceColor = computed(() => (props.owner === 0 ? '#729bf1' : '#62d368'));
+
 const pieceColor = props.owner === 0 ? '#729bf1' : '#62d368';
 </script>
 
