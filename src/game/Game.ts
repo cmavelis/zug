@@ -161,17 +161,7 @@ export const SimulChess: Game<GObject> = {
     },
   },
 
-  moves: {
-    clickCell: (
-      { G, playerID }: { G: GameState; playerID: string },
-      id: number,
-    ) => {
-      if (G.cells[id] !== null) {
-        return INVALID_MOVE;
-      }
-      G.cells[id] = +playerID;
-    },
-  },
+  moves: {},
 
   endIf: ({ G }) => {
     if (Object.values(G.score).some((i) => i > 3)) {
@@ -179,5 +169,3 @@ export const SimulChess: Game<GObject> = {
     }
   },
 };
-
-export interface moveAddOrder {}
