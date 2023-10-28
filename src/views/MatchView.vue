@@ -172,11 +172,6 @@ const gamePhase = computed(() => {
     />
     <div v-if="gameLastTurn">
       <div>LAST TURN</div>
-      <BoardDisplay
-        :state="{ G: gameLastTurn[historyOrderNumber - 1] }"
-        :orderNumber="historyOrderNumber"
-      />
-
       <button :disabled="historyOrderNumber <= 1" @click="decrementHistory()">
         -
       </button>
@@ -187,6 +182,11 @@ const gamePhase = computed(() => {
       >
         +
       </button>
+
+      <BoardDisplay
+        :state="{ G: gameLastTurn[historyOrderNumber - 1] }"
+        :orderNumber="historyOrderNumber"
+      />
     </div>
   </main>
 </template>
