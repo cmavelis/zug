@@ -58,10 +58,6 @@ export interface AttackOrder extends OrderBase {
   type: 'attack';
 }
 
-export interface DefendOrder extends Omit<OrderBase, 'toTarget'> {
-  type: 'defend';
-}
-
 export interface PlaceOrder extends OrderBase {
   type: 'place';
 }
