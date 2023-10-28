@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, reactive, ref, onMounted, onUnmounted } from 'vue';
+import { computed, reactive, ref, onMounted, onUnmounted, watch } from 'vue';
 import { useRoute } from 'vue-router';
 
 import type { ClientState } from 'boardgame.io/dist/types/src/client/client';
@@ -21,7 +21,7 @@ onUnmounted(() => {
 });
 
 interface ReactiveGameState {
-  G: GameState;
+  G: GObject;
   ctx: Ctx;
 }
 
@@ -65,14 +65,14 @@ const matchClientOne = new SimulChessClient('0', matchID);
 const matchClientTwo = new SimulChessClient('1', matchID);
 
 const gameState: ReactiveGameState = reactive({
-  G: {} as GameState,
+  G: {} as GObject,
   ctx: {} as Ctx,
 });
 const gameStateLoaded = ref(false);
-const updateGameState = (state: ClientState<{ G: GameState; ctx: Ctx }>) => {
+const updateGameState = (state: ClientState<{ G: GObject; ctx: Ctx }>) => {
   if (state) {
     gameStateLoaded.value = true;
-    gameState.G = state.G as unknown as GameState;
+    gameState.G = state.G as unknown as GObject;
     gameState.ctx = state.ctx;
   } else {
     console.error('A null game state update was received');
@@ -111,6 +111,15 @@ const updateGameStateTwo = (state: ClientState<{ G: GameState; ctx: Ctx }>) => {
   }
 };
 matchClientTwo.client.subscribe(updateGameStateTwo);
+
+watch(
+  () => gameState.G.history,
+  async (newHistory, oldHistory) => {
+    if (newHistory.length !== oldHistory.length) {
+      historyOrderNumber.value = 1;
+    }
+  },
+);
 
 const gamePhase = computed(() => {
   if (gameState.ctx.activePlayers) {
@@ -163,11 +172,6 @@ const gamePhase = computed(() => {
     />
     <div v-if="gameLastTurn">
       <div>LAST TURN</div>
-      <BoardDisplay
-        :state="{ G: gameLastTurn[historyOrderNumber - 1] }"
-        :orderNumber="historyOrderNumber"
-      />
-
       <button :disabled="historyOrderNumber <= 1" @click="decrementHistory()">
         -
       </button>
@@ -178,6 +182,11 @@ const gamePhase = computed(() => {
       >
         +
       </button>
+
+      <BoardDisplay
+        :state="{ G: gameLastTurn[historyOrderNumber - 1] }"
+        :orderNumber="historyOrderNumber"
+      />
     </div>
   </main>
 </template>
