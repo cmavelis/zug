@@ -46,9 +46,9 @@ const highlightedSquares: Ref<number[]> = computed(() => {
   if (selectedAction.value === 'place') {
     return getValidSquaresForOrder({
       playerID: props.playerID,
-      board: props.state.G.board,
+      board: props.state.G.config.board,
       orderType: 'place',
-    }).map((coord) => coordinatesToArray(coord, props.state.G.board));
+    }).map((coord) => coordinatesToArray(coord, props.state.G.config.board));
   }
   return [];
 });
@@ -105,7 +105,7 @@ const handleCellClick = (cellID: number) => {
     }
     const targetCoords = arrayToCoordinates(
       cellHover.value,
-      props.state.G.board,
+      props.state.G.config.board,
     );
 
     const toTarget = getDisplacement(pieceCoords, targetCoords);
@@ -184,7 +184,7 @@ onUnmounted(() => {
       <BoardDisplay
         :pieces="props.state.G.pieces"
         :orders="flatOrders"
-        :board="props.state.G.board"
+        :board="props.state.G.config.board"
         :hovered-cell="cellHover"
         :handle-cell-hover="handleCellHover"
         :handle-cell-click="handleCellClick"

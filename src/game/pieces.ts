@@ -19,7 +19,7 @@ export const createPiece = ({
   G: GameState;
   pieceToCreate: Omit<Piece, 'id' | 'isDefending'>;
 }) => {
-  const cellIndex = coordinatesToArray(pieceToCreate.position, G.board);
+  const cellIndex = coordinatesToArray(pieceToCreate.position, G.config.board);
   if (G.cells[cellIndex]) {
     reportError('cell occupied');
   }
@@ -31,7 +31,7 @@ export const createPiece = ({
 
   const usedIds = G.pieces.map((p) => p.id);
   const availableIds = idsByOwner[pieceToCreate.owner].filter(
-    (id) => !usedIds.includes(id)
+    (id) => !usedIds.includes(id),
   );
 
   if (availableIds.length === 0) {

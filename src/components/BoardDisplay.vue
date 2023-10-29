@@ -8,7 +8,7 @@ import OrderDisplay from '@/components/OrderOverlay.vue';
 import { logProxy } from '@/utils';
 
 interface BoardProps {
-  state: { G: Omit<GameState, 'board'> };
+  state: { G: Omit<GameState, 'config'> };
   orderNumber?: number;
 }
 const props = defineProps<BoardProps>();

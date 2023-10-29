@@ -7,7 +7,9 @@ import type { Coordinates } from '@/game/common';
 import { isValidOrder } from '@/game/zugzwang/validators';
 
 export interface GameState {
-  board: Coordinates;
+  config: {
+    board: Coordinates;
+  };
   cells: Array<null | number>;
   orders: { [playerID: number]: Orders };
   pieces: Piece[];
@@ -21,7 +23,7 @@ export interface GameEvent {
 }
 
 export type GObject = {
-  history: Omit<GameState, 'board'>[][];
+  history: Omit<GameState, 'config'>[][];
 } & GameState;
 
 let hostname: any;
@@ -41,7 +43,9 @@ export const SimulChess: Game<GObject> = {
   setup: () => {
     const board = { x: 4, y: 4 };
     const initialGame = {
-      board,
+      config: {
+        board,
+      },
       cells: Array(board.x * board.y).fill(null),
       pieces: [],
       orders: { 0: [], 1: [] },
