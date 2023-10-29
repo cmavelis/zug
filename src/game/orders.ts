@@ -1,7 +1,8 @@
-import { cloneDeep, isEqual, remove } from 'lodash';
+import { cloneDeep, countBy, forOwn, isEqual, remove } from 'lodash';
 import type { Coordinates } from '@/game/common';
 import {
   addDisplacement,
+  arrayToCoordinates,
   coordinatesToArray,
   reportError,
 } from '@/game/common';
@@ -483,6 +484,29 @@ function findDisallowedPieces(G: GameState): number[] {
     if (!isPositionOnBoard(G, p.position)) {
       pieceIDs.push(p.id);
       console.log(p.id, 'is not on board');
+    }
+  });
+
+  // overlapping pieces -- should I not allow this to happen in the first place?
+  const overlapPositions = countBy(G.pieces, (p) =>
+    coordinatesToArray(p.position, G.board),
+  );
+  forOwn(overlapPositions, (v, k) => {
+    // if 2 pieces found at position
+    if (v > 1) {
+      // key is the position as an array index, so convert to coord
+      const overlapCoordinate = arrayToCoordinates(Number(k), G.board);
+      const filterPieces = G.pieces.filter((p) => {
+        if (isEqual(p.position, overlapCoordinate)) {
+          console.log('overlap:', overlapCoordinate);
+          logProxy(p);
+          return true;
+        }
+      });
+      filterPieces.forEach((p) => {
+        pieceIDs.push(p.id);
+        console.log(p.id, 'overlaps another piece');
+      });
     }
   });
 
