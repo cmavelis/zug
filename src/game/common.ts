@@ -10,8 +10,13 @@ export const coordinatesToArray = (
   coordinates: Coordinates,
   shape: Coordinates,
 ) => {
+  // off board -
   if (coordinates.y < 0 || coordinates.x < 0) {
     return -999;
+  }
+  // off board +
+  if (coordinates.y > shape.y || coordinates.x > shape.x) {
+    return 999;
   }
   return shape.x * coordinates.y + coordinates.x;
 };
