@@ -19,6 +19,12 @@ test('3,3 coords, 4,4 shape', () => {
 
 test('-1,4 coords, 4,4 shape', () => {
   expect(coordinatesToArray({ x: -1, y: 4 }, { x: 4, y: 4 })).not.toEqual(15);
+  expect(coordinatesToArray({ x: -1, y: 4 }, { x: 4, y: 4 })).toEqual(-999);
+});
+
+test('5,5 coords, 4,4 shape', () => {
+  expect(coordinatesToArray({ x: 5, y: 5 }, { x: 4, y: 4 })).not.toEqual(25);
+  expect(coordinatesToArray({ x: 5, y: 5 }, { x: 4, y: 4 })).toEqual(999);
 });
 
 // TEST ARRAY => COORDS
