@@ -6,9 +6,14 @@ import { orderResolver } from '@/game/orders';
 import type { Coordinates } from '@/game/common';
 import { isValidOrder } from '@/game/zugzwang/validators';
 
+export type PriorityMode =
+  | 'order-choice' // the original; orders get priority based on when they were assigned in the turn
+  | 'piece'; // pieces have their own priorities based on their ID, instead of order
+
 export interface GameState {
   config: {
     board: Coordinates;
+    priority: PriorityMode;
   };
   cells: Array<null | number>;
   orders: { [playerID: number]: Orders };
@@ -45,6 +50,7 @@ export const SimulChess: Game<GObject> = {
     const initialGame = {
       config: {
         board,
+        priority: 'order-choice' as PriorityMode,
       },
       cells: Array(board.x * board.y).fill(null),
       pieces: [],
