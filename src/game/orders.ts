@@ -119,6 +119,16 @@ export function orderResolver({ G }: { G: GObject }) {
 
   const turnHistory = [];
 
+  const sortByPieceID = (order1: Order, order2: Order) => {
+    return order1.sourcePieceId - order2.sourcePieceId;
+  };
+
+  // "piece" variant sorts orders by piece ID instead of as submitted
+  if (G.config.priority === 'piece') {
+    orders[0].sort(sortByPieceID);
+    orders[1].sort(sortByPieceID);
+  }
+
   // Assume both players submit 4 orders for now
   for (let i = 0; i < 4; i++) {
     // rank orders by priority
