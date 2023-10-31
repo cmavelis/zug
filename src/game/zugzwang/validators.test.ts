@@ -11,6 +11,7 @@ const testPiece: Piece = {
   position: { x: 2, y: 1 },
   owner: 1,
   isDefending: false,
+  priority: 0,
 };
 
 const testPiece2: Piece = {
@@ -18,6 +19,7 @@ const testPiece2: Piece = {
   position: { x: 2, y: 1 },
   owner: 0,
   isDefending: false,
+  priority: 0,
 };
 
 const testAttack1: AttackOrder = {
