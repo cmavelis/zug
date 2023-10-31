@@ -4,6 +4,7 @@ import type { Ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { LobbyClient } from 'boardgame.io/client';
 import type { LobbyAPI } from 'boardgame.io/dist/types/src/types';
+import type { GameSetupData } from '@/game/Game';
 
 const matches: Ref<LobbyAPI.Match[]> = ref([]);
 const { protocol, hostname, port } = window.location;
@@ -18,8 +19,11 @@ lobbyClient
   .catch(console.error);
 
 const router = useRouter();
-const createMatch = async () => {
-  const createdMatch = await lobbyClient.createMatch('zug', { numPlayers: 2 });
+const createMatch = async (setupData: GameSetupData = {}) => {
+  const createdMatch = await lobbyClient.createMatch('zug', {
+    numPlayers: 2,
+    setupData,
+  });
   await router.push({
     name: 'match',
     params: { matchID: createdMatch.matchID },
@@ -36,7 +40,9 @@ const createMatch = async () => {
       to join an unlisted match.
     </p>
     <button @click="createMatch()">Create new match</button>
-
+    <button @click="createMatch({ priority: 'piece' })">
+      Create variant match
+    </button>
     <h2>Open matches:</h2>
 
     <section :key="match.matchID" v-for="match in matches" class="matches-list">

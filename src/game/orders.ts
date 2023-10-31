@@ -4,6 +4,7 @@ import {
   addDisplacement,
   arrayToCoordinates,
   coordinatesToArray,
+  getPiece,
   reportError,
 } from '@/game/common';
 import type { GameState, GObject } from '@/game/Game';
@@ -15,6 +16,7 @@ import {
 import { logProxy } from '@/utils';
 import type { Piece } from '@/game/pieces';
 import { createPiece } from '@/game/pieces';
+import { PRIORITIES_LIST } from '@/game/zugzwang/config';
 
 // CONFIG
 const MOVES_CAN_PUSH = false;
@@ -106,7 +108,7 @@ function movePieces(G: GameState, moveArray: Move[]) {
     if (!movedPiece) return;
 
     console.log('moving to', move.newPosition);
-    const newPosition = coordinatesToArray(move.newPosition, G.board);
+    const newPosition = coordinatesToArray(move.newPosition, G.config.board);
     movedPiece.position = move.newPosition;
     const oldPosition = cells.findIndex((i) => i === move.id);
     cells[oldPosition] = null;
@@ -118,12 +120,47 @@ export function orderResolver({ G }: { G: GObject }) {
   const { cells, orders, pieces, score } = G;
 
   const turnHistory = [];
+  let sortedOrders1: (Order | null)[] = orders[0];
+  let sortedOrders2: (Order | null)[] = orders[1];
 
-  // Assume both players submit 4 orders for now
-  for (let i = 0; i < 4; i++) {
+  // "piece" variant sorts orders by piece ID instead of as submitted
+
+  // create list with right # slots
+  // iterate through orders, slotting in the right spot (error if occupied)
+  // tack on "other" orders at the end (place, etc)
+  if (G.config.priority === 'piece') {
+    sortedOrders1 = PRIORITIES_LIST.map(() => null);
+    sortedOrders2 = PRIORITIES_LIST.map(() => null);
+
+    const arrangeOrders = (targetArray: (Order | null)[]) => (order: Order) => {
+      const piece = getPiece(G, order.sourcePieceId);
+      // "place" e.g.
+      if (!piece) {
+        targetArray.push(order);
+        return;
+      }
+      const { priority } = piece;
+      if (targetArray[priority - 1]) {
+        console.error(
+          `Order already exists for player with piece priority ${priority}`,
+        );
+        return;
+      }
+      targetArray[priority - 1] = order;
+    };
+
+    orders[0].forEach(arrangeOrders(sortedOrders1));
+    orders[1].forEach(arrangeOrders(sortedOrders2));
+  }
+
+  const numberOrders = Math.max(sortedOrders1.length, sortedOrders2.length);
+  for (let i = 0; i < numberOrders; i++) {
     // rank orders by priority
-    const ordersToResolve = [orders[0][i], orders[1][i]].sort(
-      (a, b) => a.priority - b.priority,
+    const ordersToResolve = [sortedOrders1[i], sortedOrders2[i]].sort(
+      (a, b) => {
+        if (!a || !b) return 0;
+        return a.priority - b.priority;
+      },
     );
     logProxy(ordersToResolve);
 
@@ -266,7 +303,7 @@ export function orderResolver({ G }: { G: GObject }) {
     }
     // -- CLEANUP --
     // truncate cells array if it got weird from pieces being pushed off
-    const cellsArraySize = G.board.x * G.board.y;
+    const cellsArraySize = G.config.board.x * G.config.board.y;
     if (G.cells.length > cellsArraySize) {
       G.cells.length = cellsArraySize;
     }
@@ -489,13 +526,13 @@ function findDisallowedPieces(G: GameState): number[] {
 
   // overlapping pieces -- should I not allow this to happen in the first place?
   const overlapPositions = countBy(G.pieces, (p) =>
-    coordinatesToArray(p.position, G.board),
+    coordinatesToArray(p.position, G.config.board),
   );
   forOwn(overlapPositions, (v, k) => {
     // if 2 pieces found at position
     if (v > 1) {
       // key is the position as an array index, so convert to coord
-      const overlapCoordinate = arrayToCoordinates(Number(k), G.board);
+      const overlapCoordinate = arrayToCoordinates(Number(k), G.config.board);
       const filterPieces = G.pieces.filter((p) => {
         if (isEqual(p.position, overlapCoordinate)) {
           console.log('overlap:', overlapCoordinate);
@@ -515,8 +552,8 @@ function findDisallowedPieces(G: GameState): number[] {
 
 // assumes rectangular board
 function isPositionOnBoard(G: GameState, position: Coordinates): boolean {
-  if (position.x < 0 || position.x >= G.board.x) {
+  if (position.x < 0 || position.x >= G.config.board.x) {
     return false;
   }
-  return !(position.y < 0 || position.y >= G.board.y);
+  return !(position.y < 0 || position.y >= G.config.board.y);
 }

@@ -6,8 +6,19 @@ import { orderResolver } from '@/game/orders';
 import type { Coordinates } from '@/game/common';
 import { isValidOrder } from '@/game/zugzwang/validators';
 
+export type PriorityMode =
+  | 'order-choice' // the original; orders get priority based on when they were assigned in the turn
+  | 'piece'; // pieces have their own priorities based on their ID, instead of order
+
+export interface GameSetupData {
+  priority?: PriorityMode;
+}
+
 export interface GameState {
-  board: Coordinates;
+  config: {
+    board: Coordinates;
+    priority: PriorityMode;
+  };
   cells: Array<null | number>;
   orders: { [playerID: number]: Orders };
   pieces: Piece[];
@@ -21,7 +32,7 @@ export interface GameEvent {
 }
 
 export type GObject = {
-  history: Omit<GameState, 'board'>[][];
+  history: Omit<GameState, 'config'>[][];
 } & GameState;
 
 let hostname: any;
@@ -38,10 +49,13 @@ if (typeof window !== 'undefined' && window?.location) {
 
 export const SimulChess: Game<GObject> = {
   name: 'zug',
-  setup: () => {
+  setup: (_, setupData: GameSetupData) => {
     const board = { x: 4, y: 4 };
     const initialGame = {
-      board,
+      config: {
+        board,
+        priority: setupData?.priority || ('order-choice' as PriorityMode),
+      },
       cells: Array(board.x * board.y).fill(null),
       pieces: [],
       orders: { 0: [], 1: [] },
@@ -74,14 +88,14 @@ export const SimulChess: Game<GObject> = {
       [0, 1, 2, 3].forEach((x) =>
         createPiece({
           G: initialGame,
-          pieceToCreate: { owner: 0, position: { x, y: 0 } },
+          pieceToCreate: { owner: 0, position: { x, y: 0 }, priority: x + 2 },
         }),
       );
 
       [0, 1, 2, 3].forEach((x) =>
         createPiece({
           G: initialGame,
-          pieceToCreate: { owner: 1, position: { x, y: 3 } },
+          pieceToCreate: { owner: 1, position: { x, y: 3 }, priority: x + 2 },
         }),
       );
     }
