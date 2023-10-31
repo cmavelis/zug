@@ -4,6 +4,7 @@ import {
   coordinatesToArray,
   reportError,
 } from '@/game/common';
+import { PRIORITIES_LIST } from '@/game/zugzwang/config';
 
 type Optional<T, K extends keyof T> = Omit<T, K> & Partial<Pick<T, K>>;
 
@@ -49,7 +50,7 @@ export const createPiece = ({
     const usedPriorities = G.pieces
       .filter((p) => p.owner === pieceToCreate.owner)
       .map((p) => p.priority);
-    const availablePriorities = [1, 2, 3, 4, 5, 6].filter(
+    const availablePriorities = PRIORITIES_LIST.filter(
       (n) => !usedPriorities.includes(n),
     );
     const randomIndex = Math.floor(Math.random() * availablePriorities.length);
