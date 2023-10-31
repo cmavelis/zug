@@ -10,6 +10,10 @@ export type PriorityMode =
   | 'order-choice' // the original; orders get priority based on when they were assigned in the turn
   | 'piece'; // pieces have their own priorities based on their ID, instead of order
 
+export interface GameSetupData {
+  priority?: PriorityMode;
+}
+
 export interface GameState {
   config: {
     board: Coordinates;
@@ -45,12 +49,12 @@ if (typeof window !== 'undefined' && window?.location) {
 
 export const SimulChess: Game<GObject> = {
   name: 'zug',
-  setup: () => {
+  setup: (_, setupData: GameSetupData) => {
     const board = { x: 4, y: 4 };
     const initialGame = {
       config: {
         board,
-        priority: 'order-choice' as PriorityMode,
+        priority: setupData?.priority || ('order-choice' as PriorityMode),
       },
       cells: Array(board.x * board.y).fill(null),
       pieces: [],
