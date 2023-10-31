@@ -24,7 +24,7 @@ const pieceColor = props.owner === 0 ? '#729bf1' : '#62d368';
 
 <template>
   <div class="piece" :style="styleObject">
-    <div class="pieceIcon">{{ props.id }}</div>
+    <div class="pieceIcon">{{ props.priority }}</div>
   </div>
 </template>
 

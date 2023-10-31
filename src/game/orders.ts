@@ -4,6 +4,7 @@ import {
   addDisplacement,
   arrayToCoordinates,
   coordinatesToArray,
+  getPiece,
   reportError,
 } from '@/game/common';
 import type { GameState, GObject } from '@/game/Game';
@@ -120,7 +121,13 @@ export function orderResolver({ G }: { G: GObject }) {
   const turnHistory = [];
 
   const sortByPieceID = (order1: Order, order2: Order) => {
-    return order1.sourcePieceId - order2.sourcePieceId;
+    const piece1 = getPiece(G, order1.sourcePieceId);
+    const piece2 = getPiece(G, order2.sourcePieceId);
+
+    if (!piece1) return 1;
+    if (!piece2) return -1;
+
+    return piece1.priority - piece2.priority;
   };
 
   // "piece" variant sorts orders by piece ID instead of as submitted

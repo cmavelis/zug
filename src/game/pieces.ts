@@ -42,17 +42,20 @@ export const createPiece = ({
     return;
   }
 
-  const usedPriorities = G.pieces
-    .filter((p) => p.owner === pieceToCreate.owner)
-    .map((p) => p.priority);
-
-  const availablePriorities = [1, 2, 3, 4, 5, 6].filter(
-    (n) => !usedPriorities.includes(n),
-  );
-  const randomIndex = Math.ceil(Math.random() * availablePriorities.length);
-  const priority = availablePriorities[randomIndex];
-
   const pieceId = availableIds[0];
+
+  let priority = pieceId;
+  if (G.config.priority === 'piece') {
+    const usedPriorities = G.pieces
+      .filter((p) => p.owner === pieceToCreate.owner)
+      .map((p) => p.priority);
+    const availablePriorities = [1, 2, 3, 4, 5, 6].filter(
+      (n) => !usedPriorities.includes(n),
+    );
+    const randomIndex = Math.floor(Math.random() * availablePriorities.length);
+    priority = availablePriorities[randomIndex];
+  }
+
   G.cells[cellIndex] = pieceId;
   const pieceWithId = {
     isDefending: false,
