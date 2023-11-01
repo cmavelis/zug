@@ -148,6 +148,8 @@ const selectAction = (action: OrderTypes) => {
   selectedAction.value = action;
   if (action === 'place') {
     selectedPiece.value = -1;
+  } else if (selectedPiece.value === -1) {
+    selectedPiece.value = undefined;
   }
 };
 
