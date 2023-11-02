@@ -20,3 +20,31 @@ a,
     background-color: hsla(160, 100%, 37%, 0.2);
   }
 }
+
+
+@keyframes halo {
+  from {
+    box-shadow:
+            0 0 var(--still-blur) aliceblue,
+            0 0 var(--blur) var(--color);
+  }
+  50% {
+    box-shadow:
+            0 0 var(--still-blur) aliceblue,
+            0 0 10px var(--color);
+  }
+  to {
+    box-shadow:
+            0 0 var(--still-blur) aliceblue,
+            0 0 var(--blur) var(--color);
+  }
+}
+
+.halo-shadow {
+  --blur: 1px;
+  --still-blur: 5px;
+  --color: #5b8598;
+  animation-duration: 3s;
+  animation-name: halo;
+  animation-iteration-count: infinite;
+}
