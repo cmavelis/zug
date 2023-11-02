@@ -17,6 +17,7 @@ interface BoardDisplayV2Props {
   hoveredCell?: number;
   highlightedCells?: number[];
   selectedPieceId?: number;
+  emphasizedPieceIds?: number[];
 }
 
 const props = withDefaults(defineProps<BoardDisplayV2Props>(), {
@@ -49,7 +50,12 @@ const rows = computed(() => props.board.y);
     <BoardPiece
       v-for="piece in props.pieces"
       :key="piece.id"
-      :class="{ selected: props.selectedPieceId === piece.id }"
+      :class="{
+        selected: props.selectedPieceId === piece.id,
+      }"
+      :iconClass="{
+        'halo-shadow': props.emphasizedPieceIds.includes(piece.id),
+      }"
       v-bind="piece"
       @click="handlePieceClick(piece.id)"
     />

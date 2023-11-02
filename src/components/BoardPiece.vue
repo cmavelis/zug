@@ -2,7 +2,11 @@
 import { computed } from 'vue';
 import type { Piece } from '@/game/pieces';
 
-const props = defineProps<Piece>();
+interface BoardPiece extends Piece {
+  iconClass: { [key: string]: boolean };
+}
+
+const props = defineProps<BoardPiece>();
 
 const squareSize = 50;
 
@@ -24,7 +28,9 @@ const pieceColor = props.owner === 0 ? '#729bf1' : '#62d368';
 
 <template>
   <div class="piece" :style="styleObject">
-    <div class="pieceIcon">{{ props.priority }}</div>
+    <div :class="{ pieceIcon: true, ...props.iconClass }">
+      {{ props.priority }}
+    </div>
   </div>
 </template>
 

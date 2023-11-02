@@ -51,6 +51,15 @@ const gamePhase = computed(() => {
 const canEndTurn = computed(
   () => actionsUsed.value.length === 4 && gamePhase.value === 'planning',
 );
+const piecesWithoutActions = computed(() => {
+  const idSet = new Set(
+    props.state.G.pieces
+      .filter((p) => p.owner === props.playerID)
+      .map((p) => p.id),
+  );
+  flatOrders.value.forEach((o) => idSet.delete(o.sourcePieceId));
+  return Array.from(idSet);
+});
 
 const highlightedSquares: Ref<number[]> = computed(() => {
   if (selectedAction.value === 'place') {
@@ -204,6 +213,7 @@ onUnmounted(() => {
         :highlighted-cells="highlightedSquares"
         :selected-piece-id="selectedPiece"
         :show-orders="props.showOrders"
+        :emphasized-piece-ids="piecesWithoutActions"
       />
       <div class="order-button-group">
         <button
