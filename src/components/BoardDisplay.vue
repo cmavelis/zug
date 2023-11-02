@@ -53,7 +53,7 @@ logProxy(props);
       </div>
     </div>
     <div v-if="props.orderNumber">
-      <p>ORDERS: step {{ props.orderNumber }}</p>
+      <p>ACTIONS: turn step {{ props.orderNumber }}</p>
       <template
         v-for="event in props.state.G.events"
         :key="event.sourcePieceId"

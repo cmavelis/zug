@@ -234,7 +234,7 @@ onUnmounted(() => {
           </button>
           ({{ piecesToPlace }})
         </div>
-        <button @click="clearAction()">clear</button>
+        <button @click="clearAction()">clear current action</button>
       </div>
     </div>
     <div v-if="props.showOrders">
@@ -247,8 +247,8 @@ onUnmounted(() => {
         }}
       </p>
       <p>action: {{ selectedAction || 'none selected' }}</p>
-      <p>ORDERS</p>
-      <button @click="undoLastOrder()">undo last order</button>
+      <p>ACTIONS</p>
+      <button @click="undoLastOrder()">undo last action</button>
       <button @click="handleEndTurn">end turn</button>
       <p v-if="endTurnMessage" class="info-message">{{ endTurnMessage }}</p>
       <template

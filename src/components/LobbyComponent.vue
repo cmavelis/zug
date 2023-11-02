@@ -42,7 +42,7 @@ const createMatch = async (setupData: GameSetupData = {}) => {
     <button @click="createMatch({ priority: 'piece' })">
       Create new match
     </button>
-    <button @click="createMatch({ priority: 'order-choice' })">
+    <button class="gray-bg" @click="createMatch({ priority: 'order-choice' })">
       Create "order choice" match
     </button>
     <h2>Open matches:</h2>
@@ -73,5 +73,9 @@ const createMatch = async (setupData: GameSetupData = {}) => {
   display: flex;
   gap: 8px;
   justify-self: left;
+}
+
+.gray-bg {
+  background-color: #727272;
 }
 </style>
