@@ -54,13 +54,14 @@ const placeActionSquares = getValidSquaresForOrder({
       <p>
         The goal of the game is to advance one of your pieces to the opponent's
         side 4 times. During each turn, both players are creating a list of
-        "orders" that their pieces will execute in the order they were assigned.
-        Each piece must take one action per turn, and each action must only be
-        assigned once. When both players assign all their orders and end their
-        "planning" phase, the game will resolve the orders from both players and
-        generate a new board state. This signals the start of a new turn.
+        "actions" that their pieces will execute in the order they were
+        assigned. Each piece must take one action per turn, and each action must
+        only be assigned once. When both players assign all their actions and
+        end their "planning" phase, the game will resolve the actions from both
+        players and generate a new board state. This signals the start of a new
+        turn.
         <br /><br />
-        During "resolution", the list of orders from both players are applied
+        During "resolution", the actions from both players are applied
         step-by-step. During each step, actions will occur in "priority" order
         (1=highest priority). I've added a "last turn" viewer that you can use
         to step through how the previous turn was resolved, which should help
@@ -71,48 +72,65 @@ const placeActionSquares = getValidSquaresForOrder({
         just like a destroyed piece, by using the "place" action.
       </p>
     </section>
-    <h2>Orders</h2>
-    <p class="text">
-      These are the currently configured orders in the game, showing all
-      possible directions you can assign them.
-    </p>
-    <section class="grid">
-      <template v-for="order in orderNames" :key="order">
-        <p>{{ order }}</p>
+    <section>
+      <h2>Priority</h2>
+      <p class="text">
+        Priority is the idea of "who goes first" -- in this game, lower numbers
+        happen first. There are two times the concept of priority comes up
+        during a turn: determining the order in which the actions occur, and
+        also when breaking ties during a turn "step".
+        <br /><br />
+        Each piece has a priority value assigned to it, currently from 1-6. The
+        actions you assign will play out for the 1s first, then the 2s, etc. If
+        you and your opponent both have a 2, then the action's priority is used
+        to determine which happens first.
+      </p>
+    </section>
+    <section>
+      <h2>Actions</h2>
+      <p class="text">
+        These are the currently configured actions in the game, showing all
+        possible directions you can assign them.
+      </p>
+      <div class="grid">
+        <template v-for="order in orderNames" :key="order">
+          <p>{{ order }}</p>
+          <BoardDisplay
+            :pieces="pieces"
+            :board="board"
+            :orders="ordersDict[order]"
+          />
+          <div>
+            <p>priority: {{ ORDER_PRIORITIES[order] }}</p>
+            <p v-if="order === 'move-straight'">
+              "move" actions are designed to always advance toward the
+              opponent's side. If the target square of a "move" action is
+              occupied when it's supposed to occur, nothing happens.
+            </p>
+            <p v-if="order === 'push-straight'">
+              "push" actions leave the acting piece in place. This action pushes
+              a piece on the target square away, along with any others in the
+              path. Think of a sliding puzzle. Any pieces pushed off the board
+              are destroyed.
+            </p>
+          </div>
+        </template>
+        <p>place</p>
         <BoardDisplay
-          :pieces="pieces"
-          :board="board"
-          :orders="ordersDict[order]"
+          :pieces="[]"
+          :orders="[]"
+          :board="{ x: 4, y: 4 }"
+          :highlighted-cells="placeActionSquares"
         />
         <div>
-          <p>priority: {{ ORDER_PRIORITIES[order] }}</p>
-          <p v-if="order === 'move-straight'">
-            "move" actions are designed to always advance toward the opponent's
-            side. If the target square of a "move" action is occupied when it's
-            supposed to occur, nothing happens.
-          </p>
-          <p v-if="order === 'push-straight'">
-            "push" actions leave the acting piece in place. This action pushes a
-            piece on the target square away, along with any others in the path.
-            Think of a sliding puzzle. Any pieces pushed off the board are
-            destroyed.
+          <p>priority: {{ ORDER_PRIORITIES.place }}</p>
+          <p>
+            For each of your pieces that are missing, you may place a new piece
+            on your home row during your turn. If there is a piece in that
+            square,
+            <strong>both will be destroyed!</strong>
           </p>
         </div>
-      </template>
-      <p>place</p>
-      <BoardDisplay
-        :pieces="[]"
-        :orders="[]"
-        :board="{ x: 4, y: 4 }"
-        :highlighted-cells="placeActionSquares"
-      />
-      <div>
-        <p>priority: {{ ORDER_PRIORITIES.place }}</p>
-        <p>
-          For each of your pieces that are missing, you may place a new piece on
-          your home row during your turn. If there is a piece in that square,
-          <strong>both will be destroyed!</strong>
-        </p>
       </div>
     </section>
   </main>
