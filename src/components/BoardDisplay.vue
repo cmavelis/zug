@@ -54,6 +54,12 @@ logProxy(props);
     </div>
     <div v-if="props.orderNumber">
       <p>ORDERS: step {{ props.orderNumber }}</p>
+      <template
+        v-for="event in props.state.G.events"
+        :key="event.sourcePieceId"
+      >
+        <p>piece {{ event.sourcePieceId }}: {{ event.type }}!</p>
+      </template>
       <template v-for="playerID in [0, 1]" :key="playerID">
         <p>Player {{ playerID + 1 }}</p>
         <template
