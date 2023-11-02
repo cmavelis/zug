@@ -41,12 +41,12 @@ const points = computed(() => {
       y2,
     };
   }
-  if ('toTarget' in order) {
+  if ('toTarget' in order && order.type === 'place') {
     // "place" action
     const { x: x1, y: y1 } = coordsToPixels(order.toTarget, sideLength);
     return { x1, x2: x1, y1, y2: y1 };
   }
-  return { x1: 0, y1: 0, x2: 0, y2: 0 };
+  return null;
 });
 
 const lineColor = computed(() => {
@@ -63,7 +63,7 @@ const lineColor = computed(() => {
     // hacking in score for now as Event type
     props.order.type === 'score'
   ) {
-    return 'hotpink';
+    return 'white';
   }
   return 'darkcyan';
 });
@@ -72,13 +72,20 @@ const lineColor = computed(() => {
 <template>
   <g class="order">
     <line
+      v-if="points !== null"
       :x1="points.x1"
       :y1="points.y1"
       :x2="points.x2"
       :y2="points.y2"
       :stroke="lineColor"
     ></line>
-    <circle :cx="points.x1" :cy="points.y1" r="10" :fill="lineColor"></circle>
+    <circle
+      v-if="points !== null"
+      :cx="points.x1"
+      :cy="points.y1"
+      r="10"
+      :fill="lineColor"
+    ></circle>
   </g>
 </template>
 

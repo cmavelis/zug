@@ -39,9 +39,11 @@ const createMatch = async (setupData: GameSetupData = {}) => {
       <RouterLink to="/match/1">/match/1</RouterLink>
       to join an unlisted match.
     </p>
-    <button @click="createMatch()">Create new match</button>
     <button @click="createMatch({ priority: 'piece' })">
-      Create variant match
+      Create new match
+    </button>
+    <button class="gray-bg" @click="createMatch({ priority: 'order-choice' })">
+      Create "order choice" match
     </button>
     <h2>Open matches:</h2>
 
@@ -71,5 +73,9 @@ const createMatch = async (setupData: GameSetupData = {}) => {
   display: flex;
   gap: 8px;
   justify-self: left;
+}
+
+.gray-bg {
+  background-color: #727272;
 }
 </style>

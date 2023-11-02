@@ -23,7 +23,7 @@ const NUMBER_PIECES = 4;
 // TODO: display-only board, no client prop
 interface BoardProps {
   client: _ClientImpl<GameState>;
-  state: { G: GameState };
+  state: { G: GameState; ctx: any };
   playerID: number;
   showOrders: boolean;
 }
@@ -41,6 +41,25 @@ const piecesToPlace = computed(
     getNumberPiecesMissing(props.state.G, props.playerID) -
     flatOrders.value.filter((order) => order.type === 'place').length,
 );
+const gamePhase = computed(() => {
+  if (props.state.ctx.activePlayers) {
+    return props.state.ctx.activePlayers[props.playerID] || '?';
+  } else {
+    return 'end';
+  }
+});
+const canEndTurn = computed(
+  () => actionsUsed.value.length === 4 && gamePhase.value === 'planning',
+);
+const piecesWithoutActions = computed(() => {
+  const idSet = new Set(
+    props.state.G.pieces
+      .filter((p) => p.owner === props.playerID)
+      .map((p) => p.id),
+  );
+  flatOrders.value.forEach((o) => idSet.delete(o.sourcePieceId));
+  return Array.from(idSet);
+});
 
 const highlightedSquares: Ref<number[]> = computed(() => {
   if (selectedAction.value === 'place') {
@@ -194,6 +213,7 @@ onUnmounted(() => {
         :highlighted-cells="highlightedSquares"
         :selected-piece-id="selectedPiece"
         :show-orders="props.showOrders"
+        :emphasized-piece-ids="piecesWithoutActions"
       />
       <div class="order-button-group">
         <button
@@ -234,7 +254,7 @@ onUnmounted(() => {
           </button>
           ({{ piecesToPlace }})
         </div>
-        <button @click="clearAction()">clear</button>
+        <button @click="clearAction()">clear current action</button>
       </div>
     </div>
     <div v-if="props.showOrders">
@@ -247,9 +267,11 @@ onUnmounted(() => {
         }}
       </p>
       <p>action: {{ selectedAction || 'none selected' }}</p>
-      <p>ORDERS</p>
-      <button @click="undoLastOrder()">undo last order</button>
-      <button @click="handleEndTurn">end turn</button>
+      <p>ACTIONS</p>
+      <button @click="undoLastOrder()">undo last action</button>
+      <button @click="handleEndTurn" :class="{ 'halo-shadow': canEndTurn }">
+        end turn
+      </button>
       <p v-if="endTurnMessage" class="info-message">{{ endTurnMessage }}</p>
       <template
         v-for="order in props.state.G.orders[props.playerID]"
@@ -262,7 +284,6 @@ onUnmounted(() => {
       </template>
     </div>
   </section>
-  <!--  <p>{{ props.state }}</p>-->
 </template>
 
 <style scoped>
