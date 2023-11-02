@@ -152,15 +152,13 @@ export function orderResolver({ G }: { G: GObject }) {
 
   const numberOrders = Math.max(sortedOrders1.length, sortedOrders2.length);
   for (let i = 0; i < numberOrders; i++) {
-    // rank orders by priority
     const ordersToResolve = [sortedOrders1[i], sortedOrders2[i]];
-    logProxy(ordersToResolve);
 
+    // for history
     const ordersUsed = {
       0: ordersToResolve[0] ? [ordersToResolve[0]] : [],
       1: ordersToResolve[1] ? [ordersToResolve[1]] : [],
     };
-
     if (ordersToResolve[0] || ordersToResolve[1]) {
       // copy game state for player review
       turnHistory.push(
@@ -172,6 +170,14 @@ export function orderResolver({ G }: { G: GObject }) {
         }),
       );
     }
+
+    // sort for sequential moves
+    ordersToResolve.sort((a, b) => {
+      if (!a || !b) return 0;
+      return a.priority - b.priority;
+    });
+    console.log('resolving orders:');
+    logProxy(ordersToResolve);
 
     // concurrent move resolution
     if (
