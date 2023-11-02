@@ -54,7 +54,7 @@ export const SimulChess: Game<GObject> = {
     const initialGame = {
       config: {
         board,
-        priority: setupData?.priority || ('order-choice' as PriorityMode),
+        priority: setupData?.priority || ('piece' as PriorityMode),
       },
       cells: Array(board.x * board.y).fill(null),
       pieces: [],
