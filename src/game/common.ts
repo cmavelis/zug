@@ -15,7 +15,7 @@ export const coordinatesToArray = (
     return -999;
   }
   // off board +
-  if (coordinates.y > shape.y || coordinates.x > shape.x) {
+  if (coordinates.y >= shape.y || coordinates.x >= shape.x) {
     return 999;
   }
   return shape.x * coordinates.y + coordinates.x;
