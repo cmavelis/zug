@@ -153,12 +153,7 @@ export function orderResolver({ G }: { G: GObject }) {
   const numberOrders = Math.max(sortedOrders1.length, sortedOrders2.length);
   for (let i = 0; i < numberOrders; i++) {
     // rank orders by priority
-    const ordersToResolve = [sortedOrders1[i], sortedOrders2[i]].sort(
-      (a, b) => {
-        if (!a || !b) return 0;
-        return a.priority - b.priority;
-      },
-    );
+    const ordersToResolve = [sortedOrders1[i], sortedOrders2[i]];
     logProxy(ordersToResolve);
 
     const ordersUsed = {
