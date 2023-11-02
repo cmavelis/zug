@@ -19,9 +19,11 @@ export interface Piece {
 export const createPiece = ({
   G,
   pieceToCreate,
+  priorityArray,
 }: {
   G: GameState;
   pieceToCreate: Optional<Piece, 'id' | 'isDefending' | 'priority'>;
+  priorityArray?: number[];
 }) => {
   const cellIndex = coordinatesToArray(pieceToCreate.position, G.config.board);
   if (G.cells[cellIndex]) {
@@ -45,14 +47,33 @@ export const createPiece = ({
 
   const pieceId = availableIds[0];
 
+  // Setting priority
+  let allowedPriorities = PRIORITIES_LIST;
+
+  if (priorityArray) {
+    const priorityDifference = priorityArray.filter(
+      (x) => !PRIORITIES_LIST.includes(x),
+    );
+    if (priorityDifference.length > 0) {
+      console.warn(
+        'Priority range has the following numbers outside the configured :',
+        priorityDifference,
+      );
+    }
+    allowedPriorities = priorityArray;
+  }
   let priority = pieceId;
   if (G.config.priority === 'piece') {
     const usedPriorities = G.pieces
       .filter((p) => p.owner === pieceToCreate.owner)
       .map((p) => p.priority);
-    const availablePriorities = PRIORITIES_LIST.filter(
+    const availablePriorities = allowedPriorities.filter(
       (n) => !usedPriorities.includes(n),
     );
+    if (availablePriorities.length === 0) {
+      console.error('No priorities available to assign piece, assigning 99');
+      availablePriorities.push(99);
+    }
     const randomIndex = Math.floor(Math.random() * availablePriorities.length);
     priority = availablePriorities[randomIndex];
   }

@@ -88,14 +88,16 @@ export const SimulChess: Game<GObject> = {
       [0, 1, 2, 3].forEach((x) =>
         createPiece({
           G: initialGame,
-          pieceToCreate: { owner: 0, position: { x, y: 0 }, priority: x + 2 },
+          pieceToCreate: { owner: 0, position: { x, y: 0 } },
+          priorityArray: [2, 3, 4, 5],
         }),
       );
 
       [0, 1, 2, 3].forEach((x) =>
         createPiece({
           G: initialGame,
-          pieceToCreate: { owner: 1, position: { x, y: 3 }, priority: x + 2 },
+          pieceToCreate: { owner: 1, position: { x, y: 3 } },
+          priorityArray: [2, 3, 4, 5],
         }),
       );
     }
