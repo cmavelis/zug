@@ -54,7 +54,7 @@ const rows = computed(() => props.board.y);
         selected: props.selectedPieceId === piece.id,
       }"
       :iconClass="{
-        'halo-shadow': props.emphasizedPieceIds.includes(piece.id),
+        'halo-shadow': Boolean(props.emphasizedPieceIds?.includes(piece.id)),
       }"
       v-bind="piece"
       @click="handlePieceClick(piece.id)"

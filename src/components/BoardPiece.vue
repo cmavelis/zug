@@ -3,7 +3,7 @@ import { computed } from 'vue';
 import type { Piece } from '@/game/pieces';
 
 interface BoardPiece extends Piece {
-  iconClass: { [key: string]: boolean };
+  iconClass?: { [key: string]: boolean };
 }
 
 const props = defineProps<BoardPiece>();
