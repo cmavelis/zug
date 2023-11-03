@@ -12,6 +12,8 @@ import { SimulChessClient } from '@/game/App';
 import type { GameState, GObject } from '@/game/Game';
 import { store } from '@/store';
 
+import notificationSound from '../assets/two-note-notification.mp3';
+
 onMounted(() => {
   window.addEventListener('keydown', keyListener);
 });
@@ -128,6 +130,18 @@ const gamePhase = computed(() => {
     return 'end';
   }
 });
+
+// "your turn" sound
+const audio = new Audio(notificationSound);
+audio.volume = 0.75;
+watch(
+  () => gamePhase.value,
+  (newPhase, oldPhase) => {
+    if (newPhase !== oldPhase && oldPhase === 'resolution') {
+      audio.play();
+    }
+  },
+);
 </script>
 
 <template>
