@@ -40,6 +40,10 @@ const isPlayerSelected = computed(() => {
   return playerID.value === 0 || playerID.value === 1;
 });
 const keyListener = (event: KeyboardEvent) => {
+  // @ts-expect-error tagname DNE
+  if (event?.target?.tagName?.toLowerCase() === 'input') {
+    return;
+  }
   switch (event.key) {
     case '1': {
       if (store.isDebug) playerID.value = 0;

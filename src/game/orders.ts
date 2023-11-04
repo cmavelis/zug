@@ -64,6 +64,7 @@ export interface DefendOrder extends Omit<OrderBase, 'toTarget'> {
 
 export interface PlaceOrder extends OrderBase {
   type: 'place';
+  newPiecePriority?: number;
 }
 
 type MoveOrder = MoveStraightOrder | MoveDiagonalOrder;
@@ -400,7 +401,11 @@ export function orderResolver({ G }: { G: GObject }) {
   function applyPlace(order: PlaceOrder) {
     createPiece({
       G,
-      pieceToCreate: { owner: order.owner, position: order.toTarget },
+      pieceToCreate: {
+        owner: order.owner,
+        position: order.toTarget,
+        priority: order.newPiecePriority,
+      },
     });
   }
 

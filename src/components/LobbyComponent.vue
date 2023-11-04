@@ -23,10 +23,16 @@ const createMatch = async (setupData: GameSetupData = {}) => {
   const createdMatch = await lobbyClient.createMatch('zug', {
     numPlayers: 2,
     setupData,
+    unlisted: setupData?.empty,
   });
   await router.push({
     name: 'match',
-    params: { matchID: createdMatch.matchID },
+    params: {
+      matchID: createdMatch.matchID,
+    },
+    query: {
+      player: setupData?.empty ? 9 : undefined,
+    },
   });
 };
 </script>
@@ -39,12 +45,15 @@ const createMatch = async (setupData: GameSetupData = {}) => {
       <RouterLink to="/match/1">/match/1</RouterLink>
       to join an unlisted match.
     </p>
-    <button @click="createMatch({ priority: 'piece' })">
-      Create new match
-    </button>
-    <button class="gray-bg" @click="createMatch({ priority: 'order-choice' })">
-      Create "order choice" match
-    </button>
+    <section class="button-group">
+      <h2>Create a match:</h2>
+      <button @click="createMatch({ priority: 'piece' })">Standard</button>
+      <button @click="createMatch({ priority: 'order-choice' })">
+        "Order choice" priority setting
+      </button>
+      <button @click="createMatch({ empty: true })">Testing</button>
+    </section>
+
     <h2>Open matches:</h2>
 
     <section :key="match.matchID" v-for="match in matches" class="matches-list">
@@ -75,7 +84,13 @@ const createMatch = async (setupData: GameSetupData = {}) => {
   justify-self: left;
 }
 
-.gray-bg {
-  background-color: #727272;
+.button-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  align-items: center;
+}
+button {
+  width: fit-content;
 }
 </style>
