@@ -32,6 +32,7 @@ const selectedPiece: Ref<undefined | number> = ref(undefined);
 const selectedAction: Ref<undefined | OrderTypes> = ref(undefined);
 const cellHover: Ref<undefined | number> = ref(undefined);
 const endTurnMessage = ref('');
+const pieceToPlace = ref(0);
 
 const props = defineProps<BoardProps>();
 const flatOrders = computed(() => props.state.G.orders[props.playerID] || []);
@@ -141,6 +142,9 @@ const handleCellClick = (cellID: number) => {
       if (!isValidPlaceOrder(order) && !store.isDebug) {
         return;
       }
+      if (pieceToPlace.value > 0) {
+        order.newPiecePriority = pieceToPlace.value;
+      }
     }
 
     // if invalid, early return && msg
@@ -182,6 +186,9 @@ const undoLastOrder = () => {
 };
 
 const keyListener = (e: KeyboardEvent) => {
+  if (e?.target?.tagName?.toLowerCase() === 'input') {
+    return;
+  }
   if (e.key === '3') {
     handleEndTurn();
   }
@@ -253,6 +260,11 @@ onUnmounted(() => {
             place new piece
           </button>
           ({{ piecesToPlace }})
+          <input
+            v-if="store.isDebug"
+            v-model.number="pieceToPlace"
+            type="number"
+          />
         </div>
         <button @click="clearAction()">clear current action</button>
       </div>
