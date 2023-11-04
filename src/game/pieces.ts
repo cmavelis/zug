@@ -16,13 +16,15 @@ export interface Piece {
   priority: number;
 }
 
+export type PieceToCreate = Optional<Piece, 'id' | 'isDefending' | 'priority'>;
+
 export const createPiece = ({
   G,
   pieceToCreate,
   priorityArray,
 }: {
   G: GameState;
-  pieceToCreate: Optional<Piece, 'id' | 'isDefending' | 'priority'>;
+  pieceToCreate: PieceToCreate;
   priorityArray?: number[];
 }) => {
   const cellIndex = coordinatesToArray(pieceToCreate.position, G.config.board);

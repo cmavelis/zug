@@ -14,7 +14,7 @@ import {
   isValidOrder,
 } from '@/game/zugzwang/validators';
 import { logProxy } from '@/utils';
-import type { Piece } from '@/game/pieces';
+import type { Piece, PieceToCreate } from '@/game/pieces';
 import { createPiece } from '@/game/pieces';
 import { PRIORITIES_LIST, MOVES_CAN_PUSH } from '@/game/zugzwang/config';
 
@@ -399,13 +399,14 @@ export function orderResolver({ G }: { G: GObject }) {
   }
 
   function applyPlace(order: PlaceOrder) {
+    const pieceToCreate: PieceToCreate = {
+      owner: order.owner,
+      position: order.toTarget,
+    };
+    if (order.newPiecePriority) pieceToCreate.priority = order.newPiecePriority;
     createPiece({
       G,
-      pieceToCreate: {
-        owner: order.owner,
-        position: order.toTarget,
-        priority: order.newPiecePriority,
-      },
+      pieceToCreate,
     });
   }
 
