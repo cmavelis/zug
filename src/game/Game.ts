@@ -12,6 +12,7 @@ export type PriorityMode =
 
 export interface GameSetupData {
   priority?: PriorityMode;
+  empty?: boolean;
 }
 
 export interface GameState {
@@ -63,7 +64,7 @@ export const SimulChess: Game<GObject> = {
       score: { 0: 0, 1: 0 },
     };
 
-    if (empty) {
+    if (setupData?.empty || empty) {
       return initialGame;
     }
     if (hostname === 'localhost' && port === '5173') {
