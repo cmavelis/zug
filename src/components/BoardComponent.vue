@@ -186,6 +186,7 @@ const undoLastOrder = () => {
 };
 
 const keyListener = (e: KeyboardEvent) => {
+  // @ts-expect-error tagname DNE
   if (e?.target?.tagName?.toLowerCase() === 'input') {
     return;
   }
@@ -251,6 +252,11 @@ onUnmounted(() => {
         >
           push (diagonal)
         </button>
+        <input
+          v-if="store.isDebug"
+          v-model.number="pieceToPlace"
+          type="number"
+        />
         <div>
           <button
             :disabled="piecesToPlace === 0"
@@ -260,11 +266,6 @@ onUnmounted(() => {
             place new piece
           </button>
           ({{ piecesToPlace }})
-          <input
-            v-if="store.isDebug"
-            v-model.number="pieceToPlace"
-            type="number"
-          />
         </div>
         <button @click="clearAction()">clear current action</button>
       </div>
