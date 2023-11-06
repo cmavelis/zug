@@ -8,6 +8,8 @@
     "test": "vitest --environment jsdom --root src/",
     "build-only": "vite build",
     "build-watch": "vite build --watch",
+    "build:dev": "vite build --mode development",
+    "build-watch:dev": "vite build --watch --mode development",
     "type-check": "vue-tsc --noEmit -p tsconfig.vitest.json --composite false",
     "type-check-watch": "vue-tsc --noEmit -p tsconfig.vitest.json --composite false -w",
     "lint": "eslint . --ext .vue,.js,.jsx,.cjs,.mjs,.ts,.tsx,.cts,.mts --fix --ignore-path .gitignore",
@@ -18,6 +20,7 @@
   "dependencies": {
     "bgio-postgres": "^1.0.15",
     "boardgame.io": "^0.50.2",
+    "dotenv": "^16.3.1",
     "koa-static": "^5.0.0",
     "lodash": "^4.17.21",
     "nodemon": "^2.0.20",

@@ -1,5 +1,6 @@
 // @ts-nocheck
 // @ts-ignore
+import 'dotenv/config';
 const { Server, Origins } = require('boardgame.io/server');
 const { SimulChess } = require('../src/game/Game');
 const path = require('path');
