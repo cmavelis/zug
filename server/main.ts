@@ -4,6 +4,33 @@ const { Server, Origins } = require('boardgame.io/server');
 const { SimulChess } = require('../src/game/Game');
 const path = require('path');
 const serve = require('koa-static');
+const jwt = require('jsonwebtoken');
+
+const decodeToken = (token: string) => {
+  try {
+    const decoded = jwt.verify(token, 'secret'); // TODO: real secret
+    // `sub` is just from the jwt example
+    return decoded.sub;
+  } catch (e) {
+    console.error("Couldn't decode token", e);
+    return 'error';
+  }
+};
+const generateCredentials = async (ctx) => {
+  console.log('request', ctx.request.headers);
+  const authHeader = ctx.request.headers['authorization'];
+  return decodeToken(authHeader);
+};
+
+const authenticateCredentials = async (credentials, playerMetadata) => {
+  console.log('authenticateCredentials');
+  console.log(credentials, playerMetadata);
+  if (credentials) {
+    const token = decodeToken(credentials);
+    if (token === playerMetadata?.credentials) return true;
+  }
+  return false;
+};
 
 const server = Server({
   games: [SimulChess],
@@ -12,6 +39,8 @@ const server = Server({
     `https://${process.env.RAILWAY_STATIC_URL}:${process.env.PORT}`,
     `https://${process.env.RAILWAY_STATIC_URL}`,
   ],
+  generateCredentials,
+  authenticateCredentials,
 });
 
 // Build path relative to this file
@@ -23,7 +52,7 @@ server.run(Number(process.env.PORT) || 8000, () => {
     async (ctx, next) =>
       await serve(frontEndAppBuildPath)(
         Object.assign(ctx, { path: 'index.html' }),
-        next
-      )
+        next,
+      ),
   );
 });

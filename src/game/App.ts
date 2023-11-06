@@ -6,6 +6,10 @@ import type { _ClientImpl } from 'boardgame.io/dist/types/src/client/client';
 const { protocol, hostname, port } = window.location;
 const server = `${protocol}//${hostname}:${port}`;
 
+// TODO: get JWT from server
+const jwt =
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.XbPfbIHMI6arZ3Y922BhjWgQzWXcXNrz0ogtVhfEd2o';
+
 export class SimulChessClient {
   client: _ClientImpl<any, { G: GameState; playerID: number }>;
   constructor(playerID: string, matchID?: string) {
@@ -20,6 +24,7 @@ export class SimulChessClient {
       playerID,
       matchID,
       debug: false,
+      credentials: jwt,
     });
     this.client.start();
   }

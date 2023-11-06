@@ -17,6 +17,7 @@
   },
   "dependencies": {
     "boardgame.io": "^0.50.2",
+    "jsonwebtoken": "^9.0.2",
     "koa-static": "^5.0.0",
     "lodash": "^4.17.21",
     "nodemon": "^2.0.20",
