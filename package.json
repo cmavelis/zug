@@ -16,6 +16,7 @@
     "start": "npm run server:prod"
   },
   "dependencies": {
+    "bgio-postgres": "^1.0.15",
     "boardgame.io": "^0.50.2",
     "jsonwebtoken": "^9.0.2",
     "koa-static": "^5.0.0",

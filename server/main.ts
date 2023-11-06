@@ -6,6 +6,22 @@ const path = require('path');
 const serve = require('koa-static');
 const jwt = require('jsonwebtoken');
 
+import { PostgresStore } from 'bgio-postgres';
+
+const dbname = 'zug-test';
+const username = 'cmavelis';
+
+// // EITHER provide a URI
+// const db = new PostgresStore(
+//   'postgresql://<username>:<password>@<host>/<database>',
+// );
+
+// OR provide options
+const db = new PostgresStore({
+  database: dbname,
+  username,
+});
+
 const decodeToken = (token: string) => {
   try {
     const decoded = jwt.verify(token, 'secret'); // TODO: real secret
@@ -41,6 +57,7 @@ const server = Server({
   ],
   generateCredentials,
   authenticateCredentials,
+  db,
 });
 
 // Build path relative to this file
