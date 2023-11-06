@@ -5,6 +5,17 @@ const { SimulChess } = require('../src/game/Game');
 const path = require('path');
 const serve = require('koa-static');
 
+import { PostgresStore } from 'bgio-postgres';
+
+// EITHER provide a URI
+const db = new PostgresStore(process.env.DATABASE_URL);
+
+// // OR provide options
+// const db = new PostgresStore({
+//   database: dbname,
+//   username,
+// });
+
 const server = Server({
   games: [SimulChess],
   origins: [
@@ -12,6 +23,7 @@ const server = Server({
     `https://${process.env.RAILWAY_STATIC_URL}:${process.env.PORT}`,
     `https://${process.env.RAILWAY_STATIC_URL}`,
   ],
+  db,
 });
 
 // Build path relative to this file
@@ -23,7 +35,7 @@ server.run(Number(process.env.PORT) || 8000, () => {
     async (ctx, next) =>
       await serve(frontEndAppBuildPath)(
         Object.assign(ctx, { path: 'index.html' }),
-        next
-      )
+        next,
+      ),
   );
 });
