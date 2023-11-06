@@ -7,19 +7,14 @@ const serve = require('koa-static');
 
 import { PostgresStore } from 'bgio-postgres';
 
-const dbname = 'zug-test';
-const username = 'cmavelis';
+// EITHER provide a URI
+const db = new PostgresStore(process.env.DATABASE_URL);
 
-// // EITHER provide a URI
-// const db = new PostgresStore(
-//   'postgresql://<username>:<password>@<host>/<database>',
-// );
-
-// OR provide options
-const db = new PostgresStore({
-  database: dbname,
-  username,
-});
+// // OR provide options
+// const db = new PostgresStore({
+//   database: dbname,
+//   username,
+// });
 
 const server = Server({
   games: [SimulChess],
@@ -28,7 +23,7 @@ const server = Server({
     `https://${process.env.RAILWAY_STATIC_URL}:${process.env.PORT}`,
     `https://${process.env.RAILWAY_STATIC_URL}`,
   ],
-  db
+  db,
 });
 
 // Build path relative to this file
