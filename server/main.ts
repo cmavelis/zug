@@ -64,6 +64,25 @@ const server = Server({
 const frontEndAppBuildPath = path.resolve(__dirname, '../dist');
 server.app.use(serve(frontEndAppBuildPath));
 
+// // can compose routes like this
+// server.router.get('/hello', async (ctx, next) => {
+//   console.log('yep');
+//   await next(ctx);
+//   ctx.body = { me: 'hiya', ...ctx.body };
+// });
+//
+// server.router.get('/hello', async (ctx) => {
+//   console.log('nope');
+//   ctx.body = { you: 'no' };
+// });
+
+server.router.get('/exchange', async (ctx) => {
+  const { request } = ctx;
+  console.log(request?.query?.code);
+  // do discord oauth https://discord.com/developers/docs/topics/oauth2#authorization-code-grant-access-token-exchange-example
+  ctx.redirect('/discord');
+});
+
 server.run(Number(process.env.PORT) || 8000, () => {
   server.app.use(
     async (ctx, next) =>
@@ -73,3 +92,15 @@ server.run(Number(process.env.PORT) || 8000, () => {
       ),
   );
 });
+
+// discord auth link (redirect needs changed)
+// https://discord.com/oauth2/authorize?response_type=code&client_id=1170904526635675678&scope=identify&state=15773059ghq9183habn&redirect_uri=https%3A%2F%2Fcameronavelis.com&prompt=consent
+
+// http%3A%2F%2Flocalhost%3A8000%2Fexchange
+// https://discord.com/oauth2/authorize?response_type=code&client_id=1170904526635675678&scope=identify&state=15773059ghq9183habn&redirect_uri=http%3A%2F%2Flocalhost%3A8000%2Fexchange&prompt=consent
+
+// redirected to:
+// https://www.cameronavelis.com/?code=bohiSWTBGHFpgrmqCY9VPaqAh13myS&state=15773059ghq9183habn
+
+// railway (how they do it, for notes) (didn't work)
+// https://discord.com/oauth2/authorize?client_id=743821730639773696&redirect_uri=https%3A%2F%2Frailway.app%2Fauth%2Fdiscord&response_type=code&scope=identify%20email%20connections%20guilds%20guilds.join&state=cGFnZT1wcm9maWxlJmNvbm5lY3Q9Y21hdmVsaXMlNDBnbWFpbC5jb20mbm9uY2U9ZjY3ZTI1YjgtOGJmZS00ZGUxLWFhMDgtNDg0NzU3ZWNjMjdj
