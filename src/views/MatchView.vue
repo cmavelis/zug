@@ -119,7 +119,7 @@ matchClientTwo.client.subscribe(updateGameStateTwo);
 watch(
   () => gameState.G.history,
   async (newHistory, oldHistory) => {
-    if (newHistory.length !== oldHistory.length) {
+    if (newHistory && oldHistory && newHistory?.length !== oldHistory?.length) {
       historyOrderNumber.value = 1;
     }
   },

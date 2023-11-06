@@ -1,5 +1,6 @@
 // @ts-nocheck
 // @ts-ignore
+import 'dotenv/config';
 const { Server, Origins } = require('boardgame.io/server');
 const { SimulChess } = require('../src/game/Game');
 const path = require('path');
@@ -8,19 +9,7 @@ const jwt = require('jsonwebtoken');
 
 import { PostgresStore } from 'bgio-postgres';
 
-const dbname = 'zug-test';
-const username = 'cmavelis';
-
-// // EITHER provide a URI
-// const db = new PostgresStore(
-//   'postgresql://<username>:<password>@<host>/<database>',
-// );
-
-// OR provide options
-const db = new PostgresStore({
-  database: dbname,
-  username,
-});
+const db = new PostgresStore(process.env.DATABASE_URL);
 
 const decodeToken = (token: string) => {
   try {
