@@ -10,7 +10,7 @@ export const store = reactive({
   setZugToken(arg: string) {
     this.zugToken = arg;
   },
-  zugUsername: getUserInStorage()?.username,
+  zugUsername: getUserInStorage()?.userID,
   setZugUsername(arg: string) {
     this.zugUsername = arg;
   },

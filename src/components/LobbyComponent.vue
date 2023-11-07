@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from 'vue';
+import { computed, ref } from 'vue';
 import type { Ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { LobbyClient } from 'boardgame.io/client';
@@ -44,7 +44,7 @@ const requestJoinMatch = async (matchID: string) => {
     const resp = await lobbyClient.joinMatch(
       'zug',
       matchID,
-      { playerName: 'me' },
+      { playerName: store.zugUsername || 'error' },
       { headers: { authorization: store.zugToken || 'a' } },
     );
     console.log(resp);
@@ -64,6 +64,12 @@ const navigateToMatch = (matchID: string, playerID: string) => {
   const matchUrl = `/match/${matchID}?player=${Number(playerID) + 1}`;
   router.push(matchUrl);
 };
+
+const usersMatches = computed(() => {
+  return matches.value
+    .filter((m) => m.players.some((p) => p.name === store.zugUsername))
+    .map((match) => match.matchID);
+});
 </script>
 
 <template>
@@ -86,19 +92,29 @@ const navigateToMatch = (matchID: string, playerID: string) => {
     <h2>Open matches:</h2>
     <span>{{ joinStatus }}</span>
     <section class="matches-list">
-      <div :key="match.matchID" v-for="match in matches">
+      <div
+        :key="match.matchID"
+        :class="{ highlight: usersMatches.includes(match.matchID) }"
+        v-for="match in matches"
+      >
         <div class="match-name">{{ match.matchID }}</div>
         <div>
-          <div :key="player.name" v-for="player in match.players">
+          <div :key="player.name" v-for="(player, i) in match.players">
             {{ player.name }}
+            <button
+              v-if="player.name === store.zugUsername"
+              @click="navigateToMatch(match.matchID, String(i))"
+            >
+              go to
+            </button>
           </div>
         </div>
-        <div>
-          <!--        <RouterLink :to="`/match/${match.matchID}?player=1`"-->
-          <!--          >player 1</RouterLink-->
-          <!--        ><RouterLink :to="`/match/${match.matchID}?player=2`"-->
-          <!--          >player 2</RouterLink-->
-          <!--        >-->
+        <div
+          v-if="
+            match.players.some((p) => !p.name) &&
+            match.players.every((p) => p.name !== store.zugUsername)
+          "
+        >
           <button @click="requestJoinMatch(match.matchID)">join</button>
         </div>
       </div>
@@ -116,10 +132,8 @@ const navigateToMatch = (matchID: string, playerID: string) => {
 .match-name {
   justify-self: right;
 }
-.match-link {
-  display: flex;
-  gap: 8px;
-  justify-self: left;
+.highlight {
+  border: 2px solid orange;
 }
 
 .button-group {
