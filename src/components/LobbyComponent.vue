@@ -26,19 +26,11 @@ const createMatch = async (setupData: GameSetupData = {}) => {
     setupData,
     unlisted: setupData?.empty,
   });
-  await router.push({
-    name: 'match',
-    params: {
-      matchID: createdMatch.matchID,
-    },
-    query: {
-      player: setupData?.empty ? 9 : undefined,
-    },
-  });
+  await requestJoinMatch(createdMatch.matchID, setupData);
 };
 
 const joinStatus = ref('');
-const requestJoinMatch = async (matchID: string) => {
+const requestJoinMatch = async (matchID: string, setupData?: GameSetupData) => {
   joinStatus.value = 'loading';
   try {
     const resp = await lobbyClient.joinMatch(
@@ -50,7 +42,7 @@ const requestJoinMatch = async (matchID: string) => {
     console.log(resp);
     if (resp.playerID) {
       joinStatus.value = 'success';
-      navigateToMatch(matchID, resp.playerID);
+      navigateToMatch(matchID, resp.playerID, setupData);
     } else {
       joinStatus.value = 'failed';
     }
@@ -60,9 +52,20 @@ const requestJoinMatch = async (matchID: string) => {
   }
 };
 
-const navigateToMatch = (matchID: string, playerID: string) => {
-  const matchUrl = `/match/${matchID}?player=${Number(playerID) + 1}`;
-  router.push(matchUrl);
+const navigateToMatch = (
+  matchID: string,
+  playerID: string,
+  setupData?: GameSetupData,
+) => {
+  router.push({
+    name: 'match',
+    params: {
+      matchID,
+    },
+    query: {
+      player: setupData?.empty ? 9 : Number(playerID) + 1,
+    },
+  });
 };
 
 const usersMatches = computed(() => {
@@ -94,7 +97,10 @@ const usersMatches = computed(() => {
     <section class="matches-list">
       <div
         :key="match.matchID"
-        :class="{ highlight: usersMatches.includes(match.matchID) }"
+        :class="{
+          match: true,
+          highlight: usersMatches.includes(match.matchID),
+        }"
         v-for="match in matches"
       >
         <div class="match-name">{{ match.matchID }}</div>
@@ -131,6 +137,9 @@ const usersMatches = computed(() => {
 }
 .match-name {
   justify-self: right;
+}
+.match {
+  padding: 4px;
 }
 .highlight {
   border: 2px solid orange;
