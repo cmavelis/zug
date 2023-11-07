@@ -4,6 +4,8 @@ import 'dotenv/config';
 import { PostgresStore } from 'bgio-postgres';
 
 import { decodeToken, encodeToken } from './auth';
+import { ZugUser } from '../src/utils/auth';
+import { randomUUID } from 'crypto';
 
 const { Server, Origins } = require('boardgame.io/server');
 const { SimulChess } = require('../src/game/Game');
@@ -13,18 +15,24 @@ const { koaBody } = require('koa-body');
 
 const db = new PostgresStore(process.env.DATABASE_URL);
 
+interface ZugToken extends ZugUser {
+  iat: number;
+  credentials: string;
+}
+
 const generateCredentials = async (ctx) => {
   console.log('request', ctx.request.headers);
   const authHeader = ctx.request.headers['authorization'];
-  return decodeToken(authHeader);
+  const token: ZugToken = decodeToken(authHeader);
+  return token.credentials;
 };
 
 const authenticateCredentials = async (credentials, playerMetadata) => {
   console.log('authenticateCredentials');
   console.log(credentials, playerMetadata);
   if (credentials) {
-    const token = decodeToken(credentials);
-    if (token === playerMetadata?.credentials) return true;
+    const token: ZugToken = decodeToken(credentials);
+    if (token.credentials === playerMetadata?.credentials) return true;
   }
   return false;
 };
@@ -59,7 +67,11 @@ server.app.use(serve(frontEndAppBuildPath));
 
 server.router.post('/api/login', koaBody(), async (ctx) => {
   const { request } = ctx;
-  ctx.body = encodeToken(request.body);
+  const tokenPayload = {
+    ...request.body,
+    credentials: randomUUID(),
+  };
+  ctx.body = encodeToken(tokenPayload);
 });
 
 server.router.get('/exchange', async (ctx) => {

@@ -5,6 +5,7 @@ import { useRouter } from 'vue-router';
 import { LobbyClient } from 'boardgame.io/client';
 import type { LobbyAPI } from 'boardgame.io/dist/types/src/types';
 import type { GameSetupData } from '@/game/Game';
+import { store } from '@/store';
 
 const matches: Ref<LobbyAPI.Match[]> = ref([]);
 const { protocol, hostname, port } = window.location;
@@ -35,6 +36,15 @@ const createMatch = async (setupData: GameSetupData = {}) => {
     },
   });
 };
+
+const joinMatch = (matchID: string) => {
+  lobbyClient.joinMatch(
+    'zug',
+    matchID,
+    { playerName: 'me' },
+    { headers: { authorization: store.zugToken || 'a' } },
+  );
+};
 </script>
 
 <template>
@@ -64,6 +74,7 @@ const createMatch = async (setupData: GameSetupData = {}) => {
         ><RouterLink :to="`/match/${match.matchID}?player=2`"
           >player 2</RouterLink
         >
+        <button @click="joinMatch(match.matchID)">join</button>
       </div>
     </section>
   </main>

@@ -4,8 +4,8 @@ export interface ZugUser {
 
 const STORAGE_KEY = 'zug-user';
 
-export const getTokenInStorage = (): string | null => {
-  return localStorage.getItem(STORAGE_KEY);
+export const getTokenInStorage = (): string | undefined => {
+  return localStorage.getItem(STORAGE_KEY) || undefined;
 };
 
 export const setTokenInStorage = (token: string) => {
