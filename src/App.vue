@@ -3,7 +3,7 @@ import { RouterLink, RouterView } from 'vue-router';
 import { ref } from 'vue';
 import axios from 'axios';
 
-import { setUserInStorage, ZugUser } from '@/utils/auth';
+import { setUserInStorage, type ZugUser } from '@/utils/auth';
 import { store } from '@/store';
 
 const usernameInput = ref('');
