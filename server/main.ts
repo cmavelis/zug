@@ -1,13 +1,15 @@
 // @ts-nocheck
 // @ts-ignore
 import 'dotenv/config';
+import { PostgresStore } from 'bgio-postgres';
+
+import { decodeToken, encodeToken } from './auth';
+
 const { Server, Origins } = require('boardgame.io/server');
 const { SimulChess } = require('../src/game/Game');
 const path = require('path');
 const serve = require('koa-static');
-import { PostgresStore } from 'bgio-postgres';
-
-import { decodeToken } from '../src/utils/auth';
+const { koaBody } = require('koa-body');
 
 const db = new PostgresStore(process.env.DATABASE_URL);
 
@@ -54,6 +56,11 @@ server.app.use(serve(frontEndAppBuildPath));
 //   console.log('nope');
 //   ctx.body = { you: 'no' };
 // });
+
+server.router.post('/api/login', koaBody(), async (ctx) => {
+  const { request } = ctx;
+  ctx.body = encodeToken(request.body);
+});
 
 server.router.get('/exchange', async (ctx) => {
   const { request } = ctx;

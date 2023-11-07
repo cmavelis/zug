@@ -1,10 +1,34 @@
 <script setup lang="ts">
 import { RouterLink, RouterView } from 'vue-router';
+import { ref } from 'vue';
+import axios from 'axios';
+
+import { setTokenInStorage } from '@/utils/auth';
+import { store } from '@/store';
+
+const usernameInput = ref('');
+
+const login = async () => {
+  const resp = await axios.post('/api/login', {
+    username: usernameInput.value,
+  });
+  console.log(resp);
+  if (resp.status === 200) {
+    setTokenInStorage(resp.data);
+    store.setZugToken(resp.data);
+  }
+};
 </script>
 
 <template>
   <header>
     <div class="wrapper">
+      <p v-if="store.zugToken">welcome back!</p>
+      <div v-else>
+        <input v-model="usernameInput" />
+        <button @click="login">login</button>
+      </div>
+
       <nav>
         <RouterLink to="/">Home</RouterLink>
         <RouterLink to="/how-to-play">How To Play</RouterLink>
