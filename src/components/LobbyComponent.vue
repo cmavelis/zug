@@ -70,7 +70,9 @@ const navigateToMatch = (
 
 const usersMatches = computed(() => {
   return matches.value
-    .filter((m) => m.players.some((p) => p.name === store.zugUsername))
+    .filter((m) =>
+      m.players.some((p) => p.name && p.name === store.zugUsername),
+    )
     .map((match) => match.matchID);
 });
 </script>
@@ -108,7 +110,7 @@ const usersMatches = computed(() => {
           <div :key="player.name" v-for="(player, i) in match.players">
             {{ player.name }}
             <button
-              v-if="player.name === store.zugUsername"
+              v-if="player.name && player.name === store.zugUsername"
               @click="navigateToMatch(match.matchID, String(i))"
             >
               go to

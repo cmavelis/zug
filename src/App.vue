@@ -27,8 +27,8 @@ const login = async () => {
 
 const logout = () => {
   removeUserInStorage();
-  store.setZugToken('');
-  store.setZugUsername('');
+  store.setZugToken(undefined);
+  store.setZugUsername(undefined);
 };
 </script>
 
