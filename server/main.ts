@@ -5,22 +5,12 @@ const { Server, Origins } = require('boardgame.io/server');
 const { SimulChess } = require('../src/game/Game');
 const path = require('path');
 const serve = require('koa-static');
-const jwt = require('jsonwebtoken');
-
 import { PostgresStore } from 'bgio-postgres';
+
+import { decodeToken } from '../src/utils/auth';
 
 const db = new PostgresStore(process.env.DATABASE_URL);
 
-const decodeToken = (token: string) => {
-  try {
-    const decoded = jwt.verify(token, 'secret'); // TODO: real secret
-    // `sub` is just from the jwt example
-    return decoded.sub;
-  } catch (e) {
-    console.error("Couldn't decode token", e);
-    return 'error';
-  }
-};
 const generateCredentials = async (ctx) => {
   console.log('request', ctx.request.headers);
   const authHeader = ctx.request.headers['authorization'];
