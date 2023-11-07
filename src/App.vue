@@ -3,7 +3,11 @@ import { RouterLink, RouterView } from 'vue-router';
 import { ref } from 'vue';
 import axios from 'axios';
 
-import { setUserInStorage, type ZugUser } from '@/utils/auth';
+import {
+  setUserInStorage,
+  removeUserInStorage,
+  type ZugUser,
+} from '@/utils/auth';
 import { store } from '@/store';
 
 const usernameInput = ref('');
@@ -12,7 +16,6 @@ const login = async () => {
   const resp = await axios.post('/api/login', {
     username: usernameInput.value,
   });
-  console.log(resp);
   if (resp.status === 200) {
     const { data } = resp;
     const { authToken, userID } = data as ZugUser;
@@ -21,12 +24,21 @@ const login = async () => {
     store.setZugUsername(userID);
   }
 };
+
+const logout = () => {
+  removeUserInStorage();
+  store.setZugToken('');
+  store.setZugUsername('');
+};
 </script>
 
 <template>
   <header>
     <div class="wrapper">
-      <p v-if="store.zugToken">hi {{ store.zugUsername }}!</p>
+      <div v-if="store.zugToken">
+        <p>hi {{ store.zugUsername }}!</p>
+        <button @click="logout">logout</button>
+      </div>
       <div v-else>
         <input v-model="usernameInput" />
         <button @click="login">login</button>

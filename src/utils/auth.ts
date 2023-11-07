@@ -14,3 +14,7 @@ export const getUserInStorage = (): ZugUser | undefined => {
 export const setUserInStorage = (payload: ZugUser) => {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
 };
+
+export const removeUserInStorage = () => {
+  localStorage.removeItem(STORAGE_KEY);
+};
