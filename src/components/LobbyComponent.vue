@@ -37,13 +37,32 @@ const createMatch = async (setupData: GameSetupData = {}) => {
   });
 };
 
-const joinMatch = (matchID: string) => {
-  lobbyClient.joinMatch(
-    'zug',
-    matchID,
-    { playerName: 'me' },
-    { headers: { authorization: store.zugToken || 'a' } },
-  );
+const joinStatus = ref('');
+const requestJoinMatch = async (matchID: string) => {
+  joinStatus.value = 'loading';
+  try {
+    const resp = await lobbyClient.joinMatch(
+      'zug',
+      matchID,
+      { playerName: 'me' },
+      { headers: { authorization: store.zugToken || 'a' } },
+    );
+    console.log(resp);
+    if (resp.playerID) {
+      joinStatus.value = 'success';
+      navigateToMatch(matchID, resp.playerID);
+    } else {
+      joinStatus.value = 'failed';
+    }
+  } catch (e) {
+    console.error(e);
+    joinStatus.value = 'failed';
+  }
+};
+
+const navigateToMatch = (matchID: string, playerID: string) => {
+  const matchUrl = `/match/${matchID}?player=${Number(playerID) + 1}`;
+  router.push(matchUrl);
 };
 </script>
 
@@ -65,16 +84,23 @@ const joinMatch = (matchID: string) => {
     </section>
 
     <h2>Open matches:</h2>
-
-    <section :key="match.matchID" v-for="match in matches" class="matches-list">
-      <div class="match-name">{{ match.matchID }}</div>
-      <div class="match-link">
-        <RouterLink :to="`/match/${match.matchID}?player=1`"
-          >player 1</RouterLink
-        ><RouterLink :to="`/match/${match.matchID}?player=2`"
-          >player 2</RouterLink
-        >
-        <button @click="joinMatch(match.matchID)">join</button>
+    <span>{{ joinStatus }}</span>
+    <section class="matches-list">
+      <div :key="match.matchID" v-for="match in matches">
+        <div class="match-name">{{ match.matchID }}</div>
+        <div>
+          <div :key="player.name" v-for="player in match.players">
+            {{ player.name }}
+          </div>
+        </div>
+        <div>
+          <!--        <RouterLink :to="`/match/${match.matchID}?player=1`"-->
+          <!--          >player 1</RouterLink-->
+          <!--        ><RouterLink :to="`/match/${match.matchID}?player=2`"-->
+          <!--          >player 2</RouterLink-->
+          <!--        >-->
+          <button @click="requestJoinMatch(match.matchID)">join</button>
+        </div>
       </div>
     </section>
   </main>
@@ -82,9 +108,10 @@ const joinMatch = (matchID: string) => {
 
 <style scoped>
 .matches-list {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 8px;
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  flex-wrap: wrap;
 }
 .match-name {
   justify-self: right;

@@ -1,13 +1,16 @@
 export interface ZugUser {
-  username: string;
+  userID: string;
+  authToken: string;
 }
 
 const STORAGE_KEY = 'zug-user';
 
-export const getTokenInStorage = (): string | undefined => {
-  return localStorage.getItem(STORAGE_KEY) || undefined;
+export const getUserInStorage = (): ZugUser | undefined => {
+  const stringifiedUser = localStorage.getItem(STORAGE_KEY);
+  if (!stringifiedUser) return undefined;
+  return JSON.parse(stringifiedUser);
 };
 
-export const setTokenInStorage = (token: string) => {
-  localStorage.setItem(STORAGE_KEY, token);
+export const setUserInStorage = (payload: ZugUser) => {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
 };

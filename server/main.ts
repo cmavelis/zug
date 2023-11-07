@@ -71,7 +71,10 @@ server.router.post('/api/login', koaBody(), async (ctx) => {
     ...request.body,
     credentials: randomUUID(),
   };
-  ctx.body = encodeToken(tokenPayload);
+  ctx.body = {
+    authToken: encodeToken(tokenPayload),
+    userID: request.body.username,
+  };
 });
 
 server.router.get('/exchange', async (ctx) => {
