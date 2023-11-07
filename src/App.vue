@@ -40,7 +40,7 @@ const logout = () => {
         <button @click="logout">logout</button>
       </div>
       <div v-else>
-        <input v-model="usernameInput" />
+        <input class="login" v-model="usernameInput" />
         <button @click="login">login</button>
       </div>
 
@@ -76,5 +76,9 @@ nav a {
 
 nav a:first-of-type {
   border: 0;
+}
+
+.login {
+  width: 8rem;
 }
 </style>
