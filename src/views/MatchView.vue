@@ -65,6 +65,12 @@ if (typeof route.params.matchID === 'string') {
 } else {
   matchID = route.params.matchID[0];
 }
+
+/**
+ * TODO: don't instantiate both clients
+ * TODO: allow side-by-side clients in testing matches or while spectating (playerID=null)
+ * TODO: implement secret state for spectators https://boardgame.io/documentation/#/secret-state
+ */
 const matchClientOne = new SimulChessClient('0', matchID, store.zugToken);
 const matchClientTwo = new SimulChessClient('1', matchID, store.zugToken);
 

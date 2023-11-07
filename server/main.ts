@@ -23,6 +23,10 @@ interface ZugToken extends ZugUser {
 const generateCredentials = async (ctx) => {
   console.log('request', ctx.request.headers);
   const authHeader = ctx.request.headers['authorization'];
+  if (authHeader === 'open') {
+    return 'open';
+  }
+
   const token: ZugToken = decodeToken(authHeader);
   return token.credentials;
 };
@@ -30,9 +34,13 @@ const generateCredentials = async (ctx) => {
 const authenticateCredentials = async (credentials, playerMetadata) => {
   console.log('authenticateCredentials');
   console.log(credentials, playerMetadata);
+  // this allows testing matches to work
+  if (playerMetadata?.credentials === 'open') {
+    return true;
+  }
   if (credentials) {
     const token: ZugToken = decodeToken(credentials);
-    if (token.credentials === playerMetadata?.credentials) return true;
+    if (token?.credentials === playerMetadata?.credentials) return true;
   }
   return false;
 };

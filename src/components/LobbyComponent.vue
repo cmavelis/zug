@@ -32,12 +32,13 @@ const createMatch = async (setupData: GameSetupData = {}) => {
 const joinStatus = ref('');
 const requestJoinMatch = async (matchID: string, setupData?: GameSetupData) => {
   joinStatus.value = 'loading';
+  let authHeader = setupData?.empty ? 'open' : 'error';
   try {
     const resp = await lobbyClient.joinMatch(
       'zug',
       matchID,
       { playerName: store.zugUsername || 'error' },
-      { headers: { authorization: store.zugToken || 'a' } },
+      { headers: { authorization: store.zugToken || authHeader } },
     );
     console.log(resp);
     if (resp.playerID) {
