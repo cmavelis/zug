@@ -1,10 +1,11 @@
 <script setup lang="ts">
-import { ref } from 'vue';
+import { computed, ref } from 'vue';
 import type { Ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { LobbyClient } from 'boardgame.io/client';
 import type { LobbyAPI } from 'boardgame.io/dist/types/src/types';
 import type { GameSetupData } from '@/game/Game';
+import { store } from '@/store';
 
 const matches: Ref<LobbyAPI.Match[]> = ref([]);
 const { protocol, hostname, port } = window.location;
@@ -25,16 +26,53 @@ const createMatch = async (setupData: GameSetupData = {}) => {
     setupData,
     unlisted: setupData?.empty,
   });
-  await router.push({
+  await requestJoinMatch(createdMatch.matchID, setupData);
+};
+
+const joinStatus = ref('');
+const requestJoinMatch = async (matchID: string, setupData?: GameSetupData) => {
+  joinStatus.value = 'loading';
+  try {
+    const resp = await lobbyClient.joinMatch(
+      'zug',
+      matchID,
+      { playerName: store.zugUsername || 'error' },
+      { headers: { authorization: store.zugToken || 'a' } },
+    );
+    console.log(resp);
+    if (resp.playerID) {
+      joinStatus.value = 'success';
+      navigateToMatch(matchID, resp.playerID, setupData);
+    } else {
+      joinStatus.value = 'failed';
+    }
+  } catch (e) {
+    console.error(e);
+    joinStatus.value = 'failed';
+  }
+};
+
+const navigateToMatch = (
+  matchID: string,
+  playerID: string,
+  setupData?: GameSetupData,
+) => {
+  router.push({
     name: 'match',
     params: {
-      matchID: createdMatch.matchID,
+      matchID,
     },
     query: {
-      player: setupData?.empty ? 9 : undefined,
+      player: setupData?.empty ? 9 : Number(playerID) + 1,
     },
   });
 };
+
+const usersMatches = computed(() => {
+  return matches.value
+    .filter((m) => m.players.some((p) => p.name === store.zugUsername))
+    .map((match) => match.matchID);
+});
 </script>
 
 <template>
@@ -55,15 +93,36 @@ const createMatch = async (setupData: GameSetupData = {}) => {
     </section>
 
     <h2>Open matches:</h2>
-
-    <section :key="match.matchID" v-for="match in matches" class="matches-list">
-      <div class="match-name">{{ match.matchID }}</div>
-      <div class="match-link">
-        <RouterLink :to="`/match/${match.matchID}?player=1`"
-          >player 1</RouterLink
-        ><RouterLink :to="`/match/${match.matchID}?player=2`"
-          >player 2</RouterLink
+    <span>{{ joinStatus }}</span>
+    <section class="matches-list">
+      <div
+        :key="match.matchID"
+        :class="{
+          match: true,
+          highlight: usersMatches.includes(match.matchID),
+        }"
+        v-for="match in matches"
+      >
+        <div class="match-name">{{ match.matchID }}</div>
+        <div>
+          <div :key="player.name" v-for="(player, i) in match.players">
+            {{ player.name }}
+            <button
+              v-if="player.name === store.zugUsername"
+              @click="navigateToMatch(match.matchID, String(i))"
+            >
+              go to
+            </button>
+          </div>
+        </div>
+        <div
+          v-if="
+            match.players.some((p) => !p.name) &&
+            match.players.every((p) => p.name !== store.zugUsername)
+          "
         >
+          <button @click="requestJoinMatch(match.matchID)">join</button>
+        </div>
       </div>
     </section>
   </main>
@@ -71,17 +130,19 @@ const createMatch = async (setupData: GameSetupData = {}) => {
 
 <style scoped>
 .matches-list {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 8px;
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  flex-wrap: wrap;
 }
 .match-name {
   justify-self: right;
 }
-.match-link {
-  display: flex;
-  gap: 8px;
-  justify-self: left;
+.match {
+  padding: 4px;
+}
+.highlight {
+  border: 2px solid orange;
 }
 
 .button-group {

@@ -65,8 +65,8 @@ if (typeof route.params.matchID === 'string') {
 } else {
   matchID = route.params.matchID[0];
 }
-const matchClientOne = new SimulChessClient('0', matchID);
-const matchClientTwo = new SimulChessClient('1', matchID);
+const matchClientOne = new SimulChessClient('0', matchID, store.zugToken);
+const matchClientTwo = new SimulChessClient('1', matchID, store.zugToken);
 
 const gameState: ReactiveGameState = reactive({
   G: {} as GObject,
