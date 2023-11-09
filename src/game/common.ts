@@ -55,7 +55,7 @@ export const stripSecrets = (
 ): GameState => {
   const playerNumber = Number(playerID);
   const orders: { [key: number]: Orders } = {};
-  if (playerNumber) {
+  if ([0, 1].includes(playerNumber)) {
     orders[playerNumber] = G.orders[playerNumber];
   }
   return { ...G, orders };
