@@ -5,6 +5,7 @@ import {
   arrayToCoordinates,
   coordinatesToArray,
   getPiece,
+  isOppositeVector,
   reportError,
 } from '@/game/common';
 import type { GameState, GObject } from '@/game/Game';
@@ -451,10 +452,10 @@ export function orderResolver({ G }: { G: GObject }) {
       isEqual(target2, movedPiece1.position);
     const targetSameSquare = isEqual(target1, target2);
 
-    // todo: check for push chains that conflict
+    const opposingPushes = isOppositeVector(order1.toTarget, order2.toTarget);
 
     // noinspection RedundantIfStatementJS
-    if (targetEachOther || targetSameSquare) {
+    if (targetEachOther || targetSameSquare || opposingPushes) {
       // the moves "bounce", cancel the orders
       return true;
     }
