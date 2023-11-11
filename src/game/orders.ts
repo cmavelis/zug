@@ -5,7 +5,6 @@ import {
   arrayToCoordinates,
   coordinatesToArray,
   getPiece,
-  isOppositeVector,
   reportError,
 } from '@/game/common';
 import type { GameState, GObject } from '@/game/Game';
@@ -213,6 +212,7 @@ export function orderResolver({ G }: { G: GObject }) {
           if (didMovesCancel(ordersToResolve[0], ordersToResolve[1])) {
             break;
           }
+          // pushArray: moves that should be applied to each piece pushed
           const pushArrayOne = applyPush(ordersToResolve[0]);
           // @ts-ignore -- Haven't explicitly checked the type of [1], but order priorities are unique
           const pushArrayTwo = applyPush(ordersToResolve[1]);
@@ -242,6 +242,20 @@ export function orderResolver({ G }: { G: GObject }) {
               isEqual(moveOne.newPosition, moveTwo.newPosition)
             ) {
               break;
+            }
+
+            // if pieces targeting each other's spots => cancel all pushes
+            if (moveOne && moveTwo) {
+              const pieceOne = getPiece(G, moveOne.id);
+              const pieceTwo = getPiece(G, moveTwo.id);
+              if (
+                pieceOne &&
+                pieceTwo &&
+                isEqual(moveOne.newPosition, pieceTwo.position) &&
+                isEqual(pieceOne.position, moveTwo.newPosition)
+              ) {
+                break;
+              }
             }
 
             // exit loop if nothing left
@@ -452,10 +466,8 @@ export function orderResolver({ G }: { G: GObject }) {
       isEqual(target2, movedPiece1.position);
     const targetSameSquare = isEqual(target1, target2);
 
-    const opposingPushes = isOppositeVector(order1.toTarget, order2.toTarget);
-
     // noinspection RedundantIfStatementJS
-    if (targetEachOther || targetSameSquare || opposingPushes) {
+    if (targetEachOther || targetSameSquare) {
       // the moves "bounce", cancel the orders
       return true;
     }
