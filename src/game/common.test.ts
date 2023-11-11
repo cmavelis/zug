@@ -1,5 +1,9 @@
 import { test, expect } from 'vitest';
-import { arrayToCoordinates, coordinatesToArray } from '@/game/common';
+import {
+  arrayToCoordinates,
+  coordinatesToArray,
+  isOppositeVector,
+} from '@/game/common';
 
 test('0,0 coords, 3,4 shape', () => {
   expect(coordinatesToArray({ x: 0, y: 0 }, { x: 3, y: 4 })).toEqual(0);
@@ -40,4 +44,20 @@ test('4 index, 3,4 shape', () => {
 
 test('11 index, 3,4 shape', () => {
   expect(arrayToCoordinates(11, { x: 3, y: 4 })).toEqual({ x: 2, y: 3 });
+});
+
+test('opposite straight vectors', () => {
+  expect(isOppositeVector({ x: 1, y: 0 }, { x: -1, y: 0 })).toBe(true);
+});
+
+test('orthogonal straight vectors', () => {
+  expect(isOppositeVector({ x: 1, y: 0 }, { x: 0, y: 1 })).toBe(false);
+});
+
+test('opposite diagonal vectors', () => {
+  expect(isOppositeVector({ x: 1, y: 1 }, { x: -1, y: -1 })).toBe(true);
+});
+
+test('orthogonal diagonal vectors', () => {
+  expect(isOppositeVector({ x: 1, y: 1 }, { x: -1, y: 1 })).toBe(false);
 });
