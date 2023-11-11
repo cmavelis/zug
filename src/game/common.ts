@@ -41,6 +41,13 @@ export const addDisplacement = (
   return { x: start.x + displacement.x, y: start.y + displacement.y };
 };
 
+export const isOppositeVector = (
+  vector1: Coordinates,
+  vector2: Coordinates,
+) => {
+  return vector1.x === -vector2.x && vector1.y === -vector2.y;
+};
+
 export function reportError(e: string) {
   console.error(e);
 }
