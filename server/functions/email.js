@@ -1,10 +1,10 @@
 // Copyright 2019 Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-import { SESClient, SendEmailCommand } from '@aws-sdk/client-ses';
+const { SESClient, SendEmailCommand } = require('@aws-sdk/client-ses');
 const ses = new SESClient({ region: 'us-west-2' });
 
-export const handler = async (event) => {
+module.exports.handler = async (event) => {
   let bodyText = 'BODY';
   if (event.queryStringParameters && event.queryStringParameters['message']) {
     bodyText = event.queryStringParameters['message'];
