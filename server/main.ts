@@ -2,21 +2,36 @@
 // @ts-ignore
 import 'dotenv/config';
 import { PostgresStore } from 'bgio-postgres';
+import { DataTypes } from 'sequelize';
+import { randomUUID } from 'crypto';
 
 import { decodeToken, encodeToken } from './auth';
 import { ZugUser } from '../src/utils/auth';
-import { randomUUID } from 'crypto';
 
+// TODO: figure out which process needs this to be commonJS syntax
 const { Server, Origins } = require('boardgame.io/server');
 const { SimulChess } = require('../src/game/Game');
 const path = require('path');
 const serve = require('koa-static');
 const { koaBody } = require('koa-body');
+const { Sequelize } = require('sequelize');
 
+const sequelize = new Sequelize(process.env.DATABASE_URL);
 const db = new PostgresStore(process.env.DATABASE_URL);
 
+interface ITempUser {
+  name: string;
+  credentials: string;
+}
+
+const TempUser = sequelize.define('TempUser', {
+  name: { type: DataTypes.TEXT, allowNull: false },
+  credentials: { type: DataTypes.UUID, allowNull: false },
+});
+TempUser.sync().catch(console.error);
+
 interface ZugToken extends ZugUser {
-  iat: number;
+  iat: number; // 'instantiated at'
   credentials: string;
 }
 
@@ -75,13 +90,28 @@ server.app.use(serve(frontEndAppBuildPath));
 
 server.router.post('/api/login', koaBody(), async (ctx) => {
   const { request } = ctx;
+  const { username } = request.body;
+
+  const existingUser: ITempUser = await TempUser.findOne({
+    where: { name: username },
+  });
+
+  let credentials = randomUUID();
+  if (existingUser) {
+    credentials = existingUser.credentials;
+  } else {
+    const newUser = await TempUser.create({ name: username, credentials });
+    console.log("newUser's auto-generated ID:", newUser.id);
+  }
+
   const tokenPayload = {
     ...request.body,
-    credentials: randomUUID(),
+    credentials,
   };
+
   ctx.body = {
     authToken: encodeToken(tokenPayload),
-    userID: request.body.username,
+    userID: username,
   };
 });
 
