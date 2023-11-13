@@ -20,7 +20,7 @@ export const handler = async (event) => {
 
       Subject: { Data: 'Test Email' },
     },
-    Source: process.env.SES_EMAIL_TO,
+    Source: process.env.SES_EMAIL_FROM,
   });
 
   try {
