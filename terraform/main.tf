@@ -88,6 +88,30 @@ resource "aws_iam_role" "lambda_exec" {
   })
 }
 
+resource "aws_iam_policy" "ses_send_email_policy" {
+  name        = "SES_SendEmail_Policy"
+  description = "IAM policy to allow sending emails using SES"
+
+  policy = jsonencode({
+    Version = "2012-10-17",
+    Statement = [
+      {
+        Effect = "Allow",
+        Action = [
+          "ses:SendEmail",
+          "ses:SendRawEmail",
+        ],
+        Resource = "*",
+      },
+    ],
+  })
+}
+
+resource "aws_iam_role_policy_attachment" "ses_send_email_attachment" {
+  policy_arn = aws_iam_policy.ses_send_email_policy.arn
+  role       = aws_iam_role.lambda_exec.name
+}
+
 resource "aws_iam_role_policy_attachment" "lambda_policy" {
   role       = aws_iam_role.lambda_exec.name
   policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"

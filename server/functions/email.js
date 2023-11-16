@@ -11,7 +11,7 @@ module.exports.handler = async (event) => {
   }
   const command = new SendEmailCommand({
     Destination: {
-      ToAddresses: [process.env.SES_EMAIL_TO],
+      ToAddresses: ['cmavelis@gmail.com'],
     },
     Message: {
       Body: {
@@ -20,7 +20,7 @@ module.exports.handler = async (event) => {
 
       Subject: { Data: 'Test Email' },
     },
-    Source: process.env.SES_EMAIL_FROM,
+    Source: 'cave.misc@gmail.com',
   });
 
   try {
@@ -29,7 +29,5 @@ module.exports.handler = async (event) => {
     return response;
   } catch (error) {
     console.error(error);
-  } finally {
-    // finally.
   }
 };
