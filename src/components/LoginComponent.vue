@@ -24,6 +24,18 @@ const login = async () => {
   }
 };
 
+// TODO: temp button
+const discordLogin = async () => {
+  const resp = await axios.post('/api/login/discord', {
+    username: usernameInput.value,
+  });
+  if (resp.status === 200) {
+    const { data } = resp;
+    const { redirect } = data;
+    window.location.href = redirect;
+  }
+};
+
 const logout = () => {
   removeUserInStorage();
   store.setZugToken(undefined);
@@ -39,6 +51,9 @@ const logout = () => {
   <div v-else>
     <input class="login" v-model="usernameInput" />
     <button @click="login">login</button>
+    <!--    // TODO: temp button
+-->
+    <button @click="discordLogin">discord login</button>
   </div>
 </template>
 
