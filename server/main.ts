@@ -11,6 +11,7 @@ import { ZugUser } from '../src/utils/auth';
 // TODO: figure out which process needs this to be commonJS syntax
 const { Server, Origins } = require('boardgame.io/server');
 const { SimulChess } = require('../src/game/Game');
+const { botClient } = require('./discordBot');
 const path = require('path');
 const serve = require('koa-static');
 const { koaBody } = require('koa-body');
@@ -169,6 +170,7 @@ const DISCORD_API_ENDPOINT = 'https://discord.com/api/v10';
 const CLIENT_ID = process.env.DISCORD_CLIENT_ID;
 const CLIENT_SECRET = process.env.DISCORD_CLIENT_SECRET;
 
+// discord: exchange code for OAuth credentials
 server.router.get('/api/exchange/discord', async (ctx) => {
   const { request } = ctx;
   const { origin } = request;
@@ -185,18 +187,31 @@ server.router.get('/api/exchange/discord', async (ctx) => {
     redirect_uri: uri,
   };
   const discordURL = DISCORD_API_ENDPOINT + '/oauth2/token';
+  const auth = {
+    username: CLIENT_ID,
+    password: CLIENT_SECRET,
+  };
   const resp = await axios
     .post(discordURL, data, {
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded',
       },
-      auth: {
-        username: CLIENT_ID,
-        password: CLIENT_SECRET,
-      },
+      auth,
     })
     .catch(console.error);
-  ctx.body = resp.body;
+  ctx.body = resp.data;
+  console.log('RESPONSE', resp.data);
+  // TODO: save tokens in DB
+  // data: {access_token, refresh_token}
+  const Authorization = 'Bearer ' + resp.data['access_token'];
+
+  const user = await axios
+    .get(DISCORD_API_ENDPOINT + '/users/@me', {
+      headers: { Authorization },
+    })
+    .catch(console.error);
+
+  await botClient.users.send(user.data.id, 'we logged ya in');
   ctx.redirect(origin); // TODO: redirect to my page that finishes the login
 });
 
