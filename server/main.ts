@@ -15,9 +15,14 @@ const path = require('path');
 const serve = require('koa-static');
 const { koaBody } = require('koa-body');
 const { Sequelize } = require('sequelize');
+const axios = require('axios');
 
 const sequelize = new Sequelize(process.env.DATABASE_URL);
 const db = new PostgresStore(process.env.DATABASE_URL);
+
+const getDiscordTokenExchangeURI = (origin: string) => {
+  return origin + '/api/exchange/discord';
+};
 
 interface ITempUser {
   name: string;
@@ -141,7 +146,7 @@ server.router.post('/api/login/discord', koaBody(), async (ctx) => {
   } else {
     // oauth discord
     const origin = ctx.request.origin;
-    const uri = origin + '/api/exchange/discord';
+    const uri = getDiscordTokenExchangeURI(origin);
     const uriEncoded = encodeURIComponent(uri);
     ctx.body = {
       redirect: `https://discord.com/oauth2/authorize?response_type=code&client_id=1170904526635675678&scope=identify&state=15773059ghq9183habn&redirect_uri=${uriEncoded}&prompt=consent`,
@@ -160,11 +165,39 @@ server.router.post('/api/login/discord', koaBody(), async (ctx) => {
   };
 });
 
+const DISCORD_API_ENDPOINT = 'https://discord.com/api/v10';
+const CLIENT_ID = process.env.DISCORD_CLIENT_ID;
+const CLIENT_SECRET = process.env.DISCORD_CLIENT_SECRET;
+
 server.router.get('/api/exchange/discord', async (ctx) => {
   const { request } = ctx;
-  console.log('code:', request?.query?.code);
+  const { origin } = request;
+  const code = request?.query?.code;
+  if (!code) {
+    //redirect to error
+    console.error('no code provided!');
+  }
+  const uri = getDiscordTokenExchangeURI(origin);
   // do discord oauth https://discord.com/developers/docs/topics/oauth2#authorization-code-grant-access-token-exchange-example
-  ctx.redirect('/discord');
+  const data = {
+    grant_type: 'authorization_code',
+    code: code,
+    redirect_uri: uri,
+  };
+  const discordURL = DISCORD_API_ENDPOINT + '/oauth2/token';
+  const resp = await axios
+    .post(discordURL, data, {
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+      auth: {
+        username: CLIENT_ID,
+        password: CLIENT_SECRET,
+      },
+    })
+    .catch(console.error);
+  ctx.body = resp.body;
+  ctx.redirect(origin); // TODO: redirect to my page that finishes the login
 });
 
 server.run(Number(process.env.PORT) || 8000, () => {
