@@ -1,12 +1,10 @@
-// @ts-nocheck
-// @ts-ignore
 import 'dotenv/config';
 import { PostgresStore } from 'bgio-postgres';
 import { DataTypes } from 'sequelize';
 import { randomUUID } from 'crypto';
 
 import { decodeToken, encodeToken } from './auth';
-import { ZugUser } from '../src/utils/auth';
+import { type ZugUser } from '../src/utils/auth';
 
 // TODO: figure out which process needs this to be commonJS syntax
 const { Server, Origins } = require('boardgame.io/server');
@@ -19,20 +17,18 @@ const { Sequelize } = require('sequelize');
 const axios = require('axios');
 
 const sequelize = new Sequelize(process.env.DATABASE_URL);
-const db = new PostgresStore(process.env.DATABASE_URL);
+const db = new PostgresStore(process.env.DATABASE_URL as string);
 
 const getDiscordTokenExchangeURI = (origin: string) => {
   return origin + '/api/exchange/discord';
 };
 
-interface ITempUser {
+interface IBaseUser {
   name: string;
   credentials: string;
 }
 
-interface IUser {
-  name: string;
-  credentials: string;
+interface IUser extends IBaseUser {
   discord?: any;
 }
 
@@ -45,7 +41,8 @@ TempUser.sync().catch(console.error);
 const User = sequelize.define('User', {
   name: { type: DataTypes.TEXT, allowNull: false },
   credentials: { type: DataTypes.UUID, allowNull: false },
-  discord: DataTypes.JSON,
+  discordUser: DataTypes.JSON,
+  discordOauth: DataTypes.JSON,
 });
 User.sync().catch(console.error);
 
@@ -54,7 +51,9 @@ interface ZugToken extends ZugUser {
   credentials: string;
 }
 
-const generateCredentials = async (ctx) => {
+const generateCredentials = async (ctx: {
+  request: { headers: { [x: string]: any } };
+}) => {
   console.log('request', ctx.request.headers);
   const authHeader = ctx.request.headers['authorization'];
   if (authHeader === 'open') {
@@ -65,7 +64,10 @@ const generateCredentials = async (ctx) => {
   return token.credentials;
 };
 
-const authenticateCredentials = async (credentials, playerMetadata) => {
+const authenticateCredentials = async (
+  credentials: string,
+  playerMetadata: any,
+) => {
   console.log('authenticateCredentials');
   console.log(credentials, playerMetadata);
   // this allows testing matches to work
@@ -107,117 +109,136 @@ server.app.use(serve(frontEndAppBuildPath));
 //   ctx.body = { you: 'no' };
 // });
 
-server.router.post('/api/login', koaBody(), async (ctx) => {
-  const { request } = ctx;
-  const { username } = request.body;
+server.router.post(
+  '/api/login',
+  koaBody(),
+  async (ctx: { body?: any; request?: any }) => {
+    const { request } = ctx;
+    const { username } = request.body;
 
-  const existingUser: ITempUser = await TempUser.findOne({
-    where: { name: username },
-  });
+    const existingUser: IBaseUser = await TempUser.findOne({
+      where: { name: username },
+    });
 
-  let credentials = randomUUID();
-  if (existingUser) {
-    credentials = existingUser.credentials;
-  } else {
-    await TempUser.create({ name: username, credentials });
-  }
+    let credentials: string = randomUUID();
+    if (existingUser) {
+      credentials = existingUser.credentials;
+    } else {
+      await TempUser.create({ name: username, credentials });
+    }
 
-  const tokenPayload = {
-    ...request.body,
-    credentials,
-  };
-
-  ctx.body = {
-    authToken: encodeToken(tokenPayload),
-    userID: username,
-  };
-});
-
-server.router.post('/api/login/discord', koaBody(), async (ctx) => {
-  const { request } = ctx;
-  const { username } = request.body;
-
-  const existingUser: IUser = await User.findOne({
-    where: { name: username },
-  });
-
-  let credentials = randomUUID();
-  if (existingUser) {
-    credentials = existingUser.credentials;
-  } else {
-    // oauth discord
-    const origin = ctx.request.origin;
-    const uri = getDiscordTokenExchangeURI(origin);
-    const uriEncoded = encodeURIComponent(uri);
-    ctx.body = {
-      redirect: `https://discord.com/oauth2/authorize?response_type=code&client_id=1170904526635675678&scope=identify&state=15773059ghq9183habn&redirect_uri=${uriEncoded}&prompt=consent`,
+    const tokenPayload = {
+      ...request.body,
+      credentials,
     };
-    return;
-  }
 
-  const tokenPayload = {
-    ...request.body,
-    credentials,
-  };
+    ctx.body = {
+      authToken: encodeToken(tokenPayload),
+      userID: username,
+    };
+  },
+);
 
-  ctx.body = {
-    authToken: encodeToken(tokenPayload),
-    userID: username,
-  };
-});
+server.router.post(
+  '/api/login/discord',
+  koaBody(),
+  async (ctx: { request: any; body?: any }) => {
+    const { request } = ctx;
+    const { username } = request.body;
+
+    const existingUser: IUser = await User.findOne({
+      where: { name: username },
+    });
+
+    let credentials: string = randomUUID();
+    if (existingUser) {
+      credentials = existingUser.credentials;
+    } else {
+      // oauth discord
+      const origin = ctx.request.origin;
+      const uri = getDiscordTokenExchangeURI(origin);
+      const uriEncoded = encodeURIComponent(uri);
+      ctx.body = {
+        redirect: `https://discord.com/oauth2/authorize?response_type=code&client_id=1170904526635675678&scope=identify&state=15773059ghq9183habn&redirect_uri=${uriEncoded}&prompt=consent`,
+      };
+      return;
+    }
+
+    const tokenPayload = {
+      ...request.body,
+      credentials,
+    };
+
+    ctx.body = {
+      authToken: encodeToken(tokenPayload),
+      userID: username,
+    };
+  },
+);
 
 const DISCORD_API_ENDPOINT = 'https://discord.com/api/v10';
 const CLIENT_ID = process.env.DISCORD_CLIENT_ID;
 const CLIENT_SECRET = process.env.DISCORD_CLIENT_SECRET;
 
 // discord: exchange code for OAuth credentials
-server.router.get('/api/exchange/discord', async (ctx) => {
-  const { request } = ctx;
-  const { origin } = request;
-  const code = request?.query?.code;
-  if (!code) {
-    //redirect to error
-    console.error('no code provided!');
-  }
-  const uri = getDiscordTokenExchangeURI(origin);
-  // do discord oauth https://discord.com/developers/docs/topics/oauth2#authorization-code-grant-access-token-exchange-example
-  const data = {
-    grant_type: 'authorization_code',
-    code: code,
-    redirect_uri: uri,
-  };
-  const discordURL = DISCORD_API_ENDPOINT + '/oauth2/token';
-  const auth = {
-    username: CLIENT_ID,
-    password: CLIENT_SECRET,
-  };
-  const resp = await axios
-    .post(discordURL, data, {
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
-      },
-      auth,
-    })
-    .catch(console.error);
-  ctx.body = resp.data;
-  console.log('RESPONSE', resp.data);
-  // TODO: save tokens in DB
-  // data: {access_token, refresh_token}
-  const Authorization = 'Bearer ' + resp.data['access_token'];
+server.router.get(
+  '/api/exchange/discord',
+  async (ctx: { body?: any; redirect?: any; request?: any }) => {
+    const { request } = ctx;
+    const { origin } = request;
+    const code = request?.query?.code;
+    if (!code) {
+      //redirect to error
+      console.error('no code provided!');
+    }
+    const uri = getDiscordTokenExchangeURI(origin);
+    // do discord oauth https://discord.com/developers/docs/topics/oauth2#authorization-code-grant-access-token-exchange-example
+    const data = {
+      grant_type: 'authorization_code',
+      code: code,
+      redirect_uri: uri,
+    };
+    const discordURL = DISCORD_API_ENDPOINT + '/oauth2/token';
+    const auth = {
+      username: CLIENT_ID,
+      password: CLIENT_SECRET,
+    };
+    const resp = await axios
+      .post(discordURL, data, {
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        auth,
+      })
+      .catch(console.error);
+    ctx.body = resp.data;
+    const Authorization = 'Bearer ' + resp.data['access_token'];
 
-  const user = await axios
-    .get(DISCORD_API_ENDPOINT + '/users/@me', {
-      headers: { Authorization },
-    })
-    .catch(console.error);
+    const user = await axios
+      .get(DISCORD_API_ENDPOINT + '/users/@me', {
+        headers: { Authorization },
+      })
+      .catch(console.error);
 
-  await botClient.users.send(user.data.id, 'we logged ya in');
-  ctx.redirect(origin); // TODO: redirect to my page that finishes the login
-});
+    await User.create({
+      name: user.data.username,
+      credentials: randomUUID(),
+      discordUser: user.data,
+      discordOauth: resp.data,
+    });
+
+    await botClient.users.send(
+      user.data.id,
+      'Your account has been linked to Zug.  You may be asked to re-verify your account every week or so.\nThanks for playing!\n\n-Cam',
+    );
+    ctx.redirect(origin); // TODO: redirect to my page that finishes the login
+    // todo: need to issue JWT to client
+  },
+);
 
 server.run(Number(process.env.PORT) || 8000, () => {
   server.app.use(
-    async (ctx, next) =>
+    async (ctx: any, next: any) =>
       await serve(frontEndAppBuildPath)(
         Object.assign(ctx, { path: 'index.html' }),
         next,
