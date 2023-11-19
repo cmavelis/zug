@@ -105,19 +105,19 @@ const gameLastTurn = computed(() => {
   }
   return null;
 });
-const historyOrderNumber = ref(1);
+const historyTurnStep = ref(1);
 function incrementHistory() {
-  historyOrderNumber.value++;
+  historyTurnStep.value++;
 }
 function decrementHistory() {
-  historyOrderNumber.value--;
+  historyTurnStep.value--;
 }
 
 watch(
   () => gameState.G.history,
   async (newHistory, oldHistory) => {
     if (newHistory && oldHistory && newHistory?.length !== oldHistory?.length) {
-      historyOrderNumber.value = 1;
+      historyTurnStep.value = 1;
     }
   },
 );
@@ -166,20 +166,20 @@ const gamePhase = computed(() => {
     />
     <div v-if="gameLastTurn">
       <div>LAST TURN</div>
-      <button :disabled="historyOrderNumber <= 1" @click="decrementHistory()">
+      <button :disabled="historyTurnStep <= 1" @click="decrementHistory()">
         -
       </button>
-      <span id="history-order-number-display">{{ historyOrderNumber }}</span>
+      <span id="history-order-number-display">{{ historyTurnStep }}</span>
       <button
-        :disabled="historyOrderNumber >= gameLastTurn.length"
+        :disabled="historyTurnStep >= gameLastTurn.length"
         @click="incrementHistory()"
       >
         +
       </button>
 
       <BoardDisplay
-        :state="{ G: gameLastTurn[historyOrderNumber - 1] }"
-        :orderNumber="historyOrderNumber"
+        :state="{ G: gameLastTurn[historyTurnStep - 1] }"
+        :orderNumber="historyTurnStep"
       />
     </div>
   </main>
