@@ -95,29 +95,40 @@ const updateGameState = (state: ClientState<{ G: GObject; ctx: Ctx }>) => {
 };
 matchClientOne.client.subscribe(updateGameState);
 
+const historyTurn = ref(1);
+function incrementHistoryTurn() {
+  historyTurn.value++;
+}
+function decrementHistoryTurn() {
+  historyTurn.value--;
+}
+function setHistoryLastTurn() {
+  historyTurn.value = gameState.G.history.length;
+}
 const gameLastTurn = computed(() => {
   if (isEqual(gameState.G, {})) {
     return null;
   }
   const { history } = gameState.G as GObject;
   if (history.length > 0) {
-    return history[history.length - 1];
+    return history[historyTurn.value - 1];
   }
   return null;
 });
-const historyOrderNumber = ref(1);
-function incrementHistory() {
-  historyOrderNumber.value++;
+const historyTurnStep = ref(1);
+function incrementHistoryStep() {
+  historyTurnStep.value++;
 }
-function decrementHistory() {
-  historyOrderNumber.value--;
+function decrementHistoryStep() {
+  historyTurnStep.value--;
 }
 
 watch(
   () => gameState.G.history,
   async (newHistory, oldHistory) => {
     if (newHistory && oldHistory && newHistory?.length !== oldHistory?.length) {
-      historyOrderNumber.value = 1;
+      historyTurnStep.value = 1;
+      setHistoryLastTurn();
     }
   },
 );
@@ -165,21 +176,32 @@ const gamePhase = computed(() => {
       :showOrders="isPlayerSelected"
     />
     <div v-if="gameLastTurn">
-      <div>LAST TURN</div>
-      <button :disabled="historyOrderNumber <= 1" @click="decrementHistory()">
+      <button :disabled="historyTurn <= 1" @click="decrementHistoryTurn()">
         -
       </button>
-      <span id="history-order-number-display">{{ historyOrderNumber }}</span>
+      <span id="history-order-number-display">{{ historyTurn }}</span>
       <button
-        :disabled="historyOrderNumber >= gameLastTurn.length"
-        @click="incrementHistory()"
+        :disabled="historyTurn >= gameState.G.history.length"
+        @click="incrementHistoryTurn()"
+      >
+        +
+      </button>
+      <button @click="setHistoryLastTurn()">>|</button>
+      <div>TURN {{ historyTurn }}</div>
+      <button :disabled="historyTurnStep <= 1" @click="decrementHistoryStep()">
+        -
+      </button>
+      <span id="history-order-number-display">{{ historyTurnStep }}</span>
+      <button
+        :disabled="historyTurnStep >= gameLastTurn.length"
+        @click="incrementHistoryStep()"
       >
         +
       </button>
 
       <BoardDisplay
-        :state="{ G: gameLastTurn[historyOrderNumber - 1] }"
-        :orderNumber="historyOrderNumber"
+        :state="{ G: gameLastTurn[historyTurnStep - 1] }"
+        :orderNumber="historyTurnStep"
       />
     </div>
   </main>
