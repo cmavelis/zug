@@ -39,7 +39,7 @@ const TempUser = sequelize.define('TempUser', {
 TempUser.sync().catch(console.error);
 
 const User = sequelize.define('User', {
-  name: { type: DataTypes.TEXT, allowNull: false },
+  name: { type: DataTypes.TEXT, allowNull: false, unique: true },
   credentials: { type: DataTypes.UUID, allowNull: false },
   discordUser: DataTypes.JSON,
   discordOauth: DataTypes.JSON,
@@ -180,7 +180,7 @@ const DISCORD_API_ENDPOINT = 'https://discord.com/api/v10';
 const CLIENT_ID = process.env.DISCORD_CLIENT_ID;
 const CLIENT_SECRET = process.env.DISCORD_CLIENT_SECRET;
 
-// discord: exchange code for OAuth credentials
+// discord: exchange code for OAuth credentials, creating user
 server.router.get(
   '/api/exchange/discord',
   async (ctx: { body?: any; redirect?: any; request?: any }) => {
@@ -214,25 +214,41 @@ server.router.get(
     ctx.body = resp.data;
     const Authorization = 'Bearer ' + resp.data['access_token'];
 
-    const user = await axios
+    const discordUser = await axios
       .get(DISCORD_API_ENDPOINT + '/users/@me', {
         headers: { Authorization },
       })
       .catch(console.error);
 
-    await User.create({
-      name: user.data.username,
-      credentials: randomUUID(),
-      discordUser: user.data,
-      discordOauth: resp.data,
-    });
+    const newCredentials = randomUUID();
 
-    await botClient.users.send(
-      user.data.id,
-      'Your account has been linked to Zug.  You may be asked to re-verify your account every week or so.\nThanks for playing!\n\n-Cam',
+    const [zugUser, created] = await User.findOrCreate({
+      where: {
+        name: discordUser.data.username,
+      },
+      defaults: {
+        credentials: newCredentials,
+        discordUser: discordUser.data,
+        discordOauth: resp.data,
+      },
+    }).catch(console.error);
+
+    if (created) {
+      botClient.users
+        .send(
+          discordUser.data.id,
+          'Your account has been linked to Zug.  You may be asked to re-verify your account every week or so.\nThanks for playing!\n\n-Cam',
+        )
+        .catch(console.error);
+    }
+
+    const token = encodeToken({
+      userID: discordUser.data.username,
+      authToken: zugUser.credentials,
+    });
+    ctx.redirect(
+      origin + `/login?token=${token}&username=${discordUser.data.username}`,
     );
-    ctx.redirect(origin); // TODO: redirect to my page that finishes the login
-    // todo: need to issue JWT to client
   },
 );
 
@@ -245,15 +261,3 @@ server.run(Number(process.env.PORT) || 8000, () => {
       ),
   );
 });
-
-// discord auth link (redirect needs changed)
-// https://discord.com/oauth2/authorize?response_type=code&client_id=1170904526635675678&scope=identify&state=15773059ghq9183habn&redirect_uri=https%3A%2F%2Fcameronavelis.com&prompt=consent
-
-// http%3A%2F%2Flocalhost%3A8000%2Fexchange
-// https://discord.com/oauth2/authorize?response_type=code&client_id=1170904526635675678&scope=identify&state=15773059ghq9183habn&redirect_uri=http%3A%2F%2Flocalhost%3A8000%2Fexchange&prompt=consent
-
-// redirected to:
-// https://www.cameronavelis.com/?code=bohiSWTBGHFpgrmqCY9VPaqAh13myS&state=15773059ghq9183habn
-
-// railway (how they do it, for notes) (didn't work)
-// https://discord.com/oauth2/authorize?client_id=743821730639773696&redirect_uri=https%3A%2F%2Frailway.app%2Fauth%2Fdiscord&response_type=code&scope=identify%20email%20connections%20guilds%20guilds.join&state=cGFnZT1wcm9maWxlJmNvbm5lY3Q9Y21hdmVsaXMlNDBnbWFpbC5jb20mbm9uY2U9ZjY3ZTI1YjgtOGJmZS00ZGUxLWFhMDgtNDg0NzU3ZWNjMjdj
