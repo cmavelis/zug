@@ -105,6 +105,7 @@ function decrementHistoryTurn() {
 function setHistoryLastTurn() {
   historyTurn.value = gameState.G.history.length;
 }
+
 const gameLastTurn = computed(() => {
   if (isEqual(gameState.G, {})) {
     return null;
@@ -121,6 +122,9 @@ function incrementHistoryStep() {
 }
 function decrementHistoryStep() {
   historyTurnStep.value--;
+}
+function setHistoryStep(value: number) {
+  historyTurnStep.value = value;
 }
 
 watch(
@@ -176,6 +180,9 @@ const gamePhase = computed(() => {
       :showOrders="isPlayerSelected"
     />
     <div v-if="gameLastTurn">
+      <button @click="historyTurn = 1">
+        {{ '|<' }}
+      </button>
       <button :disabled="historyTurn <= 1" @click="decrementHistoryTurn()">
         -
       </button>
@@ -188,6 +195,9 @@ const gamePhase = computed(() => {
       </button>
       <button @click="setHistoryLastTurn()">>|</button>
       <div>TURN {{ historyTurn }}</div>
+      <button @click="setHistoryStep(1)">
+        {{ '|<' }}
+      </button>
       <button :disabled="historyTurnStep <= 1" @click="decrementHistoryStep()">
         -
       </button>
@@ -198,6 +208,7 @@ const gamePhase = computed(() => {
       >
         +
       </button>
+      <button @click="setHistoryStep(gameLastTurn.length)">>|</button>
 
       <BoardDisplay
         :state="{ G: gameLastTurn[historyTurnStep - 1] }"
