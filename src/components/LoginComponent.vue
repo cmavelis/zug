@@ -50,9 +50,10 @@ const logout = () => {
   </div>
   <div v-else>
     <input class="login" v-model="usernameInput" />
-    <button @click="login">login</button>
-    <!--    // TODO: temp button
--->
+    <button @click="login">name login</button>
+    <p>(no password)</p>
+    or
+    <br />
     <button @click="discordLogin">discord login</button>
   </div>
 </template>
