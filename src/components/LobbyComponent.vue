@@ -32,12 +32,13 @@ const createMatch = async (setupData: GameSetupData = {}) => {
 const joinStatus = ref('');
 const requestJoinMatch = async (matchID: string, setupData?: GameSetupData) => {
   joinStatus.value = 'loading';
+  let authHeader = setupData?.empty ? 'open' : 'error';
   try {
     const resp = await lobbyClient.joinMatch(
       'zug',
       matchID,
       { playerName: store.zugUsername || 'error' },
-      { headers: { authorization: store.zugToken || 'a' } },
+      { headers: { authorization: store.zugToken || authHeader } },
     );
     console.log(resp);
     if (resp.playerID) {
@@ -70,7 +71,9 @@ const navigateToMatch = (
 
 const usersMatches = computed(() => {
   return matches.value
-    .filter((m) => m.players.some((p) => p.name === store.zugUsername))
+    .filter((m) =>
+      m.players.some((p) => p.name && p.name === store.zugUsername),
+    )
     .map((match) => match.matchID);
 });
 </script>
@@ -108,7 +111,7 @@ const usersMatches = computed(() => {
           <div :key="player.name" v-for="(player, i) in match.players">
             {{ player.name }}
             <button
-              v-if="player.name === store.zugUsername"
+              v-if="player.name && player.name === store.zugUsername"
               @click="navigateToMatch(match.matchID, String(i))"
             >
               go to

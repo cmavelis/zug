@@ -7,11 +7,11 @@ export const store = reactive({
     this.isDebug = arg;
   },
   zugToken: getUserInStorage()?.authToken,
-  setZugToken(arg: string) {
+  setZugToken(arg: string | undefined) {
     this.zugToken = arg;
   },
   zugUsername: getUserInStorage()?.userID,
-  setZugUsername(arg: string) {
+  setZugUsername(arg: string | undefined) {
     this.zugUsername = arg;
   },
 });

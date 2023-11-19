@@ -9,7 +9,7 @@ import { isEqual } from 'lodash';
 import BoardComponent from '@/components/BoardComponent.vue';
 import BoardDisplay from '@/components/BoardDisplay.vue';
 import { SimulChessClient } from '@/game/App';
-import type { GameState, GObject } from '@/game/Game';
+import type { GObject } from '@/game/Game';
 import { store } from '@/store';
 
 onMounted(() => {
@@ -65,8 +65,19 @@ if (typeof route.params.matchID === 'string') {
 } else {
   matchID = route.params.matchID[0];
 }
-const matchClientOne = new SimulChessClient('0', matchID, store.zugToken);
-const matchClientTwo = new SimulChessClient('1', matchID, store.zugToken);
+
+/**
+ * TODO: allow side-by-side clients in testing matches or while spectating (playerID=null)
+ */
+const matchClientOne = new SimulChessClient(
+  String(playerID.value),
+  matchID,
+  store.zugToken,
+);
+
+watch(playerID, () => {
+  matchClientOne.client.updatePlayerID(String(playerID.value));
+});
 
 const gameState: ReactiveGameState = reactive({
   G: {} as GObject,
@@ -79,7 +90,7 @@ const updateGameState = (state: ClientState<{ G: GObject; ctx: Ctx }>) => {
     gameState.G = state.G as unknown as GObject;
     gameState.ctx = state.ctx;
   } else {
-    console.error('A null game state update was received');
+    console.warn('A null game state update was received');
   }
 };
 matchClientOne.client.subscribe(updateGameState);
@@ -101,20 +112,6 @@ function incrementHistory() {
 function decrementHistory() {
   historyOrderNumber.value--;
 }
-
-const gameStateTwo = reactive({ G: {} as GameState, ctx: {} as Ctx });
-const gameStateTwoLoaded = ref(false);
-
-const updateGameStateTwo = (state: ClientState<{ G: GameState; ctx: Ctx }>) => {
-  if (state) {
-    gameStateTwo.G = state.G as unknown as GameState;
-    gameStateTwo.ctx = state.ctx;
-    gameStateTwoLoaded.value = true;
-  } else {
-    console.error('A null game state update was received');
-  }
-};
-matchClientTwo.client.subscribe(updateGameStateTwo);
 
 watch(
   () => gameState.G.history,
@@ -161,16 +158,9 @@ const gamePhase = computed(() => {
       Waiting for opponent to finish turn...
     </p>
     <BoardComponent
-      v-if="playerID !== 1 && gameStateLoaded"
+      v-if="gameStateLoaded"
       :client="matchClientOne.client"
       :state="gameState"
-      :playerID="playerID"
-      :showOrders="isPlayerSelected"
-    />
-    <BoardComponent
-      v-if="playerID === 1 && gameStateTwoLoaded"
-      :client="matchClientTwo.client"
-      :state="gameStateTwo"
       :playerID="playerID"
       :showOrders="isPlayerSelected"
     />
