@@ -156,6 +156,7 @@ server.router.post(
     } else {
       // oauth discord
       const origin = ctx.request.origin;
+      console.info('request origin to /api/login/discord:', origin);
       const uri = getDiscordTokenExchangeURI(origin);
       const uriEncoded = encodeURIComponent(uri);
       ctx.body = {
