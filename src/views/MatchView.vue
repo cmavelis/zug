@@ -128,6 +128,7 @@ watch(
   async (newHistory, oldHistory) => {
     if (newHistory && oldHistory && newHistory?.length !== oldHistory?.length) {
       historyTurnStep.value = 1;
+      setHistoryLastTurn();
     }
   },
 );
@@ -185,6 +186,7 @@ const gamePhase = computed(() => {
       >
         +
       </button>
+      <button @click="setHistoryLastTurn()">>|</button>
       <div>TURN {{ historyTurn }}</div>
       <button :disabled="historyTurnStep <= 1" @click="decrementHistoryStep()">
         -
