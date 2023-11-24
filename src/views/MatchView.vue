@@ -137,6 +137,7 @@ watch(
   },
 );
 
+// TODO: add something like this to show ooponent phase
 const gamePhase = computed(() => {
   if (gameState.ctx.activePlayers) {
     return gameState.ctx.activePlayers[playerID.value] || '?';

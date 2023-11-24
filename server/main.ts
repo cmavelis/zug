@@ -9,7 +9,7 @@ import { type ZugUser } from '../src/utils/auth';
 // TODO: figure out which process needs this to be commonJS syntax
 const { Server, Origins } = require('boardgame.io/server');
 const { SimulChess } = require('../src/game/Game');
-const { botClient } = require('./discordBot');
+const { botClient, zugDiscordServer } = require('./discordBot');
 const path = require('path');
 const serve = require('koa-static');
 const { koaBody } = require('koa-body');
@@ -18,6 +18,48 @@ const axios = require('axios');
 
 const sequelize = new Sequelize(process.env.DATABASE_URL);
 const db = new PostgresStore(process.env.DATABASE_URL as string);
+
+const Game = db.sequelize.model('Match');
+
+Game.beforeUpsert(async (created, options) => {
+  console.info('GAME UPSERT');
+  const { id } = created;
+  // console.info(created);
+  const oldMatch = await Game.findByPk(id);
+  const oldActivePlayers = oldMatch?.state?.ctx.activePlayers;
+  const newActivePlayers = created?.state?.ctx.activePlayers;
+
+  if (!(oldActivePlayers && newActivePlayers)) {
+    return;
+  }
+
+  for (const p in [0, 1]) {
+    const oldPhase = oldActivePlayers[p];
+    const newPhase = newActivePlayers[p];
+    if (oldPhase === newPhase) {
+      return;
+    } else {
+      console.info('player', p, ' has changed phase!');
+      // if p not connected
+      const player = oldMatch.players[p];
+      if (true) {
+        // !player.connected
+        // send discord message
+        console.info('search for', player.name);
+        User.findOne({ where: { name: 'cmavelis' } }).then((user) => {
+          console.info('discordUser', user);
+          botClient.users
+            .send(user.discordUser.id, 'Your go!')
+            .catch(console.error);
+        });
+        // console.info('discordUser', discordUser);
+        // if (discordUser) {
+        //   botClient.users.send(discordUser.id, 'Your go!').catch(console.error);
+        // }
+      }
+    }
+  }
+});
 
 const getDiscordTokenExchangeURI = (origin: string) => {
   return origin + '/api/exchange/discord';
