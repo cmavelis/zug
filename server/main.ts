@@ -16,7 +16,9 @@ const { koaBody } = require('koa-body');
 const { Sequelize } = require('sequelize');
 const axios = require('axios');
 
-const sequelize = new Sequelize(process.env.DATABASE_URL);
+const sequelize = new Sequelize(process.env.DATABASE_URL, {
+  dialect: 'postgres',
+});
 const db = new PostgresStore(process.env.DATABASE_URL as string);
 
 const getDiscordTokenExchangeURI = (origin: string) => {
