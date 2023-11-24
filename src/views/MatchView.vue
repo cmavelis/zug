@@ -9,7 +9,7 @@ import { isEqual } from 'lodash';
 import BoardComponent from '@/components/BoardComponent.vue';
 import BoardDisplay from '@/components/BoardDisplay.vue';
 import { SimulChessClient } from '@/game/App';
-import type { GameState, GObject } from '@/game/Game';
+import type { GObject } from '@/game/Game';
 import { store } from '@/store';
 
 onMounted(() => {
@@ -65,8 +65,19 @@ if (typeof route.params.matchID === 'string') {
 } else {
   matchID = route.params.matchID[0];
 }
-const matchClientOne = new SimulChessClient('0', matchID);
-const matchClientTwo = new SimulChessClient('1', matchID);
+
+/**
+ * TODO: allow side-by-side clients in testing matches or while spectating (playerID=null)
+ */
+const matchClientOne = new SimulChessClient(
+  String(playerID.value),
+  matchID,
+  store.zugToken,
+);
+
+watch(playerID, () => {
+  matchClientOne.client.updatePlayerID(String(playerID.value));
+});
 
 const gameState: ReactiveGameState = reactive({
   G: {} as GObject,
@@ -79,10 +90,21 @@ const updateGameState = (state: ClientState<{ G: GObject; ctx: Ctx }>) => {
     gameState.G = state.G as unknown as GObject;
     gameState.ctx = state.ctx;
   } else {
-    console.error('A null game state update was received');
+    console.warn('A null game state update was received');
   }
 };
 matchClientOne.client.subscribe(updateGameState);
+
+const historyTurn = ref(1);
+function incrementHistoryTurn() {
+  historyTurn.value++;
+}
+function decrementHistoryTurn() {
+  historyTurn.value--;
+}
+function setHistoryLastTurn() {
+  historyTurn.value = gameState.G.history.length;
+}
 
 const gameLastTurn = computed(() => {
   if (isEqual(gameState.G, {})) {
@@ -90,37 +112,27 @@ const gameLastTurn = computed(() => {
   }
   const { history } = gameState.G as GObject;
   if (history.length > 0) {
-    return history[history.length - 1];
+    return history[historyTurn.value - 1];
   }
   return null;
 });
-const historyOrderNumber = ref(1);
-function incrementHistory() {
-  historyOrderNumber.value++;
+const historyTurnStep = ref(1);
+function incrementHistoryStep() {
+  historyTurnStep.value++;
 }
-function decrementHistory() {
-  historyOrderNumber.value--;
+function decrementHistoryStep() {
+  historyTurnStep.value--;
 }
-
-const gameStateTwo = reactive({ G: {} as GameState, ctx: {} as Ctx });
-const gameStateTwoLoaded = ref(false);
-
-const updateGameStateTwo = (state: ClientState<{ G: GameState; ctx: Ctx }>) => {
-  if (state) {
-    gameStateTwo.G = state.G as unknown as GameState;
-    gameStateTwo.ctx = state.ctx;
-    gameStateTwoLoaded.value = true;
-  } else {
-    console.error('A null game state update was received');
-  }
-};
-matchClientTwo.client.subscribe(updateGameStateTwo);
+function setHistoryStep(value: number) {
+  historyTurnStep.value = value;
+}
 
 watch(
   () => gameState.G.history,
   async (newHistory, oldHistory) => {
-    if (newHistory.length !== oldHistory.length) {
-      historyOrderNumber.value = 1;
+    if (newHistory && oldHistory && newHistory?.length !== oldHistory?.length) {
+      historyTurnStep.value = 1;
+      setHistoryLastTurn();
     }
   },
 );
@@ -161,35 +173,46 @@ const gamePhase = computed(() => {
       Waiting for opponent to finish turn...
     </p>
     <BoardComponent
-      v-if="playerID !== 1 && gameStateLoaded"
+      v-if="gameStateLoaded"
       :client="matchClientOne.client"
       :state="gameState"
       :playerID="playerID"
       :showOrders="isPlayerSelected"
     />
-    <BoardComponent
-      v-if="playerID === 1 && gameStateTwoLoaded"
-      :client="matchClientTwo.client"
-      :state="gameStateTwo"
-      :playerID="playerID"
-      :showOrders="isPlayerSelected"
-    />
     <div v-if="gameLastTurn">
-      <div>LAST TURN</div>
-      <button :disabled="historyOrderNumber <= 1" @click="decrementHistory()">
+      <button @click="historyTurn = 1">
+        {{ '|<' }}
+      </button>
+      <button :disabled="historyTurn <= 1" @click="decrementHistoryTurn()">
         -
       </button>
-      <span id="history-order-number-display">{{ historyOrderNumber }}</span>
+      <span id="history-order-number-display">{{ historyTurn }}</span>
       <button
-        :disabled="historyOrderNumber >= gameLastTurn.length"
-        @click="incrementHistory()"
+        :disabled="historyTurn >= gameState.G.history.length"
+        @click="incrementHistoryTurn()"
       >
         +
       </button>
+      <button @click="setHistoryLastTurn()">>|</button>
+      <div>TURN {{ historyTurn }}</div>
+      <button @click="setHistoryStep(1)">
+        {{ '|<' }}
+      </button>
+      <button :disabled="historyTurnStep <= 1" @click="decrementHistoryStep()">
+        -
+      </button>
+      <span id="history-order-number-display">{{ historyTurnStep }}</span>
+      <button
+        :disabled="historyTurnStep >= gameLastTurn.length"
+        @click="incrementHistoryStep()"
+      >
+        +
+      </button>
+      <button @click="setHistoryStep(gameLastTurn.length)">>|</button>
 
       <BoardDisplay
-        :state="{ G: gameLastTurn[historyOrderNumber - 1] }"
-        :orderNumber="historyOrderNumber"
+        :state="{ G: gameLastTurn[historyTurnStep - 1] }"
+        :orderNumber="historyTurnStep"
       />
     </div>
   </main>

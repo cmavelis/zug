@@ -8,7 +8,7 @@ const server = `${protocol}//${hostname}:${port}`;
 
 export class SimulChessClient {
   client: _ClientImpl<any, { G: GameState; playerID: number }>;
-  constructor(playerID: string, matchID?: string) {
+  constructor(playerID: string, matchID?: string, credentials?: string) {
     this.client = Client({
       game: SimulChess,
       multiplayer:
@@ -20,6 +20,7 @@ export class SimulChessClient {
       playerID,
       matchID,
       debug: false,
+      credentials,
     });
     this.client.start();
   }

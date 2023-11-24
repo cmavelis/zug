@@ -1,4 +1,5 @@
 import type { GameState } from '@/game/Game';
+import type { Orders } from '@/game/orders';
 
 export interface Coordinates {
   x: number;
@@ -53,4 +54,20 @@ export function reportError(e: string) {
 
 export const getPiece = (G: GameState, id: number) => {
   return G.pieces.find((p) => p.id === id);
+};
+
+export const stripSecrets = (
+  G: GameState,
+  playerID: string | null,
+): GameState => {
+  // spectator ID is null
+  if (playerID === null) {
+    return G;
+  }
+  const playerNumber = Number(playerID);
+  const orders: { [key: number]: Orders } = {};
+  if ([0, 1].includes(playerNumber)) {
+    orders[playerNumber] = G.orders[playerNumber];
+  }
+  return { ...G, orders };
 };

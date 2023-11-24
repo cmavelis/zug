@@ -28,6 +28,11 @@ const router = createRouter({
       name: 'match',
       component: MatchView,
     },
+    {
+      path: '/login',
+      name: 'login',
+      component: () => import('../views/DiscordLogin.vue'),
+    },
   ],
 });
 

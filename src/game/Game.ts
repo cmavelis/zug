@@ -5,6 +5,7 @@ import type { Order, Orders } from '@/game/orders';
 import { orderResolver } from '@/game/orders';
 import type { Coordinates } from '@/game/common';
 import { isValidOrder } from '@/game/zugzwang/validators';
+import { stripSecrets } from '@/game/common';
 
 export type PriorityMode =
   | 'order-choice' // the original; orders get priority based on when they were assigned in the turn
@@ -104,6 +105,11 @@ export const SimulChess: Game<GObject> = {
     }
 
     return initialGame;
+  },
+
+  // `playerID` could also be null or undefined for spectators.
+  playerView: ({ G, playerID }) => {
+    return stripSecrets(G, playerID);
   },
 
   turn: {
