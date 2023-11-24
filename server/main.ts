@@ -19,7 +19,9 @@ const axios = require('axios');
 const sequelize = new Sequelize(process.env.DATABASE_URL, {
   dialect: 'postgres',
 });
-const db = new PostgresStore(process.env.DATABASE_URL as string);
+const db = new PostgresStore(process.env.DATABASE_URL as string, {
+  dialect: 'postgres',
+});
 
 const getDiscordTokenExchangeURI = (origin: string) => {
   return origin + '/api/exchange/discord';
