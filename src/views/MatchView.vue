@@ -12,6 +12,21 @@ import { SimulChessClient } from '@/game/App';
 import type { GObject } from '@/game/Game';
 import { store } from '@/store';
 
+// START useVisible composable can be extracted
+const windowVisible = ref(!document.hidden);
+
+const visibilityListener = () => {
+  windowVisible.value = !document.hidden;
+};
+
+onMounted(() => {
+  document.addEventListener('visibilitychange', visibilityListener);
+});
+onUnmounted(() => {
+  document.removeEventListener('visibilitychange', visibilityListener);
+});
+// END useVisible
+
 onMounted(() => {
   window.addEventListener('keydown', keyListener);
 });
@@ -127,12 +142,19 @@ function setHistoryStep(value: number) {
   historyTurnStep.value = value;
 }
 
+// new turn watcher
 watch(
   () => gameState.G.history,
   async (newHistory, oldHistory) => {
     if (newHistory && oldHistory && newHistory?.length !== oldHistory?.length) {
       historyTurnStep.value = 1;
       setHistoryLastTurn();
+
+      // notify of your turn
+      if (!windowVisible.value) {
+        // play sound
+        // do "your turn!" thing in top bar
+      }
     }
   },
 );
