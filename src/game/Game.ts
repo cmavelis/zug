@@ -168,7 +168,6 @@ export const SimulChess: Game<GObject> = {
           },
         },
         next: 'resolution',
-        // onEnd: () => {}, // todo could use hook here
       },
       resolution: {
         next: 'resolution',

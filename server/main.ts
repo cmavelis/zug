@@ -9,7 +9,7 @@ import { type ZugUser } from '../src/utils/auth';
 // TODO: figure out which process needs this to be commonJS syntax
 const { Server, Origins } = require('boardgame.io/server');
 const { SimulChess } = require('../src/game/Game');
-const { botClient, zugDiscordServer } = require('./discordBot');
+const { botClient } = require('./discordBot');
 const path = require('path');
 const serve = require('koa-static');
 const { koaBody } = require('koa-body');
@@ -21,10 +21,9 @@ const db = new PostgresStore(process.env.DATABASE_URL as string);
 
 const Game = db.sequelize.model('Match');
 
-Game.beforeUpsert(async (created, options) => {
-  console.info('GAME UPSERT');
+// notify players when it's their turn
+Game.beforeUpsert(async (created) => {
   const { id } = created;
-  // console.info(created);
   const oldMatch = await Game.findByPk(id);
   const oldActivePlayers = oldMatch?.state?.ctx.activePlayers;
   const newActivePlayers = created?.state?.ctx.activePlayers;
@@ -39,23 +38,14 @@ Game.beforeUpsert(async (created, options) => {
     if (oldPhase === newPhase) {
       return;
     } else {
-      console.info('player', p, ' has changed phase!');
-      // if p not connected
       const player = oldMatch.players[p];
-      if (true) {
-        // !player.connected
+      if (!player.connected) {
         // send discord message
-        console.info('search for', player.name);
         User.findOne({ where: { name: 'cmavelis' } }).then((user) => {
-          console.info('discordUser', user);
           botClient.users
-            .send(user.discordUser.id, 'Your go!')
+            .send(user.discordUser.id, "It's your turn")
             .catch(console.error);
         });
-        // console.info('discordUser', discordUser);
-        // if (discordUser) {
-        //   botClient.users.send(discordUser.id, 'Your go!').catch(console.error);
-        // }
       }
     }
   }
