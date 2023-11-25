@@ -9,19 +9,3 @@ botClient.once(Events.ClientReady, (c: { user: { tag: any } }) => {
 });
 
 botClient.login(process.env.DISCORD_BOT_TOKEN);
-// export const zugDiscordServer = botClient.guilds
-//   .fetch('1123769624719265922')
-//   .then(async (guild) => {
-//     await guild.members.fetch();
-//     return guild;
-//   });
-//
-// const doit = async () => {
-//   const b = await zugDiscordServer;
-//   const a = await b.members.list();
-//   console.log(a);
-// };
-//
-// doit().then(() => {
-//   throw new Error('stop');
-// });
