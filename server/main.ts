@@ -41,7 +41,7 @@ Game.beforeUpsert(async (created) => {
       const player = oldMatch.players[p];
       if (!player.connected) {
         // send discord message
-        User.findOne({ where: { name: 'cmavelis' } }).then((user) => {
+        User.findOne({ where: { name: player.name } }).then((user) => {
           botClient.users
             .send(user.discordUser.id, "It's your turn")
             .catch(console.error);
