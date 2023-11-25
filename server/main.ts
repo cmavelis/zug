@@ -39,7 +39,7 @@ Game.beforeUpsert(async (created) => {
       return;
     } else {
       const player = oldMatch.players[p];
-      if (!player.connected) {
+      if (!player.isConnected) {
         // send discord message
         User.findOne({ where: { name: player.name } }).then((user) => {
           botClient.users
