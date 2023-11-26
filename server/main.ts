@@ -55,7 +55,7 @@ Game.beforeUpsert(async (created) => {
             .send(user.discordUser.id, "It's your turn")
             .then(() =>
               console.debug(
-                `message sent to ${user.discordUser.name} ${user.discordUser.id}`,
+                `message sent to ${user.discordUser.username} ${user.discordUser.id}`,
               ),
             )
             .catch(console.error);
