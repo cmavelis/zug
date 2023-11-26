@@ -13,7 +13,7 @@ import { SimulChessClient } from '@/game/App';
 import type { GObject } from '@/game/Game';
 import { store } from '@/store';
 
-import notificationSound from '../assets/two-note-notification.mp3';
+import notificationSound from '../assets/zug-zug.mp3';
 import {
   startTitleNotification,
   stopTitleNotification,
