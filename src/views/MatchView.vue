@@ -15,18 +15,11 @@ import { store } from '@/store';
 import notificationSound from '../assets/two-note-notification.mp3';
 
 // START useVisible composable can be extracted
-const windowVisible = ref(!document.hidden);
+const windowHasFocus = ref(document.hasFocus());
 
-const visibilityListener = () => {
-  windowVisible.value = !document.hidden;
-};
-
-onMounted(() => {
-  document.addEventListener('visibilitychange', visibilityListener);
-});
-onUnmounted(() => {
-  document.removeEventListener('visibilitychange', visibilityListener);
-});
+setInterval(function () {
+  windowHasFocus.value = document.hasFocus();
+}, 500);
 // END useVisible
 
 onMounted(() => {
@@ -151,12 +144,6 @@ watch(
     if (newHistory && oldHistory && newHistory?.length !== oldHistory?.length) {
       historyTurnStep.value = 1;
       setHistoryLastTurn();
-
-      // notify of your turn
-      if (!windowVisible.value) {
-        // play sound
-        // do "your turn!" thing in top bar
-      }
     }
   },
 );
@@ -177,7 +164,10 @@ watch(
   () => gamePhase.value,
   (newPhase, oldPhase) => {
     if (newPhase !== oldPhase && oldPhase === 'resolution') {
-      audio.play();
+      if (!windowHasFocus.value) {
+        audio.play();
+        //todo do "your turn!" thing in top bar
+      }
     }
   },
 );
