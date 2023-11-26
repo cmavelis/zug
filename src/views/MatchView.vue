@@ -22,6 +22,34 @@ setInterval(function () {
 }, 500);
 // END useVisible
 
+watch(windowHasFocus, (newFocus) => {
+  if (newFocus) {
+    stopTitleNotification();
+  }
+});
+
+// START useWindowTitle
+const originalDocumentTitle = document.title;
+let interval1: string | number | NodeJS.Timeout | undefined,
+  interval2: string | number | NodeJS.Timeout | undefined;
+
+const startTitleNotification = () => {
+  interval1 = setInterval(() => {
+    document.title = 'Your turn!';
+  }, 2500);
+  setTimeout(() => {
+    interval2 = setInterval(() => {
+      document.title = originalDocumentTitle;
+    }, 2500);
+  }, 1250);
+};
+
+const stopTitleNotification = () => {
+  clearInterval(interval1);
+  clearInterval(interval2);
+};
+// END useWindowTitle
+
 onMounted(() => {
   window.addEventListener('keydown', keyListener);
 });
@@ -166,7 +194,7 @@ watch(
     if (newPhase !== oldPhase && oldPhase === 'resolution') {
       if (!windowHasFocus.value) {
         audio.play();
-        //todo do "your turn!" thing in top bar
+        startTitleNotification();
       }
     }
   },
