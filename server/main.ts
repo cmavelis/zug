@@ -48,16 +48,13 @@ Game.beforeUpsert(async (created) => {
   }
 
   for (const p of [0, 1]) {
-    console.debug('player', p);
     const oldPhase = oldActivePlayers[p];
     const newPhase = newActivePlayers[p];
     if (oldPhase === newPhase) {
-      console.debug('continue, no phase change');
       // this skips one iteration of for loop
       continue;
     } else {
       const player = oldMatch.players[p];
-      console.debug('player', player);
       if (!player.isConnected) {
         // send discord message
         User.findOne({ where: { name: player.name } }).then((user) => {
