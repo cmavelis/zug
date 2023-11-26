@@ -8,19 +8,14 @@ import { isEqual } from 'lodash';
 
 import BoardComponent from '@/components/BoardComponent.vue';
 import BoardDisplay from '@/components/BoardDisplay.vue';
+import { useWindowFocus } from '@/composables/useWindowFocus';
 import { SimulChessClient } from '@/game/App';
 import type { GObject } from '@/game/Game';
 import { store } from '@/store';
 
 import notificationSound from '../assets/two-note-notification.mp3';
 
-// START useVisible composable can be extracted
-const windowHasFocus = ref(document.hasFocus());
-
-setInterval(function () {
-  windowHasFocus.value = document.hasFocus();
-}, 500);
-// END useVisible
+const windowHasFocus = useWindowFocus();
 
 watch(windowHasFocus, (newFocus) => {
   if (newFocus) {
