@@ -162,6 +162,14 @@ const gamePhase = computed(() => {
   }
 });
 
+const opponentWaiting = computed(() => {
+  if (!gameState.ctx.activePlayers) {
+    return false;
+  }
+  const opponentPlayerID = playerID.value === 1 ? 0 : 1;
+  return gameState.ctx.activePlayers[opponentPlayerID] === 'resolution';
+});
+
 // "your turn" sound
 const audio = new Audio(notificationSound);
 audio.volume = 0.75;
@@ -203,6 +211,9 @@ watch(
     </p>
     <p v-if="gamePhase === 'resolution'" class="info-message">
       Waiting for opponent to finish turn...
+    </p>
+    <p v-if="opponentWaiting" class="info-message">
+      Your opponent is waiting for you to finish...
     </p>
     <BoardComponent
       v-if="gameStateLoaded"
