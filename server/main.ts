@@ -23,6 +23,38 @@ const db = new PostgresStore(process.env.DATABASE_URL as string, {
   dialect: 'postgres',
 });
 
+const Game = db.sequelize.model('Match');
+
+// notify players when it's their turn
+Game.beforeUpsert(async (created) => {
+  const { id } = created;
+  const oldMatch = await Game.findByPk(id);
+  const oldActivePlayers = oldMatch?.state?.ctx.activePlayers;
+  const newActivePlayers = created?.state?.ctx.activePlayers;
+
+  if (!(oldActivePlayers && newActivePlayers)) {
+    return;
+  }
+
+  for (const p in [0, 1]) {
+    const oldPhase = oldActivePlayers[p];
+    const newPhase = newActivePlayers[p];
+    if (oldPhase === newPhase) {
+      return;
+    } else {
+      const player = oldMatch.players[p];
+      if (!player.isConnected) {
+        // send discord message
+        User.findOne({ where: { name: player.name } }).then((user) => {
+          botClient.users
+            .send(user.discordUser.id, "It's your turn")
+            .catch(console.error);
+        });
+      }
+    }
+  }
+});
+
 const getDiscordTokenExchangeURI = (origin: string) => {
   return origin + '/api/exchange/discord';
 };

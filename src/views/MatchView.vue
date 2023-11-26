@@ -8,9 +8,24 @@ import { isEqual } from 'lodash';
 
 import BoardComponent from '@/components/BoardComponent.vue';
 import BoardDisplay from '@/components/BoardDisplay.vue';
+import { useWindowFocus } from '@/composables/useWindowFocus';
 import { SimulChessClient } from '@/game/App';
 import type { GObject } from '@/game/Game';
 import { store } from '@/store';
+
+import notificationSound from '../assets/two-note-notification.mp3';
+import {
+  startTitleNotification,
+  stopTitleNotification,
+} from '@/utils/titleAnimation';
+
+const windowHasFocus = useWindowFocus();
+
+watch(windowHasFocus, (newFocus) => {
+  if (newFocus) {
+    stopTitleNotification();
+  }
+});
 
 onMounted(() => {
   window.addEventListener('keydown', keyListener);
@@ -127,6 +142,7 @@ function setHistoryStep(value: number) {
   historyTurnStep.value = value;
 }
 
+// new turn watcher
 watch(
   () => gameState.G.history,
   async (newHistory, oldHistory) => {
@@ -137,6 +153,7 @@ watch(
   },
 );
 
+// TODO: add something like this to show ooponent phase
 const gamePhase = computed(() => {
   if (gameState.ctx.activePlayers) {
     return gameState.ctx.activePlayers[playerID.value] || '?';
@@ -144,6 +161,21 @@ const gamePhase = computed(() => {
     return 'end';
   }
 });
+
+// "your turn" sound
+const audio = new Audio(notificationSound);
+audio.volume = 0.75;
+watch(
+  () => gamePhase.value,
+  (newPhase, oldPhase) => {
+    if (newPhase !== oldPhase && oldPhase === 'resolution') {
+      if (!windowHasFocus.value) {
+        audio.play();
+        startTitleNotification('Your turn!');
+      }
+    }
+  },
+);
 </script>
 
 <template>
