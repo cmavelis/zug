@@ -16,6 +16,16 @@ const { koaBody } = require('koa-body');
 const { Sequelize } = require('sequelize');
 const axios = require('axios');
 
+const makeMatchURL = ({
+  matchID,
+  playerID,
+}: {
+  matchID: string;
+  playerID: 0 | 1;
+}) => {
+  return `${process.env.HOST_URL}/match/${matchID}?player=${playerID + 1}`;
+};
+
 const sequelize = new Sequelize(process.env.DATABASE_URL, {
   dialect: 'postgres',
 });
@@ -37,7 +47,7 @@ Game.beforeUpsert(async (created) => {
     return;
   }
 
-  for (const p in [0, 1]) {
+  for (let p of [0, 1]) {
     console.debug('player', p);
     const oldPhase = oldActivePlayers[p];
     const newPhase = newActivePlayers[p];
@@ -52,7 +62,14 @@ Game.beforeUpsert(async (created) => {
         // send discord message
         User.findOne({ where: { name: player.name } }).then((user) => {
           botClient.users
-            .send(user.discordUser.id, "It's your turn")
+            .send(
+              user.discordUser.id,
+              `It's your turn: \n ${makeMatchURL({
+                matchID: created.id,
+                playerID: p as 0 | 1,
+              })}`,
+            )
+
             .then(() =>
               console.debug(
                 `message sent to ${user.discordUser.username} ${user.discordUser.id}`,
