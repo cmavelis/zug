@@ -14,6 +14,10 @@ import type { GObject } from '@/game/Game';
 import { store } from '@/store';
 
 import notificationSound from '../assets/two-note-notification.mp3';
+import {
+  startTitleNotification,
+  stopTitleNotification,
+} from '@/utils/titleAnimation';
 
 const windowHasFocus = useWindowFocus();
 
@@ -22,28 +26,6 @@ watch(windowHasFocus, (newFocus) => {
     stopTitleNotification();
   }
 });
-
-// START useWindowTitle
-const originalDocumentTitle = document.title;
-let interval1: string | number | NodeJS.Timeout | undefined,
-  interval2: string | number | NodeJS.Timeout | undefined;
-
-const startTitleNotification = () => {
-  interval1 = setInterval(() => {
-    document.title = 'Your turn!';
-  }, 2500);
-  setTimeout(() => {
-    interval2 = setInterval(() => {
-      document.title = originalDocumentTitle;
-    }, 2500);
-  }, 1250);
-};
-
-const stopTitleNotification = () => {
-  clearInterval(interval1);
-  clearInterval(interval2);
-};
-// END useWindowTitle
 
 onMounted(() => {
   window.addEventListener('keydown', keyListener);
@@ -189,7 +171,7 @@ watch(
     if (newPhase !== oldPhase && oldPhase === 'resolution') {
       if (!windowHasFocus.value) {
         audio.play();
-        startTitleNotification();
+        startTitleNotification('Your turn!');
       }
     }
   },
