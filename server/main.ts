@@ -47,7 +47,7 @@ Game.beforeUpsert(async (created) => {
     return;
   }
 
-  for (let p of [0, 1]) {
+  for (const p of [0, 1]) {
     console.debug('player', p);
     const oldPhase = oldActivePlayers[p];
     const newPhase = newActivePlayers[p];
