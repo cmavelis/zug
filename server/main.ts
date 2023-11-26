@@ -28,6 +28,7 @@ const Game = db.sequelize.model('Match');
 // notify players when it's their turn
 Game.beforeUpsert(async (created) => {
   const { id } = created;
+  console.debug('Game.beforeUpsert', created);
   const oldMatch = await Game.findByPk(id);
   const oldActivePlayers = oldMatch?.state?.ctx.activePlayers;
   const newActivePlayers = created?.state?.ctx.activePlayers;
@@ -37,15 +38,19 @@ Game.beforeUpsert(async (created) => {
   }
 
   for (const p in [0, 1]) {
+    console.debug('player', p);
     const oldPhase = oldActivePlayers[p];
     const newPhase = newActivePlayers[p];
     if (oldPhase === newPhase) {
+      console.debug('return, no phase change');
       return;
     } else {
       const player = oldMatch.players[p];
+      console.debug('player', player);
       if (!player.isConnected) {
         // send discord message
         User.findOne({ where: { name: player.name } }).then((user) => {
+          console.debug('found user', user);
           botClient.users
             .send(user.discordUser.id, "It's your turn")
             .catch(console.error);
