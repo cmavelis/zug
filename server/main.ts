@@ -43,6 +43,7 @@ Game.beforeUpsert(async (created) => {
     const newPhase = newActivePlayers[p];
     if (oldPhase === newPhase) {
       console.debug('continue, no phase change');
+      // this skips one iteration of for loop
       continue;
     } else {
       const player = oldMatch.players[p];
