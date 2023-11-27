@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { RouterLink, RouterView } from 'vue-router';
+import { store } from './store';
 </script>
 
 <template>
@@ -9,6 +10,7 @@ import { RouterLink, RouterView } from 'vue-router';
         <RouterLink to="/">Home</RouterLink>
         <RouterLink to="/how-to-play">How To Play</RouterLink>
         <RouterLink to="/about">About</RouterLink>
+        <span>{{ store.zugUsername }}</span>
       </nav>
     </div>
   </header>
@@ -29,13 +31,13 @@ nav {
   margin-bottom: 1rem;
 }
 
-nav a {
+nav * {
   display: inline-block;
   padding: 0 1rem;
   border-left: 1px solid var(--color-border);
 }
 
-nav a:first-of-type {
+nav *:first-child {
   border: 0;
 }
 </style>

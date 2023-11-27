@@ -16,11 +16,64 @@ const { koaBody } = require('koa-body');
 const { Sequelize } = require('sequelize');
 const axios = require('axios');
 
+const makeMatchURL = ({
+  matchID,
+  playerID,
+}: {
+  matchID: string;
+  playerID: 0 | 1;
+}) => {
+  return `${process.env.HOST_URL}/match/${matchID}?player=${playerID + 1}`;
+};
+
 const sequelize = new Sequelize(process.env.DATABASE_URL, {
   dialect: 'postgres',
 });
 const db = new PostgresStore(process.env.DATABASE_URL as string, {
   dialect: 'postgres',
+});
+
+const Game = db.sequelize.model('Match');
+
+// notify players when it's their turn
+Game.beforeUpsert(async (created) => {
+  const { id } = created;
+  const oldMatch = await Game.findByPk(id);
+  const oldActivePlayers = oldMatch?.state?.ctx.activePlayers;
+  const newActivePlayers = created?.state?.ctx.activePlayers;
+
+  if (!(oldActivePlayers && newActivePlayers)) {
+    return;
+  }
+
+  for (const p of [0, 1]) {
+    const oldPhase = oldActivePlayers[p];
+    const newPhase = newActivePlayers[p];
+    if (oldPhase === newPhase) {
+      continue;
+    }
+    const player = oldMatch.players[p];
+    if (!player.isConnected) {
+      // send discord message
+      User.findOne({ where: { name: player.name } }).then((user) => {
+        botClient.users
+          .send(
+            user.discordUser.id,
+            `It's your turn: \n ${makeMatchURL({
+              matchID: created.id,
+              playerID: p as 0 | 1,
+            })}`,
+          )
+
+          .then(() =>
+            console.debug(
+              `discord message sent to ${user.discordUser.username} ${user.discordUser.id}`,
+            ),
+          )
+          .catch(console.error);
+      });
+    }
+  }
 });
 
 const getDiscordTokenExchangeURI = (origin: string) => {
@@ -52,35 +105,31 @@ User.sync().catch(console.error);
 
 interface ZugToken extends ZugUser {
   iat: number; // 'instantiated at'
-  credentials: string;
 }
 
 const generateCredentials = async (ctx: {
   request: { headers: { [x: string]: any } };
 }) => {
-  console.log('request', ctx.request.headers);
   const authHeader = ctx.request.headers['authorization'];
   if (authHeader === 'open') {
     return 'open';
   }
 
   const token: ZugToken = decodeToken(authHeader);
-  return token.credentials;
+  return token.authToken;
 };
 
 const authenticateCredentials = async (
   credentials: string,
   playerMetadata: any,
 ) => {
-  console.log('authenticateCredentials');
-  console.log(credentials, playerMetadata);
   // this allows testing matches to work
   if (playerMetadata?.credentials === 'open') {
     return true;
   }
   if (credentials) {
     const token: ZugToken = decodeToken(credentials);
-    if (token?.credentials === playerMetadata?.credentials) return true;
+    if (token?.authToken === playerMetadata?.credentials) return true;
   }
   return false;
 };

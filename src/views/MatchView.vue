@@ -8,9 +8,24 @@ import { isEqual } from 'lodash';
 
 import BoardComponent from '@/components/BoardComponent.vue';
 import BoardDisplay from '@/components/BoardDisplay.vue';
+import { useWindowFocus } from '@/composables/useWindowFocus';
 import { SimulChessClient } from '@/game/App';
 import type { GObject } from '@/game/Game';
 import { store } from '@/store';
+
+import { getNotificationSound } from '@/utils/notificationSound';
+import {
+  startTitleNotification,
+  stopTitleNotification,
+} from '@/utils/titleAnimation';
+
+const windowHasFocus = useWindowFocus();
+
+watch(windowHasFocus, (newFocus) => {
+  if (newFocus) {
+    stopTitleNotification();
+  }
+});
 
 onMounted(() => {
   window.addEventListener('keydown', keyListener);
@@ -127,6 +142,7 @@ function setHistoryStep(value: number) {
   historyTurnStep.value = value;
 }
 
+// new turn watcher
 watch(
   () => gameState.G.history,
   async (newHistory, oldHistory) => {
@@ -137,12 +153,38 @@ watch(
   },
 );
 
+// TODO: add something like this to show ooponent phase
 const gamePhase = computed(() => {
   if (gameState.ctx.activePlayers) {
     return gameState.ctx.activePlayers[playerID.value] || '?';
   } else {
     return 'end';
   }
+});
+
+const opponentWaiting = computed(() => {
+  if (!gameState.ctx.activePlayers) {
+    return false;
+  }
+  const opponentPlayerID = playerID.value === 1 ? 0 : 1;
+  return gameState.ctx.activePlayers[opponentPlayerID] === 'resolution';
+});
+
+// "your turn" sound
+getNotificationSound(store.zugUsername === 'Ben').then((notificationSound) => {
+  const audio = new Audio(notificationSound);
+  audio.volume = 0.75;
+  watch(
+    () => gamePhase.value,
+    (newPhase, oldPhase) => {
+      if (newPhase !== oldPhase && oldPhase === 'resolution') {
+        if (!windowHasFocus.value) {
+          audio.play();
+          startTitleNotification('Your turn!');
+        }
+      }
+    },
+  );
 });
 </script>
 
@@ -171,6 +213,9 @@ const gamePhase = computed(() => {
     </p>
     <p v-if="gamePhase === 'resolution'" class="info-message">
       Waiting for opponent to finish turn...
+    </p>
+    <p v-if="opponentWaiting" class="info-message">
+      Your opponent is waiting for you to finish...
     </p>
     <BoardComponent
       v-if="gameStateLoaded"
