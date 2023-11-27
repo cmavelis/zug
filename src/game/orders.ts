@@ -523,10 +523,9 @@ export function orderResolver({ G }: { G: GObject }) {
 
   // remove OB pieces
   const outOfBoundsPieces = [];
-  if (G.config.outOfBounds === 'immediate') {
+  if (G.config.outOfBounds === 'turn-end') {
     outOfBoundsPieces.push(...findOutOfBoundsPieces(G));
   }
-  outOfBoundsPieces.push(...findOverlappingPieces(G));
   removePieces(G, outOfBoundsPieces);
 
   return G;
