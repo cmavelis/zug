@@ -21,6 +21,11 @@ a,
   }
 }
 
+/* disables double-tap zoom on mobile devices, when clicking buttons */
+button {
+  touch-action: manipulation;
+}
+
 
 @keyframes halo {
   from {
