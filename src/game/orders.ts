@@ -494,6 +494,27 @@ export function orderResolver({ G }: { G: GObject }) {
       p.isDefending = false;
     });
 
+  // remove OB pieces
+  const outOfBoundsPieces = [];
+  if (G.config.outOfBounds === 'turn-end') {
+    outOfBoundsPieces.push(...findOutOfBoundsPieces(G));
+  }
+  removePieces(G, outOfBoundsPieces);
+
+  // add OB events to history
+  turnHistory.push(
+    cloneDeep({
+      cells,
+      orders: [],
+      pieces,
+      score,
+      events: outOfBoundsPieces.map((id) => ({
+        type: 'destroy',
+        sourcePieceId: id,
+      })),
+    }),
+  );
+
   // score & remove pieces in the goal
   const toRemove: number[] = [];
   pieces.forEach((p) => {
@@ -520,13 +541,6 @@ export function orderResolver({ G }: { G: GObject }) {
     }),
   );
   removePieces(G, toRemove);
-
-  // remove OB pieces
-  const outOfBoundsPieces = [];
-  if (G.config.outOfBounds === 'turn-end') {
-    outOfBoundsPieces.push(...findOutOfBoundsPieces(G));
-  }
-  removePieces(G, outOfBoundsPieces);
 
   return G;
 }
