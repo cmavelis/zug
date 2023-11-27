@@ -38,7 +38,6 @@ const Game = db.sequelize.model('Match');
 // notify players when it's their turn
 Game.beforeUpsert(async (created) => {
   const { id } = created;
-  console.debug('Game, beforeUpsert', id);
   const oldMatch = await Game.findByPk(id);
   const oldActivePlayers = oldMatch?.state?.ctx.activePlayers;
   const newActivePlayers = created?.state?.ctx.activePlayers;
@@ -68,7 +67,7 @@ Game.beforeUpsert(async (created) => {
 
           .then(() =>
             console.debug(
-              `message sent to ${user.discordUser.username} ${user.discordUser.id}`,
+              `discord message sent to ${user.discordUser.username} ${user.discordUser.id}`,
             ),
           )
           .catch(console.error);
@@ -106,35 +105,31 @@ User.sync().catch(console.error);
 
 interface ZugToken extends ZugUser {
   iat: number; // 'instantiated at'
-  credentials: string;
 }
 
 const generateCredentials = async (ctx: {
   request: { headers: { [x: string]: any } };
 }) => {
-  console.log('request', ctx.request.headers);
   const authHeader = ctx.request.headers['authorization'];
   if (authHeader === 'open') {
     return 'open';
   }
 
   const token: ZugToken = decodeToken(authHeader);
-  return token.credentials;
+  return token.authToken;
 };
 
 const authenticateCredentials = async (
   credentials: string,
   playerMetadata: any,
 ) => {
-  console.log('authenticateCredentials');
-  console.log(credentials, playerMetadata);
   // this allows testing matches to work
   if (playerMetadata?.credentials === 'open') {
     return true;
   }
   if (credentials) {
     const token: ZugToken = decodeToken(credentials);
-    if (token?.credentials === playerMetadata?.credentials) return true;
+    if (token?.authToken === playerMetadata?.credentials) return true;
   }
   return false;
 };
