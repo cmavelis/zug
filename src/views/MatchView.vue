@@ -13,7 +13,7 @@ import { SimulChessClient } from '@/game/App';
 import type { GObject } from '@/game/Game';
 import { store } from '@/store';
 
-import notificationSound from '../assets/zug-zug.mp3';
+import { getNotificationSound } from '@/utils/notificationSound';
 import {
   startTitleNotification,
   stopTitleNotification,
@@ -171,19 +171,21 @@ const opponentWaiting = computed(() => {
 });
 
 // "your turn" sound
-const audio = new Audio(notificationSound);
-audio.volume = 0.75;
-watch(
-  () => gamePhase.value,
-  (newPhase, oldPhase) => {
-    if (newPhase !== oldPhase && oldPhase === 'resolution') {
-      if (!windowHasFocus.value) {
-        audio.play();
-        startTitleNotification('Your turn!');
+getNotificationSound(store.zugUsername === 'Ben').then((notificationSound) => {
+  const audio = new Audio(notificationSound);
+  audio.volume = 0.75;
+  watch(
+    () => gamePhase.value,
+    (newPhase, oldPhase) => {
+      if (newPhase !== oldPhase && oldPhase === 'resolution') {
+        if (!windowHasFocus.value) {
+          audio.play();
+          startTitleNotification('Your turn!');
+        }
       }
-    }
-  },
-);
+    },
+  );
+});
 </script>
 
 <template>
