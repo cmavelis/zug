@@ -92,6 +92,9 @@ const usersMatches = computed(() => {
       <button @click="createMatch({ priority: 'order-choice' })">
         "Order choice" priority setting
       </button>
+      <button @click="createMatch({ outOfBounds: 'turn-end' })">
+        "Greatest"
+      </button>
       <button @click="createMatch({ empty: true })">Testing</button>
     </section>
 
