@@ -16,4 +16,5 @@ export const startTitleNotification = (newTitle: string) => {
 export const stopTitleNotification = () => {
   clearInterval(interval1);
   clearInterval(interval2);
+  document.title = originalDocumentTitle;
 };

@@ -16,6 +16,16 @@ const { koaBody } = require('koa-body');
 const { Sequelize } = require('sequelize');
 const axios = require('axios');
 
+const makeMatchURL = ({
+  matchID,
+  playerID,
+}: {
+  matchID: string;
+  playerID: 0 | 1;
+}) => {
+  return `${process.env.HOST_URL}/match/${matchID}?player=${playerID + 1}`;
+};
+
 const sequelize = new Sequelize(process.env.DATABASE_URL, {
   dialect: 'postgres',
 });
@@ -37,30 +47,32 @@ Game.beforeUpsert(async (created) => {
     return;
   }
 
-  for (const p in [0, 1]) {
-    console.debug('player', p);
+  for (const p of [0, 1]) {
     const oldPhase = oldActivePlayers[p];
     const newPhase = newActivePlayers[p];
     if (oldPhase === newPhase) {
-      console.debug('continue, no phase change');
-      // this skips one iteration of for loop
       continue;
-    } else {
-      const player = oldMatch.players[p];
-      console.debug('player', player);
-      if (!player.isConnected) {
-        // send discord message
-        User.findOne({ where: { name: player.name } }).then((user) => {
-          botClient.users
-            .send(user.discordUser.id, "It's your turn")
-            .then(() =>
-              console.debug(
-                `message sent to ${user.discordUser.name} ${user.discordUser.id}`,
-              ),
-            )
-            .catch(console.error);
-        });
-      }
+    }
+    const player = oldMatch.players[p];
+    if (!player.isConnected) {
+      // send discord message
+      User.findOne({ where: { name: player.name } }).then((user) => {
+        botClient.users
+          .send(
+            user.discordUser.id,
+            `It's your turn: \n ${makeMatchURL({
+              matchID: created.id,
+              playerID: p as 0 | 1,
+            })}`,
+          )
+
+          .then(() =>
+            console.debug(
+              `message sent to ${user.discordUser.username} ${user.discordUser.id}`,
+            ),
+          )
+          .catch(console.error);
+      });
     }
   }
 });
