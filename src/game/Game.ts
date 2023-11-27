@@ -11,15 +11,22 @@ export type PriorityMode =
   | 'order-choice' // the original; orders get priority based on when they were assigned in the turn
   | 'piece'; // pieces have their own priorities based on their ID, instead of order
 
-export interface GameSetupData {
-  priority?: PriorityMode;
+export type OutOfBoundsMode =
+  | 'immediate' // pieces will be removed from play immediately after being knocked out of bounds
+  | 'turn-end'; // pieces removed from play if OB at end of turn
+
+interface CommonGameConfig {
+  outOfBounds: OutOfBoundsMode;
+  priority: PriorityMode;
+}
+
+export interface GameSetupData extends Partial<CommonGameConfig> {
   empty?: boolean;
 }
 
 export interface GameState {
-  config: {
+  config: CommonGameConfig & {
     board: Coordinates;
-    priority: PriorityMode;
   };
   cells: Array<null | number>;
   orders: { [playerID: number]: Orders };
@@ -56,6 +63,7 @@ export const SimulChess: Game<GObject> = {
     const initialGame = {
       config: {
         board,
+        outOfBounds: setupData?.outOfBounds || ('immediate' as OutOfBoundsMode),
         priority: setupData?.priority || ('piece' as PriorityMode),
       },
       cells: Array(board.x * board.y).fill(null),
