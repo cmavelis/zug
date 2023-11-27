@@ -51,30 +51,28 @@ Game.beforeUpsert(async (created) => {
     const oldPhase = oldActivePlayers[p];
     const newPhase = newActivePlayers[p];
     if (oldPhase === newPhase) {
-      // this skips one iteration of for loop
       continue;
-    } else {
-      const player = oldMatch.players[p];
-      if (!player.isConnected) {
-        // send discord message
-        User.findOne({ where: { name: player.name } }).then((user) => {
-          botClient.users
-            .send(
-              user.discordUser.id,
-              `It's your turn: \n ${makeMatchURL({
-                matchID: created.id,
-                playerID: p as 0 | 1,
-              })}`,
-            )
+    }
+    const player = oldMatch.players[p];
+    if (!player.isConnected) {
+      // send discord message
+      User.findOne({ where: { name: player.name } }).then((user) => {
+        botClient.users
+          .send(
+            user.discordUser.id,
+            `It's your turn: \n ${makeMatchURL({
+              matchID: created.id,
+              playerID: p as 0 | 1,
+            })}`,
+          )
 
-            .then(() =>
-              console.debug(
-                `message sent to ${user.discordUser.username} ${user.discordUser.id}`,
-              ),
-            )
-            .catch(console.error);
-        });
-      }
+          .then(() =>
+            console.debug(
+              `message sent to ${user.discordUser.username} ${user.discordUser.id}`,
+            ),
+          )
+          .catch(console.error);
+      });
     }
   }
 });
