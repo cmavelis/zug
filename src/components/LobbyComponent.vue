@@ -176,15 +176,7 @@ watch(matches, () => {
   gap: 1rem;
   justify-content: center;
   flex-wrap: wrap;
-}
-.match-name {
-  justify-self: right;
-}
-.match {
-  padding: 4px;
-}
-.highlight {
-  border: 2px solid orange;
+  margin-bottom: 1rem;
 }
 
 .button-group {
