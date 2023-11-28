@@ -1,8 +1,9 @@
 <script setup lang="ts">
 import { store } from '@/store';
+import { type LobbyAPI } from 'boardgame.io';
 
 interface LobbyMatchProps {
-  players: any;
+  players: LobbyAPI.Match['players'];
   matchID: string;
   handleMatchJoin: () => any;
   handleMatchNavigate: (playerNumber: string) => void;
