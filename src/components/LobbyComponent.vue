@@ -114,11 +114,11 @@ watch(matches, () => {
     <section class="button-group">
       <h2>Create a match:</h2>
       <button @click="createMatch({ priority: 'piece' })">Standard</button>
-      <button @click="createMatch({ priority: 'order-choice' })">
-        "Order choice" priority setting
-      </button>
       <button @click="createMatch({ outOfBounds: 'turn-end' })">
         Standard + "Greatest"
+      </button>
+      <button @click="createMatch({ priority: 'order-choice' })">
+        "Action order" priority setting
       </button>
       <button @click="createMatch({ empty: true })">Testing</button>
     </section>
