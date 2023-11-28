@@ -132,7 +132,7 @@ watch(matches, () => {
         :key="match.matchID"
         :matchID="match.matchID"
         :players="match.players"
-        :highlight="usersMatches.includes(match.matchID)"
+        :highlight="!match.gameover"
         :handle-match-join="() => requestJoinMatch(match.matchID)"
         :handle-match-navigate="
           (playerName: string) => navigateToMatch(match.matchID, playerName)
