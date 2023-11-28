@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { store } from '@/store';
-import { type LobbyAPI } from 'boardgame.io';
+import { type LobbyAPI } from 'boardgame.io/dist/types/src/types';
 
 interface LobbyMatchProps {
   players: LobbyAPI.Match['players'];
