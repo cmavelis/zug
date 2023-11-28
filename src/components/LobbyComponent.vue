@@ -106,14 +106,11 @@ watch(matches, () => {
 <template>
   <main>
     <h1>Matches Lobby</h1>
-    <p>
-      Create or join a match here, or you can navigate to a match URL like
-      <RouterLink to="/match/1">/match/1</RouterLink>
-      to join an unlisted match.
-    </p>
+    <h2>Create a match</h2>
+    <button class="button-big" @click="createMatch({ priority: 'piece' })">
+      Standard
+    </button>
     <section class="button-group">
-      <h2>Create a match:</h2>
-      <button @click="createMatch({ priority: 'piece' })">Standard</button>
       <button @click="createMatch({ outOfBounds: 'turn-end' })">
         Standard + "Greatest"
       </button>
@@ -125,7 +122,7 @@ watch(matches, () => {
 
     <h2>Matches</h2>
     <span>{{ joinStatus }}</span>
-    <h3>Your matches:</h3>
+    <h3>Your matches</h3>
     <section class="matches-list">
       <LobbyMatch
         v-for="match in yourMatches"
@@ -139,7 +136,7 @@ watch(matches, () => {
         "
       />
     </section>
-    <h3>Open matches:</h3>
+    <h3>Open matches</h3>
     <section class="matches-list">
       <LobbyMatch
         v-for="match in openMatches"
@@ -153,7 +150,7 @@ watch(matches, () => {
         "
       />
     </section>
-    <h3>Other matches:</h3>
+    <h3>Other matches</h3>
     <section class="matches-list">
       <LobbyMatch
         v-for="match in remainingMatches"
@@ -181,11 +178,18 @@ watch(matches, () => {
 
 .button-group {
   display: flex;
-  flex-direction: column;
-  gap: 4px;
+  flex-direction: row;
+  flex-wrap: wrap;
+  justify-content: center;
   align-items: center;
+  gap: 4px;
 }
 button {
   width: fit-content;
+}
+
+.button-big {
+  font-size: 1.5rem;
+  margin: 0.5rem;
 }
 </style>
