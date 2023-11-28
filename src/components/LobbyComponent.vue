@@ -4,6 +4,7 @@ import type { Ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { LobbyClient } from 'boardgame.io/client';
 import type { LobbyAPI } from 'boardgame.io/dist/types/src/types';
+import LobbyMatch from '@/components/LobbyMatch.vue';
 import type { GameSetupData } from '@/game/Game';
 import { store } from '@/store';
 
@@ -90,7 +91,7 @@ watch(matches, () => {
   matches.value.forEach((match) => {
     if (match.players.some((p) => p.name && p.name === store.zugUsername)) {
       newYourMatches.push(match);
-    } else if (match.players.some((p) => Boolean(p.name))) {
+    } else if (match.players.some((p) => !p.name)) {
       newOpenMatches.push(match);
     } else {
       newRemainingMatches.push(match);
@@ -122,38 +123,49 @@ watch(matches, () => {
       <button @click="createMatch({ empty: true })">Testing</button>
     </section>
 
-    <h2>Open matches:</h2>
+    <h2>Matches</h2>
     <span>{{ joinStatus }}</span>
+    <h3>Your matches:</h3>
     <section class="matches-list">
-      <div
+      <LobbyMatch
+        v-for="match in yourMatches"
         :key="match.matchID"
-        :class="{
-          match: true,
-          highlight: usersMatches.includes(match.matchID),
-        }"
-        v-for="match in matches"
-      >
-        <div class="match-name">{{ match.matchID }}</div>
-        <div>
-          <div :key="player.name" v-for="(player, i) in match.players">
-            {{ player.name }}
-            <button
-              v-if="player.name && player.name === store.zugUsername"
-              @click="navigateToMatch(match.matchID, String(i))"
-            >
-              go to
-            </button>
-          </div>
-        </div>
-        <div
-          v-if="
-            match.players.some((p) => !p.name) &&
-            match.players.every((p) => p.name !== store.zugUsername)
-          "
-        >
-          <button @click="requestJoinMatch(match.matchID)">join</button>
-        </div>
-      </div>
+        :matchID="match.matchID"
+        :players="match.players"
+        :highlight="usersMatches.includes(match.matchID)"
+        :handle-match-join="() => requestJoinMatch(match.matchID)"
+        :handle-match-navigate="
+          (playerName: string) => navigateToMatch(match.matchID, playerName)
+        "
+      />
+    </section>
+    <h3>Open matches:</h3>
+    <section class="matches-list">
+      <LobbyMatch
+        v-for="match in openMatches"
+        :key="match.matchID"
+        :matchID="match.matchID"
+        :players="match.players"
+        :highlight="usersMatches.includes(match.matchID)"
+        :handle-match-join="() => requestJoinMatch(match.matchID)"
+        :handle-match-navigate="
+          (playerName: string) => navigateToMatch(match.matchID, playerName)
+        "
+      />
+    </section>
+    <h3>Other matches:</h3>
+    <section class="matches-list">
+      <LobbyMatch
+        v-for="match in remainingMatches"
+        :key="match.matchID"
+        :matchID="match.matchID"
+        :players="match.players"
+        :highlight="usersMatches.includes(match.matchID)"
+        :handle-match-join="() => requestJoinMatch(match.matchID)"
+        :handle-match-navigate="
+          (playerName: string) => navigateToMatch(match.matchID, playerName)
+        "
+      />
     </section>
   </main>
 </template>

@@ -4,8 +4,8 @@ import { store } from '@/store';
 interface LobbyMatchProps {
   players: any;
   matchID: string;
-  handleMatchJoin: () => {};
-  handleMatchNavigate: () => {};
+  handleMatchJoin: () => any;
+  handleMatchNavigate: (playerNumber: string) => void;
   highlight?: boolean;
 }
 
@@ -21,11 +21,11 @@ const props = defineProps<LobbyMatchProps>();
   >
     <div class="match-name">{{ props.matchID }}</div>
     <div>
-      <div :key="player.name" v-for="player in props.players">
+      <div :key="player.name" v-for="(player, i) in props.players">
         {{ player.name }}
         <button
           v-if="player.name && player.name === store.zugUsername"
-          @click="handleMatchNavigate"
+          @click="() => handleMatchNavigate(String(i))"
         >
           go to
         </button>
