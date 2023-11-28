@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue';
+import { computed, ref, watch } from 'vue';
 import type { Ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { LobbyClient } from 'boardgame.io/client';
@@ -11,6 +11,7 @@ const matches: Ref<LobbyAPI.Match[]> = ref([]);
 const { protocol, hostname, port } = window.location;
 const server = `${protocol}//${hostname}:${port}`;
 
+// todo: poll match list or show refresh button
 const lobbyClient = new LobbyClient({ server });
 lobbyClient
   .listMatches('zug')
@@ -75,6 +76,29 @@ const usersMatches = computed(() => {
       m.players.some((p) => p.name && p.name === store.zugUsername),
     )
     .map((match) => match.matchID);
+});
+
+const yourMatches: Ref<LobbyAPI.Match[]> = ref([]);
+const openMatches: Ref<LobbyAPI.Match[]> = ref([]);
+const remainingMatches: Ref<LobbyAPI.Match[]> = ref([]);
+
+watch(matches, () => {
+  const newYourMatches: LobbyAPI.Match[] = [];
+  const newOpenMatches: LobbyAPI.Match[] = [];
+  const newRemainingMatches: LobbyAPI.Match[] = [];
+
+  matches.value.forEach((match) => {
+    if (match.players.some((p) => p.name && p.name === store.zugUsername)) {
+      newYourMatches.push(match);
+    } else if (match.players.some((p) => Boolean(p.name))) {
+      newOpenMatches.push(match);
+    } else {
+      newRemainingMatches.push(match);
+    }
+  });
+  yourMatches.value = newYourMatches;
+  openMatches.value = newOpenMatches;
+  remainingMatches.value = newRemainingMatches;
 });
 </script>
 
