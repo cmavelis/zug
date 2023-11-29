@@ -127,8 +127,7 @@ watch(matches, () => {
       <LobbyMatch
         v-for="match in yourMatches"
         :key="match.matchID"
-        :matchID="match.matchID"
-        :players="match.players"
+        v-bind="match"
         :highlight="!match.gameover"
         :handle-match-join="() => requestJoinMatch(match.matchID)"
         :handle-match-navigate="
