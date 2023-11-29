@@ -1,4 +1,4 @@
-import { cloneDeep, countBy, forOwn, isEqual, remove } from 'lodash-es';
+import { cloneDeep, countBy, forOwn, isEqual, remove } from 'lodash';
 import type { Coordinates } from '@/game/common';
 import {
   addDisplacement,
