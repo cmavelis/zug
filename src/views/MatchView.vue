@@ -204,7 +204,7 @@ getNotificationSound(store.zugUsername === 'Ben').then((notificationSound) => {
 </script>
 
 <template>
-  <OverlayPanel ref="op" appendTo="body" showCloseIcon>
+  <OverlayPanel ref="op" appendTo="body">
     <div>
       <!--prettier-ignore-->
       <pre>{{JSON.stringify(gameState.G.config, null, 2).trim()}}</pre>
