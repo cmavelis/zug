@@ -200,27 +200,32 @@ getNotificationSound(store.zugUsername === 'Ben').then((notificationSound) => {
 <template>
   <main>
     <p v-if="!isPlayerSelected">Choose a player</p>
-    <input
-      type="radio"
-      v-if="store.isDebug || !isPlayerSelected"
-      v-model="playerID"
-      :value="0"
-    />
-    <span :class="{ checked: playerID === 0 }">
-      {{ matchData ? matchData[0].name : 'player 1' }}</span
-    >
-    ({{ gameState.G.score ? gameState.G.score[0] : '?' }}) - ({{
-      gameState.G.score ? gameState.G.score[1] : '?'
-    }})
-    <span :class="{ checked: playerID === 1 }"
-      >{{ matchData ? matchData[1].name : 'player 2' }}
-    </span>
-    <input
-      type="radio"
-      v-if="store.isDebug || !isPlayerSelected"
-      v-model="playerID"
-      :value="1"
-    />
+    <div class="player-info">
+      <span />
+      <input
+        type="radio"
+        v-if="store.isDebug || !isPlayerSelected"
+        v-model="playerID"
+        :value="0"
+      />
+      <span :class="{ checked: playerID === 0 }">
+        {{ matchData ? matchData[0].name : 'player 1' }}</span
+      >
+      ({{ gameState.G.score ? gameState.G.score[0] : '?' }}) - ({{
+        gameState.G.score ? gameState.G.score[1] : '?'
+      }})
+      <span :class="{ checked: playerID === 1 }"
+        >{{ matchData ? matchData[1].name : 'player 2' }}
+      </span>
+      <input
+        type="radio"
+        v-if="store.isDebug || !isPlayerSelected"
+        v-model="playerID"
+        :value="1"
+      />
+      <button class="player-info-button">?</button>
+    </div>
+
     <p>
       phase:
       {{ gamePhase }}
@@ -280,6 +285,29 @@ getNotificationSound(store.zugUsername === 'Ben').then((notificationSound) => {
 <style>
 main {
   padding: 1rem 0;
+}
+
+.player-info {
+  display: grid;
+  grid-template-columns: 1fr 100px auto 100px 1fr;
+  justify-content: center;
+  gap: 0.2rem;
+}
+
+.player-info-button {
+  --circle-size: 1.8rem;
+  background: transparent;
+  font-size: 1.2rem;
+  font-weight: bold;
+  color: var(--color-theme-green);
+  border: 2px solid var(--color-theme-green);
+  border-radius: var(--circle-size);
+  width: var(--circle-size);
+  height: var(--circle-size);
+}
+
+.player-info-button:hover {
+  background-color: var(--color-border-hover);
 }
 
 .info-message {
