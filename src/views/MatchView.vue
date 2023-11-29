@@ -13,7 +13,7 @@ import OverlayPanel from 'primevue/overlaypanel';
 
 import type { ClientState } from 'boardgame.io/dist/types/src/client/client';
 import type { Ctx, FilteredMetadata } from 'boardgame.io/dist/types/src/types';
-import { isEqual } from 'lodash';
+import { isEqual } from 'lodash-es';
 
 import BoardComponent from '@/components/BoardComponent.vue';
 import BoardDisplay from '@/components/BoardDisplay.vue';

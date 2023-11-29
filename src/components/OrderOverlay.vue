@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import type { Order } from '@/game/orders';
-import { isEqual } from 'lodash';
+import { isEqual } from 'lodash-es';
 import type { Coordinates } from '@/game/common';
 import type { Piece } from '@/game/pieces';
 import type { GameEvent } from '@/game/Game';
