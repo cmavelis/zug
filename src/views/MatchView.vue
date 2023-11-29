@@ -9,6 +9,7 @@ import {
   Ref,
 } from 'vue';
 import { useRoute } from 'vue-router';
+import OverlayPanel from 'primevue/overlaypanel';
 
 import type { ClientState } from 'boardgame.io/dist/types/src/client/client';
 import type { Ctx, FilteredMetadata } from 'boardgame.io/dist/types/src/types';
@@ -179,6 +180,11 @@ const opponentWaiting = computed(() => {
   return gameState.ctx.activePlayers[opponentPlayerID] === 'resolution';
 });
 
+const op = ref();
+const toggleMatchInfo = (event: Event) => {
+  op.value.toggle(event);
+};
+
 // "your turn" sound
 getNotificationSound(store.zugUsername === 'Ben').then((notificationSound) => {
   const audio = new Audio(notificationSound);
@@ -199,6 +205,7 @@ getNotificationSound(store.zugUsername === 'Ben').then((notificationSound) => {
 
 <template>
   <main>
+    <OverlayPanel ref="op"> info info info </OverlayPanel>
     <p v-if="!isPlayerSelected">Choose a player</p>
     <div class="player-info">
       <span />
@@ -223,7 +230,7 @@ getNotificationSound(store.zugUsername === 'Ben').then((notificationSound) => {
         v-model="playerID"
         :value="1"
       />
-      <button class="player-info-button">?</button>
+      <button class="match-info-button" @click="toggleMatchInfo">?</button>
     </div>
 
     <p>
@@ -294,7 +301,7 @@ main {
   gap: 0.2rem;
 }
 
-.player-info-button {
+.match-info-button {
   --circle-size: 1.8rem;
   background: transparent;
   font-size: 1.2rem;
@@ -306,7 +313,7 @@ main {
   height: var(--circle-size);
 }
 
-.player-info-button:hover {
+.match-info-button:hover {
   background-color: var(--color-border-hover);
 }
 
