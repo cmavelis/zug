@@ -55,23 +55,26 @@ Game.beforeUpsert(async (created) => {
     const player = oldMatch.players[p];
     if (!player.isConnected) {
       // send discord message
-      User.findOne({ where: { name: player.name } }).then((user) => {
-        botClient.users
-          .send(
-            user.discordUser.id,
-            `It's your turn: \n ${makeMatchURL({
-              matchID: created.id,
-              playerID: p as 0 | 1,
-            })}`,
-          )
+      User.findOne({ where: { name: player.name } })
+        .then((user) => {
+          if (!user) return;
+          botClient.users
+            .send(
+              user.discordUser.id,
+              `It's your turn: \n ${makeMatchURL({
+                matchID: created.id,
+                playerID: p as 0 | 1,
+              })}`,
+            )
 
-          .then(() =>
-            console.debug(
-              `discord message sent to ${user.discordUser.username} ${user.discordUser.id}`,
-            ),
-          )
-          .catch(console.error);
-      });
+            .then(() =>
+              console.debug(
+                `discord message sent to ${user.discordUser.username} ${user.discordUser.id}`,
+              ),
+            )
+            .catch(console.error);
+        })
+        .catch(console.error);
     }
   }
 });
