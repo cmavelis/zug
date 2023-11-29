@@ -205,7 +205,7 @@ getNotificationSound(store.zugUsername === 'Ben').then((notificationSound) => {
 
 <template>
   <main>
-    <OverlayPanel ref="op"> info info info </OverlayPanel>
+    <OverlayPanel ref="op"> {{ gameState.G.config }} </OverlayPanel>
     <p v-if="!isPlayerSelected">Choose a player</p>
     <div class="player-info">
       <span />
