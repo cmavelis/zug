@@ -5,6 +5,7 @@ import router from './router';
 
 import './assets/main.css';
 import 'primevue/resources/themes/lara-light-green/theme.css';
+import './assets/prime-overrides.css';
 
 const app = createApp(App);
 
