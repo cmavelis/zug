@@ -2,6 +2,8 @@
 import { computed, ref, onMounted, onUnmounted } from 'vue';
 import type { Ref } from 'vue';
 import type { _ClientImpl } from 'boardgame.io/dist/types/src/client/client';
+import Button from 'primevue/button';
+
 import BoardDisplay from '@/components/BoardDisplayV2.vue';
 import type { GameState } from '@/game/Game';
 import type { Order, OrderTypes } from '@/game/orders';
@@ -224,50 +226,57 @@ onUnmounted(() => {
         :emphasized-piece-ids="piecesWithoutActions"
       />
       <div class="order-button-group">
-        <button
+        <Button
+          size="small"
+          severity="secondary"
           :disabled="actionsUsed.includes('move-straight')"
-          :class="{ highlight: selectedAction === 'move-straight' }"
           @click="selectAction('move-straight')"
         >
           move (straight)
-        </button>
-        <button
+        </Button>
+        <Button
+          size="small"
+          severity="secondary"
           :disabled="actionsUsed.includes('push-straight')"
-          :class="{ highlight: selectedAction === 'push-straight' }"
           @click="selectAction('push-straight')"
         >
           push (straight)
-        </button>
-        <button
+        </Button>
+        <Button
+          size="small"
+          severity="secondary"
           :disabled="actionsUsed.includes('move-diagonal')"
-          :class="{ highlight: selectedAction === 'move-diagonal' }"
           @click="selectAction('move-diagonal')"
         >
           move (diagonal)
-        </button>
-        <button
+        </Button>
+        <Button
+          size="small"
+          severity="secondary"
           :disabled="actionsUsed.includes('push-diagonal')"
-          :class="{ highlight: selectedAction === 'push-diagonal' }"
           @click="selectAction('push-diagonal')"
         >
           push (diagonal)
-        </button>
+        </Button>
         <input
           v-if="store.isDebug"
           v-model.number="pieceToPlace"
           type="number"
         />
         <div>
-          <button
+          <Button
+            size="small"
+            severity="secondary"
             :disabled="piecesToPlace === 0"
-            :class="{ highlight: selectedAction === 'place' }"
             @click="selectAction('place')"
           >
             place new piece
-          </button>
+          </Button>
           ({{ piecesToPlace }})
         </div>
-        <button @click="clearAction()">clear current action</button>
+        <Button size="small" severity="secondary" @click="clearAction()"
+          >clear current action</Button
+        >
       </div>
     </div>
     <div v-if="props.showOrders">
@@ -281,10 +290,17 @@ onUnmounted(() => {
       </p>
       <p>action: {{ selectedAction || 'none selected' }}</p>
       <p>ACTIONS</p>
-      <button @click="undoLastOrder()">undo last action</button>
-      <button @click="handleEndTurn" :class="{ 'halo-shadow': canEndTurn }">
+      <Button size="small" severity="secondary" @click="undoLastOrder()"
+        >undo last action</Button
+      >
+      <Button
+        size="small"
+        :severity="canEndTurn ? 'primary' : 'secondary'"
+        @click="handleEndTurn"
+        :class="{ 'halo-shadow': canEndTurn }"
+      >
         end turn
-      </button>
+      </Button>
       <p v-if="endTurnMessage" class="info-message">{{ endTurnMessage }}</p>
       <template
         v-for="order in props.state.G.orders[props.playerID]"
@@ -300,14 +316,10 @@ onUnmounted(() => {
 </template>
 
 <style scoped>
-button {
-  -webkit-appearance: none;
-  min-height: 2.5rem;
-}
-
 .layout {
   display: grid;
   grid-template-columns: 1fr 1fr;
+  gap: 0.2rem;
 }
 
 .board-with-controls {
@@ -319,10 +331,6 @@ button {
   gap: 8px;
 }
 
-.highlight {
-  box-shadow: inset 0 0 9px var(--color-theme-green);
-}
-
 .info-message {
   color: coral;
   font-weight: bold;
@@ -330,6 +338,7 @@ button {
 
 .order-button-group {
   display: flex;
+  gap: 0.2rem;
   flex-direction: column;
 }
 
