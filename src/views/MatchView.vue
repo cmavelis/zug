@@ -6,7 +6,7 @@ import {
   onMounted,
   onUnmounted,
   watch,
-  Ref,
+  type Ref,
 } from 'vue';
 import { useRoute } from 'vue-router';
 import OverlayPanel from 'primevue/overlaypanel';
