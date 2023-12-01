@@ -172,6 +172,13 @@ const gamePhase = computed(() => {
   }
 });
 
+const winner = computed(() => {
+  if (gameState.ctx.gameover && matchData.value) {
+    return matchData.value[gameState.ctx.gameover?.winner].name;
+  }
+  return false;
+});
+
 const opponentWaiting = computed(() => {
   if (!gameState.ctx.activePlayers) {
     return false;
@@ -238,10 +245,12 @@ getNotificationSound(store.zugUsername === 'Ben').then((notificationSound) => {
       <button class="match-info-button" @click="toggleMatchInfo">?</button>
     </div>
 
-    <p>
+    <p v-if="!winner">
       phase:
       {{ gamePhase }}
     </p>
+    <p class="game-over" v-else>{{ winner }} wins!</p>
+
     <p v-if="gamePhase === 'resolution'" class="info-message">
       Waiting for opponent to finish turn...
     </p>
@@ -334,5 +343,11 @@ main {
 .checked {
   color: var(--color-theme-green);
   font-weight: bold;
+}
+
+.game-over {
+  font-size: 2rem;
+  font-weight: bold;
+  color: var(--color-theme-green);
 }
 </style>
