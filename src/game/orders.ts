@@ -288,7 +288,7 @@ export function orderResolver({ G }: { G: GObject }) {
           // @ts-ignore -- Haven't explicitly checked the type of [1], but order priorities are unique
           applyPlace(ordersToResolve[1]);
       }
-      if (G.config.outOfBounds === 'immediate') {
+      if (G.config.outOfBounds === 'immediate' || !G.config.outOfBounds) {
         pieceIDsToRemove.push(...findOutOfBoundsPieces(G));
       }
       pieceIDsToRemove.push(...findOverlappingPieces(G));

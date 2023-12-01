@@ -1,0 +1,8 @@
+@layer primevue {
+    .p-overlaypanel::before {
+        margin-left: -15px !important;
+    }
+    .p-overlaypanel::after {
+        margin-left: -13px !important;
+    }
+}
