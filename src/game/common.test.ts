@@ -66,7 +66,11 @@ test('orthogonal diagonal vectors', () => {
 
 const setupGame = (partialG?: Partial<GameState>) => {
   const G: GameState = {
-    config: { board: { x: 3, y: 3 }, priority: 'piece' },
+    config: {
+      board: { x: 3, y: 3 },
+      outOfBounds: 'immediate',
+      priority: 'piece',
+    },
     cells: [],
     pieces: [],
     orders: { 0: [], 1: [] },

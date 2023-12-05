@@ -288,7 +288,10 @@ export function orderResolver({ G }: { G: GObject }) {
           // @ts-ignore -- Haven't explicitly checked the type of [1], but order priorities are unique
           applyPlace(ordersToResolve[1]);
       }
-      pieceIDsToRemove.push(...findDisallowedPieces(G));
+      if (G.config.outOfBounds === 'immediate' || !G.config.outOfBounds) {
+        pieceIDsToRemove.push(...findOutOfBoundsPieces(G));
+      }
+      pieceIDsToRemove.push(...findOverlappingPieces(G));
       removePieces(G, pieceIDsToRemove);
     } else {
       // sequential move resolution, already sorted by priority
@@ -311,7 +314,10 @@ export function orderResolver({ G }: { G: GObject }) {
           case 'place':
             applyPlace(order);
         }
-        pieceIDsToRemove.push(...findDisallowedPieces(G));
+        if (G.config.outOfBounds === 'immediate') {
+          pieceIDsToRemove.push(...findOutOfBoundsPieces(G));
+        }
+        pieceIDsToRemove.push(...findOverlappingPieces(G));
         removePieces(G, pieceIDsToRemove);
       });
     }
@@ -488,6 +494,27 @@ export function orderResolver({ G }: { G: GObject }) {
       p.isDefending = false;
     });
 
+  // remove OB pieces
+  const outOfBoundsPieces = [];
+  if (G.config.outOfBounds === 'turn-end') {
+    outOfBoundsPieces.push(...findOutOfBoundsPieces(G));
+  }
+  removePieces(G, outOfBoundsPieces);
+
+  // add OB events to history
+  turnHistory.push(
+    cloneDeep({
+      cells,
+      orders: [],
+      pieces,
+      score,
+      events: outOfBoundsPieces.map((id) => ({
+        type: 'destroy',
+        sourcePieceId: id,
+      })),
+    }),
+  );
+
   // score & remove pieces in the goal
   const toRemove: number[] = [];
   pieces.forEach((p) => {
@@ -529,8 +556,7 @@ export function createOrder(
   };
 }
 
-// get ids for pieces that need to be removed
-function findDisallowedPieces(G: GameState): number[] {
+function findOutOfBoundsPieces(G: GameState): number[] {
   const pieceIDs: number[] = [];
 
   // pieces off the board
@@ -540,6 +566,13 @@ function findDisallowedPieces(G: GameState): number[] {
       console.log(p.id, 'is not on board');
     }
   });
+
+  return pieceIDs;
+}
+
+// get ids for pieces that need to be removed
+function findOverlappingPieces(G: GameState): number[] {
+  const pieceIDs: number[] = [];
 
   // overlapping pieces -- should I not allow this to happen in the first place?
   const overlapPositions = countBy(G.pieces, (p) =>

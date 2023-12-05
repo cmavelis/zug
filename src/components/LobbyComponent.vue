@@ -1,9 +1,10 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue';
+import { computed, ref, watch } from 'vue';
 import type { Ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { LobbyClient } from 'boardgame.io/client';
 import type { LobbyAPI } from 'boardgame.io/dist/types/src/types';
+import LobbyMatch from '@/components/LobbyMatch.vue';
 import type { GameSetupData } from '@/game/Game';
 import { store } from '@/store';
 
@@ -11,6 +12,7 @@ const matches: Ref<LobbyAPI.Match[]> = ref([]);
 const { protocol, hostname, port } = window.location;
 const server = `${protocol}//${hostname}:${port}`;
 
+// todo: poll match list or show refresh button
 const lobbyClient = new LobbyClient({ server });
 lobbyClient
   .listMatches('zug')
@@ -76,57 +78,90 @@ const usersMatches = computed(() => {
     )
     .map((match) => match.matchID);
 });
+
+const yourMatches: Ref<LobbyAPI.Match[]> = ref([]);
+const openMatches: Ref<LobbyAPI.Match[]> = ref([]);
+const remainingMatches: Ref<LobbyAPI.Match[]> = ref([]);
+
+watch(matches, () => {
+  const newYourMatches: LobbyAPI.Match[] = [];
+  const newOpenMatches: LobbyAPI.Match[] = [];
+  const newRemainingMatches: LobbyAPI.Match[] = [];
+
+  matches.value.forEach((match) => {
+    if (match.players.some((p) => p.name && p.name === store.zugUsername)) {
+      newYourMatches.push(match);
+    } else if (match.players.some((p) => !p.name)) {
+      newOpenMatches.push(match);
+    } else {
+      newRemainingMatches.push(match);
+    }
+  });
+  yourMatches.value = newYourMatches;
+  openMatches.value = newOpenMatches;
+  remainingMatches.value = newRemainingMatches;
+});
 </script>
 
 <template>
   <main>
     <h1>Matches Lobby</h1>
-    <p>
-      Create or join a match here, or you can navigate to a match URL like
-      <RouterLink to="/match/1">/match/1</RouterLink>
-      to join an unlisted match.
-    </p>
+    <h2>Create a match</h2>
+    <button class="button-big" @click="createMatch({ priority: 'piece' })">
+      Standard
+    </button>
     <section class="button-group">
-      <h2>Create a match:</h2>
-      <button @click="createMatch({ priority: 'piece' })">Standard</button>
+      <button @click="createMatch({ outOfBounds: 'turn-end' })">
+        Standard + "Greatest"
+      </button>
       <button @click="createMatch({ priority: 'order-choice' })">
-        "Order choice" priority setting
+        "Action order" priority setting
       </button>
       <button @click="createMatch({ empty: true })">Testing</button>
     </section>
 
-    <h2>Open matches:</h2>
+    <h2>Matches</h2>
     <span>{{ joinStatus }}</span>
+    <h3>Your matches</h3>
     <section class="matches-list">
-      <div
+      <LobbyMatch
+        v-for="match in yourMatches"
         :key="match.matchID"
-        :class="{
-          match: true,
-          highlight: usersMatches.includes(match.matchID),
-        }"
-        v-for="match in matches"
-      >
-        <div class="match-name">{{ match.matchID }}</div>
-        <div>
-          <div :key="player.name" v-for="(player, i) in match.players">
-            {{ player.name }}
-            <button
-              v-if="player.name && player.name === store.zugUsername"
-              @click="navigateToMatch(match.matchID, String(i))"
-            >
-              go to
-            </button>
-          </div>
-        </div>
-        <div
-          v-if="
-            match.players.some((p) => !p.name) &&
-            match.players.every((p) => p.name !== store.zugUsername)
-          "
-        >
-          <button @click="requestJoinMatch(match.matchID)">join</button>
-        </div>
-      </div>
+        v-bind="match"
+        :highlight="!match.gameover"
+        :handle-match-join="() => requestJoinMatch(match.matchID)"
+        :handle-match-navigate="
+          (playerName: string) => navigateToMatch(match.matchID, playerName)
+        "
+      />
+    </section>
+    <h3>Open matches</h3>
+    <section class="matches-list">
+      <LobbyMatch
+        v-for="match in openMatches"
+        :key="match.matchID"
+        :matchID="match.matchID"
+        :players="match.players"
+        :highlight="usersMatches.includes(match.matchID)"
+        :handle-match-join="() => requestJoinMatch(match.matchID)"
+        :handle-match-navigate="
+          (playerName: string) => navigateToMatch(match.matchID, playerName)
+        "
+      />
+    </section>
+    <h3>Other matches</h3>
+    <section class="matches-list">
+      <LobbyMatch
+        v-for="match in remainingMatches"
+        :key="match.matchID"
+        :matchID="match.matchID"
+        :players="match.players"
+        :highlight="usersMatches.includes(match.matchID)"
+        :handle-match-join="() => requestJoinMatch(match.matchID)"
+        :handle-match-navigate="
+          (playerName: string) => navigateToMatch(match.matchID, playerName)
+        "
+      />
     </section>
   </main>
 </template>
@@ -137,24 +172,23 @@ const usersMatches = computed(() => {
   gap: 1rem;
   justify-content: center;
   flex-wrap: wrap;
-}
-.match-name {
-  justify-self: right;
-}
-.match {
-  padding: 4px;
-}
-.highlight {
-  border: 2px solid orange;
+  margin-bottom: 1rem;
 }
 
 .button-group {
   display: flex;
-  flex-direction: column;
-  gap: 4px;
+  flex-direction: row;
+  flex-wrap: wrap;
+  justify-content: center;
   align-items: center;
+  gap: 4px;
 }
 button {
   width: fit-content;
+}
+
+.button-big {
+  font-size: 1.5rem;
+  margin: 0.5rem;
 }
 </style>

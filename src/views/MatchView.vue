@@ -1,9 +1,18 @@
 <script setup lang="ts">
-import { computed, reactive, ref, onMounted, onUnmounted, watch } from 'vue';
+import {
+  computed,
+  reactive,
+  ref,
+  onMounted,
+  onUnmounted,
+  watch,
+  type Ref,
+} from 'vue';
 import { useRoute } from 'vue-router';
+import OverlayPanel from 'primevue/overlaypanel';
 
 import type { ClientState } from 'boardgame.io/dist/types/src/client/client';
-import type { Ctx } from 'boardgame.io/dist/types/src/types';
+import type { Ctx, FilteredMetadata } from 'boardgame.io/dist/types/src/types';
 import { isEqual } from 'lodash';
 
 import BoardComponent from '@/components/BoardComponent.vue';
@@ -99,7 +108,9 @@ const gameState: ReactiveGameState = reactive({
   ctx: {} as Ctx,
 });
 const gameStateLoaded = ref(false);
+const matchData: Ref<FilteredMetadata | undefined> = ref(undefined);
 const updateGameState = (state: ClientState<{ G: GObject; ctx: Ctx }>) => {
+  matchData.value = matchClientOne.client.matchData;
   if (state) {
     gameStateLoaded.value = true;
     gameState.G = state.G as unknown as GObject;
@@ -153,13 +164,19 @@ watch(
   },
 );
 
-// TODO: add something like this to show ooponent phase
 const gamePhase = computed(() => {
   if (gameState.ctx.activePlayers) {
     return gameState.ctx.activePlayers[playerID.value] || '?';
   } else {
     return 'end';
   }
+});
+
+const winner = computed(() => {
+  if (gameState.ctx.gameover && matchData.value) {
+    return matchData.value[gameState.ctx.gameover?.winner].name;
+  }
+  return false;
 });
 
 const opponentWaiting = computed(() => {
@@ -169,6 +186,11 @@ const opponentWaiting = computed(() => {
   const opponentPlayerID = playerID.value === 1 ? 0 : 1;
   return gameState.ctx.activePlayers[opponentPlayerID] === 'resolution';
 });
+
+const op = ref();
+const toggleMatchInfo = (event: Event) => {
+  op.value.toggle(event);
+};
 
 // "your turn" sound
 getNotificationSound(store.zugUsername === 'Ben').then((notificationSound) => {
@@ -189,28 +211,46 @@ getNotificationSound(store.zugUsername === 'Ben').then((notificationSound) => {
 </script>
 
 <template>
+  <OverlayPanel ref="op" appendTo="body">
+    <div>
+      <!--prettier-ignore-->
+      <pre>{{JSON.stringify(gameState.G.config, null, 2).trim()}}</pre>
+    </div>
+  </OverlayPanel>
   <main>
     <p v-if="!isPlayerSelected">Choose a player</p>
-    <input
-      type="radio"
-      v-if="store.isDebug || !isPlayerSelected"
-      v-model="playerID"
-      :value="0"
-    />
-    <span :class="{ checked: playerID === 0 }"> player 1</span> ({{
-      gameState.G.score ? gameState.G.score[0] : '?'
-    }}) - ({{ gameState.G.score ? gameState.G.score[1] : '?' }})
-    <span :class="{ checked: playerID === 1 }">player 2 </span>
-    <input
-      type="radio"
-      v-if="store.isDebug || !isPlayerSelected"
-      v-model="playerID"
-      :value="1"
-    />
-    <p>
+    <div class="player-info">
+      <span />
+      <input
+        type="radio"
+        v-if="store.isDebug || !isPlayerSelected"
+        v-model="playerID"
+        :value="0"
+      />
+      <span :class="{ checked: playerID === 0 }">
+        {{ matchData ? matchData[0].name : 'player 1' }}</span
+      >
+      ({{ gameState.G.score ? gameState.G.score[0] : '?' }}) - ({{
+        gameState.G.score ? gameState.G.score[1] : '?'
+      }})
+      <span :class="{ checked: playerID === 1 }"
+        >{{ matchData ? matchData[1].name : 'player 2' }}
+      </span>
+      <input
+        type="radio"
+        v-if="store.isDebug || !isPlayerSelected"
+        v-model="playerID"
+        :value="1"
+      />
+      <button class="match-info-button" @click="toggleMatchInfo">?</button>
+    </div>
+
+    <p v-if="!winner">
       phase:
       {{ gamePhase }}
     </p>
+    <p class="game-over" v-else>{{ winner }} wins!</p>
+
     <p v-if="gamePhase === 'resolution'" class="info-message">
       Waiting for opponent to finish turn...
     </p>
@@ -268,6 +308,29 @@ main {
   padding: 1rem 0;
 }
 
+.player-info {
+  display: grid;
+  grid-template-columns: 1fr 100px auto 100px 1fr;
+  justify-content: center;
+  gap: 0.2rem;
+}
+
+.match-info-button {
+  --circle-size: 1.8rem;
+  background: transparent;
+  font-size: 1.2rem;
+  font-weight: bold;
+  color: var(--color-theme-green);
+  border: 2px solid var(--color-theme-green);
+  border-radius: var(--circle-size);
+  width: var(--circle-size);
+  height: var(--circle-size);
+}
+
+.match-info-button:hover {
+  background-color: var(--color-border-hover);
+}
+
 .info-message {
   color: coral;
 }
@@ -280,5 +343,11 @@ main {
 .checked {
   color: var(--color-theme-green);
   font-weight: bold;
+}
+
+.game-over {
+  font-size: 2rem;
+  font-weight: bold;
+  color: var(--color-theme-green);
 }
 </style>
