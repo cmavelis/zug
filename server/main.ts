@@ -309,6 +309,7 @@ server.router.get(
   },
 );
 
+// TODO: figure out typing for server so (ctx, next) aren't any
 server.router.get('/games/:name', async (ctx, next) => {
   const gameName = ctx.params.name;
   if (gameName !== 'zug') {
@@ -317,8 +318,8 @@ server.router.get('/games/:name', async (ctx, next) => {
   }
   await next(ctx);
   // this list already filtered for unlisted matches
-  const matchList: { matchID: string }[] = ctx.body.matches;
-  const newMatchList = [];
+  const matchList: { matchID: string; score: any; turn: any }[] =
+    ctx.body.matches;
   for (const match of matchList) {
     const { state } = await db.fetch(match.matchID, {
       state: true,
