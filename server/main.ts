@@ -309,6 +309,27 @@ server.router.get(
   },
 );
 
+server.router.get('/games/:name', async (ctx, next) => {
+  const gameName = ctx.params.name;
+  if (gameName !== 'zug') {
+    await next(ctx);
+    return;
+  }
+  await next(ctx);
+  // this list already filtered for unlisted matches
+  const matchList: { matchID: string }[] = ctx.body.matches;
+  const newMatchList = [];
+  for (const match of matchList) {
+    const { state } = await db.fetch(match.matchID, {
+      state: true,
+    });
+    match.score = state.G.score;
+    match.turn = state.ctx.turn;
+  }
+
+  ctx.body = { matches: matchList };
+});
+
 server.run(Number(process.env.PORT) || 8000, () => {
   server.app.use(
     async (ctx: any, next: any) =>
