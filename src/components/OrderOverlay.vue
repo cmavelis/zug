@@ -5,6 +5,7 @@ import { isEqual } from 'lodash';
 import type { Coordinates } from '@/game/common';
 import type { Piece } from '@/game/pieces';
 import type { GameEvent } from '@/game/Game';
+import { BOARD_PIXEL_SIZE } from '@/constants';
 
 interface Props {
   pieces: Piece[];
@@ -12,7 +13,7 @@ interface Props {
 }
 
 const props = defineProps<Props>();
-const sideLength = 50;
+const sideLength = BOARD_PIXEL_SIZE;
 
 const coordsToPixels = (coordinates: Coordinates, squareLength: number) => {
   return {

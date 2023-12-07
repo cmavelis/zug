@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import type { Piece } from '@/game/pieces';
+import { BOARD_PIXEL_SIZE } from '@/constants';
 
 interface BoardPiece extends Piece {
   iconClass?: { [key: string]: boolean };
@@ -8,7 +9,7 @@ interface BoardPiece extends Piece {
 
 const props = defineProps<BoardPiece>();
 
-const squareSize = 50;
+const squareSize = BOARD_PIXEL_SIZE;
 
 const styleObject = computed(() => {
   const translateX = `${props.position.x * squareSize}px`;

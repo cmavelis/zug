@@ -1,6 +1,11 @@
 <script setup lang="ts">
 import { RouterLink, RouterView } from 'vue-router';
 import { store } from './store';
+import { BOARD_PIXEL_SIZE } from '@/constants';
+
+const squareSize = BOARD_PIXEL_SIZE + 'px';
+const root = document.querySelector(':root');
+root.style.setProperty('--square-size', squareSize);
 </script>
 
 <template>

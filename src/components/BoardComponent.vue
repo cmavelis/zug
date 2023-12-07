@@ -323,7 +323,6 @@ onUnmounted(() => {
 }
 
 .board-with-controls {
-  --square-size: 50px;
   position: relative;
   display: flex;
   flex-direction: row;

@@ -6,6 +6,7 @@ import type { GameState } from '@/game/Game';
 
 import OrderDisplay from '@/components/OrderOverlay.vue';
 import { logProxy } from '@/utils';
+import { BOARD_PIXEL_SIZE } from '@/constants';
 
 interface BoardProps {
   state: { G: Omit<GameState, 'config'> };
@@ -13,6 +14,7 @@ interface BoardProps {
 }
 const props = defineProps<BoardProps>();
 logProxy(props);
+const svgSideLength = BOARD_PIXEL_SIZE * 4;
 </script>
 
 <template>
@@ -29,7 +31,7 @@ logProxy(props);
           :key="piece.id"
           v-bind="piece"
         />
-        <svg width="200" height="200">
+        <svg :width="svgSideLength" :height="svgSideLength">
           <OrderDisplay
             v-for="order in props.state.G.orders[0]"
             :key="order.toString()"
@@ -82,7 +84,6 @@ logProxy(props);
   grid-template-columns: 1fr 1fr;
 }
 .board-wrapper {
-  --square-size: 50px;
   position: relative;
   display: flex;
   flex-direction: row;
