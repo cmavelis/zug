@@ -34,27 +34,29 @@ button {
 
 @keyframes halo {
   from {
-    box-shadow:
-            0 0 var(--still-blur) aliceblue,
-            0 0 var(--blur) var(--color);
+    transform: scale(0.9);
+    opacity: 1;
   }
   50% {
-    box-shadow:
-            0 0 var(--still-blur) aliceblue,
-            0 0 10px var(--color);
+    transform: scale(1.05);
+    opacity: 0.3;
   }
   to {
-    box-shadow:
-            0 0 var(--still-blur) aliceblue,
-            0 0 var(--blur) var(--color);
+    transform: scale(0.9);
+    opacity: 1;
   }
 }
 
-.halo-shadow {
-  --blur: 1px;
-  --still-blur: 5px;
+.halo-shadow::before {
+  content: "";
   --color: #5b8598;
-  animation-duration: 3s;
+  border-radius: 50%;
+  animation-duration: 4s;
   animation-name: halo;
   animation-iteration-count: infinite;
+  position: absolute;
+  background-color: var(--color);
+  height:100%;
+  width:100%;
+  z-index: -1;
 }
