@@ -40,6 +40,7 @@ const props = defineProps<LobbyMatchProps>();
     >
       <button @click="handleMatchJoin">join</button>
     </div>
+    <p>turn {{ props.match.turn }}</p>
   </div>
 </template>
 
