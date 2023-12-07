@@ -2,9 +2,12 @@ import 'dotenv/config';
 import { PostgresStore } from 'bgio-postgres';
 import { DataTypes } from 'sequelize';
 import { randomUUID } from 'crypto';
+import * as Koa from 'koa';
 
 import { decodeToken, encodeToken } from './auth';
 import { type ZugUser } from '../src/utils/auth';
+import { type EnhancedMatch } from './types';
+import { type LobbyAPI } from 'boardgame.io/dist/types/src/types';
 
 // TODO: figure out which process needs this to be commonJS syntax
 const { Server, Origins } = require('boardgame.io/server');
@@ -137,6 +140,7 @@ const authenticateCredentials = async (
   return false;
 };
 
+//server: : { router: Router<DefaultState, Context> }
 const server = Server({
   games: [SimulChess],
   origins: [
@@ -152,18 +156,6 @@ const server = Server({
 // Build path relative to this file
 const frontEndAppBuildPath = path.resolve(__dirname, '../dist');
 server.app.use(serve(frontEndAppBuildPath));
-
-// // can compose routes like this
-// server.router.get('/hello', async (ctx, next) => {
-//   console.log('yep');
-//   await next(ctx);
-//   ctx.body = { me: 'hiya', ...ctx.body };
-// });
-//
-// server.router.get('/hello', async (ctx) => {
-//   console.log('nope');
-//   ctx.body = { you: 'no' };
-// });
 
 server.router.post(
   '/api/login',
@@ -309,27 +301,34 @@ server.router.get(
   },
 );
 
-// TODO: figure out typing for server so (ctx, next) aren't any
-server.router.get('/games/:name', async (ctx, next) => {
-  const gameName = ctx.params.name;
-  if (gameName !== 'zug') {
+interface MatchesContext extends Koa.Context {
+  body: {
+    matches: LobbyAPI.Match[];
+  };
+}
+server.router.get(
+  '/games/:name',
+  async (ctx: MatchesContext, next: (ctx: Koa.Context) => Promise<void>) => {
+    const gameName = ctx.params.name;
+    if (gameName !== 'zug') {
+      await next(ctx);
+      return;
+    }
     await next(ctx);
-    return;
-  }
-  await next(ctx);
-  // this list already filtered for unlisted matches
-  const matchList: { matchID: string; score: any; turn: any }[] =
-    ctx.body.matches;
-  for (const match of matchList) {
-    const { state } = await db.fetch(match.matchID, {
-      state: true,
-    });
-    match.score = state.G.score;
-    match.turn = state.ctx.turn;
-  }
 
-  ctx.body = { matches: matchList };
-});
+    // this list already filtered for unlisted matches
+    const matchList = ctx.body.matches as EnhancedMatch[];
+    for (const match of matchList) {
+      const { state } = await db.fetch(match.matchID, {
+        state: true,
+      });
+      match.score = state.G.score;
+      match.turn = state.ctx.turn;
+    }
+
+    ctx.body = { matches: matchList };
+  },
+);
 
 server.run(Number(process.env.PORT) || 8000, () => {
   server.app.use(
