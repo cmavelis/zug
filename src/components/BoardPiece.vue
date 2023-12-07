@@ -21,8 +21,6 @@ const styleObject = computed(() => {
   };
 });
 
-// need this? //const pieceColor = computed(() => (props.owner === 0 ? '#729bf1' : '#62d368'));
-
 const pieceColor = props.owner === 0 ? '#729bf1' : '#62d368';
 </script>
 
@@ -42,6 +40,7 @@ const pieceColor = props.owner === 0 ? '#729bf1' : '#62d368';
   align-items: center;
   justify-content: center;
   z-index: 1; /* below the order overlay */
+  transition: transform 0.5s ease-out;
 }
 
 .pieceIcon {
