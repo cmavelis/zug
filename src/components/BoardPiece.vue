@@ -42,6 +42,8 @@ const pieceColor = props.owner === 0 ? '#729bf1' : '#62d368';
   justify-content: center;
   z-index: 1; /* below the order overlay */
   transition: transform 0.5s ease-out;
+  font-size: medium;
+  font-weight: bold;
 }
 
 .pieceIcon {
