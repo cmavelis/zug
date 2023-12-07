@@ -42,7 +42,6 @@ const requestJoinMatch = async (matchID: string, setupData?: GameSetupData) => {
       { playerName: store.zugUsername || 'error' },
       { headers: { authorization: store.zugToken || authHeader } },
     );
-    console.log(resp);
     if (resp.playerID) {
       joinStatus.value = 'success';
       navigateToMatch(matchID, resp.playerID, setupData);
