@@ -338,7 +338,7 @@ onUnmounted(() => {
 
 .order-button-group {
   display: flex;
-  gap: 0.2rem;
+  gap: 4px;
   flex-direction: column;
 }
 
