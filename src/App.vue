@@ -5,6 +5,7 @@ import { BOARD_PIXEL_SIZE } from '@/constants';
 
 const squareSize = BOARD_PIXEL_SIZE + 'px';
 const root = document.querySelector(':root');
+// @ts-expect-error
 root.style.setProperty('--square-size', squareSize);
 </script>
 
