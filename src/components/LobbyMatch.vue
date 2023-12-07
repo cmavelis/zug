@@ -1,10 +1,9 @@
 <script setup lang="ts">
 import { store } from '@/store';
-import type { LobbyAPI } from 'boardgame.io';
+import type { EnhancedMatch } from '../../server/types';
 
 interface LobbyMatchProps {
-  players: LobbyAPI.Match['players'];
-  matchID: string;
+  match: EnhancedMatch;
   handleMatchJoin: () => any;
   handleMatchNavigate: (playerNumber: string) => void;
   highlight?: boolean;
@@ -20,9 +19,10 @@ const props = defineProps<LobbyMatchProps>();
       highlight: props.highlight,
     }"
   >
-    <div class="match-name">{{ props.matchID }}</div>
+    <div class="match-name">{{ props.match.matchID }}</div>
     <div>
-      <div :key="player.name" v-for="(player, i) in props.players">
+      <div :key="player.name" v-for="(player, i) in props.match.players">
+        ({{ props.match.score[i as 0 | 1] }})
         {{ player.name }}
         <button
           v-if="player.name && player.name === store.zugUsername"
@@ -34,8 +34,8 @@ const props = defineProps<LobbyMatchProps>();
     </div>
     <div
       v-if="
-        props.players.some((p) => !p.name) &&
-        props.players.every((p) => p.name !== store.zugUsername)
+        props.match.players.some((p) => !p.name) &&
+        props.match.players.every((p) => p.name !== store.zugUsername)
       "
     >
       <button @click="handleMatchJoin">join</button>

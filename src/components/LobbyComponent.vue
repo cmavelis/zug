@@ -3,12 +3,12 @@ import { computed, ref, watch } from 'vue';
 import type { Ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { LobbyClient } from 'boardgame.io/client';
-import type { LobbyAPI } from 'boardgame.io/dist/types/src/types';
 import LobbyMatch from '@/components/LobbyMatch.vue';
 import type { GameSetupData } from '@/game/Game';
 import { store } from '@/store';
+import type { EnhancedMatch } from '../../server/types';
 
-const matches: Ref<LobbyAPI.Match[]> = ref([]);
+const matches: Ref<EnhancedMatch[]> = ref([]);
 const { protocol, hostname, port } = window.location;
 const server = `${protocol}//${hostname}:${port}`;
 
@@ -17,7 +17,7 @@ const lobbyClient = new LobbyClient({ server });
 lobbyClient
   .listMatches('zug')
   .then((matchList) => {
-    matches.value = matchList.matches;
+    matches.value = matchList.matches as EnhancedMatch[];
   })
   .catch(console.error);
 
@@ -79,14 +79,14 @@ const usersMatches = computed(() => {
     .map((match) => match.matchID);
 });
 
-const yourMatches: Ref<LobbyAPI.Match[]> = ref([]);
-const openMatches: Ref<LobbyAPI.Match[]> = ref([]);
-const remainingMatches: Ref<LobbyAPI.Match[]> = ref([]);
+const yourMatches: Ref<EnhancedMatch[]> = ref([]);
+const openMatches: Ref<EnhancedMatch[]> = ref([]);
+const remainingMatches: Ref<EnhancedMatch[]> = ref([]);
 
 watch(matches, () => {
-  const newYourMatches: LobbyAPI.Match[] = [];
-  const newOpenMatches: LobbyAPI.Match[] = [];
-  const newRemainingMatches: LobbyAPI.Match[] = [];
+  const newYourMatches: EnhancedMatch[] = [];
+  const newOpenMatches: EnhancedMatch[] = [];
+  const newRemainingMatches: EnhancedMatch[] = [];
 
   matches.value.forEach((match) => {
     if (match.players.some((p) => p.name && p.name === store.zugUsername)) {
@@ -127,7 +127,7 @@ watch(matches, () => {
       <LobbyMatch
         v-for="match in yourMatches"
         :key="match.matchID"
-        v-bind="match"
+        :match="match"
         :highlight="!match.gameover"
         :handle-match-join="() => requestJoinMatch(match.matchID)"
         :handle-match-navigate="
@@ -140,8 +140,7 @@ watch(matches, () => {
       <LobbyMatch
         v-for="match in openMatches"
         :key="match.matchID"
-        :matchID="match.matchID"
-        :players="match.players"
+        :match="match"
         :highlight="usersMatches.includes(match.matchID)"
         :handle-match-join="() => requestJoinMatch(match.matchID)"
         :handle-match-navigate="
@@ -154,8 +153,7 @@ watch(matches, () => {
       <LobbyMatch
         v-for="match in remainingMatches"
         :key="match.matchID"
-        :matchID="match.matchID"
-        :players="match.players"
+        :match="match"
         :highlight="usersMatches.includes(match.matchID)"
         :handle-match-join="() => requestJoinMatch(match.matchID)"
         :handle-match-navigate="
