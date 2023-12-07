@@ -1,5 +1,10 @@
 @import './base.css';
 
+:root {
+  /* also set programmatically */
+  --square-size: 56px;
+}
+
 #app {
   max-width: 1280px;
   margin: 0 auto;
@@ -34,27 +39,36 @@ button {
 
 @keyframes halo {
   from {
-    box-shadow:
-            0 0 var(--still-blur) aliceblue,
-            0 0 var(--blur) var(--color);
-  }
-  50% {
-    box-shadow:
-            0 0 var(--still-blur) aliceblue,
-            0 0 10px var(--color);
+    transform: scale(0.8);
+    opacity: 0.8;
   }
   to {
-    box-shadow:
-            0 0 var(--still-blur) aliceblue,
-            0 0 var(--blur) var(--color);
+    transform: scale(1.1);
+    opacity: 0;
   }
 }
 
-.halo-shadow {
-  --blur: 1px;
-  --still-blur: 5px;
+.halo-shadow::before {
+  content: "";
   --color: #5b8598;
-  animation-duration: 3s;
+  border-radius: 50%;
+  animation-duration: 2.5s;
   animation-name: halo;
   animation-iteration-count: infinite;
+  position: absolute;
+  background-color: var(--color);
+  height:100%;
+  width:100%;
+  z-index: -1;
+}
+.halo-shadow::after {
+  content: "";
+  --color: #5b8598;
+  border-radius: 50%;
+  position: absolute;
+  background-color: var(--color);
+  height: 90%;
+  width: 90%;
+  z-index: -1;
+  opacity: 0.5;
 }

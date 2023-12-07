@@ -323,7 +323,6 @@ onUnmounted(() => {
 }
 
 .board-with-controls {
-  --square-size: 50px;
   position: relative;
   display: flex;
   flex-direction: row;
@@ -338,7 +337,7 @@ onUnmounted(() => {
 
 .order-button-group {
   display: flex;
-  gap: 0.2rem;
+  gap: 4px;
   flex-direction: column;
 }
 

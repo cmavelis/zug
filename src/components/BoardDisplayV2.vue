@@ -5,6 +5,7 @@ import type { Order } from '@/game/orders';
 import BoardPiece from './BoardPiece.vue';
 import OrderOverlay from './OrderOverlay.vue';
 import { computed } from 'vue';
+import { BOARD_PIXEL_SIZE } from '@/constants';
 
 interface BoardDisplayV2Props {
   board: Coordinates;
@@ -32,6 +33,7 @@ const boardCells = Array(props.board.x * props.board.y);
 // cols, rows, used by css
 const cols = computed(() => props.board.x);
 const rows = computed(() => props.board.y);
+const svgSideLength = BOARD_PIXEL_SIZE * 4;
 </script>
 
 <template>
@@ -59,7 +61,7 @@ const rows = computed(() => props.board.y);
       v-bind="piece"
       @click="handlePieceClick(piece.id)"
     />
-    <svg v-if="props.showOrders" width="200" height="200">
+    <svg v-if="props.showOrders" :width="svgSideLength" :height="svgSideLength">
       <OrderOverlay
         v-for="order in props.orders"
         :key="order.toString()"
