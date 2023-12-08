@@ -28,7 +28,6 @@ import {
   stopTitleNotification,
 } from '@/utils/titleAnimation';
 import MatchInvite from '@/components/MatchInvite.vue';
-import BoardDisplayV2 from '@/components/BoardDisplayV2.vue';
 
 const windowHasFocus = useWindowFocus();
 
@@ -66,7 +65,7 @@ const isPlayerSelected = computed(() => {
   return playerID.value === 0 || playerID.value === 1;
 });
 const keyListener = (event: KeyboardEvent) => {
-  // @ts-expect-error tagname DNE
+  // @ts-expect-error tagName DNE
   if (event?.target?.tagName?.toLowerCase() === 'input') {
     return;
   }
@@ -358,10 +357,5 @@ main {
   font-size: 2rem;
   font-weight: bold;
   color: var(--color-theme-green);
-}
-
-.center {
-  display: flex;
-  justify-content: center;
 }
 </style>
