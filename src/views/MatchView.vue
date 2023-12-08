@@ -225,15 +225,8 @@ getNotificationSound(store.zugUsername === 'Ben').then((notificationSound) => {
   </OverlayPanel>
   <main>
     <MatchInvite :matchID="matchID" />
-    <p v-if="!isPlayerSelected">Choose a player</p>
     <div class="player-info">
       <span />
-      <input
-        type="radio"
-        v-if="store.isDebug || !isPlayerSelected"
-        v-model="playerID"
-        :value="0"
-      />
       <span :class="{ checked: playerID === 0 }">
         {{ matchData ? matchData[0].name : 'player 1' }}</span
       >
@@ -243,12 +236,6 @@ getNotificationSound(store.zugUsername === 'Ben').then((notificationSound) => {
       <span :class="{ checked: playerID === 1 }"
         >{{ matchData ? matchData[1].name : 'player 2' }}
       </span>
-      <input
-        type="radio"
-        v-if="store.isDebug || !isPlayerSelected"
-        v-model="playerID"
-        :value="1"
-      />
       <button class="match-info-button" @click="toggleMatchInfo">?</button>
     </div>
 
