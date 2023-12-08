@@ -7,10 +7,10 @@ import type { LobbyAPI } from 'boardgame.io/dist/types/src/types';
 import LobbyMatch from '@/components/LobbyMatch.vue';
 import type { GameSetupData } from '@/game/Game';
 import { store } from '@/store';
+import { getServerURL } from '@/utils';
 
 const matches: Ref<LobbyAPI.Match[]> = ref([]);
-const { protocol, hostname, port } = window.location;
-const server = `${protocol}//${hostname}:${port}`;
+const server = getServerURL();
 
 // todo: poll match list or show refresh button
 const lobbyClient = new LobbyClient({ server });
