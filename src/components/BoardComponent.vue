@@ -279,7 +279,7 @@ onUnmounted(() => {
         >
       </div>
     </div>
-    <div v-if="props.showOrders">
+    <div class="actions-text" v-if="props.showOrders">
       <p>
         piece:
         {{
@@ -328,7 +328,14 @@ onUnmounted(() => {
   display: flex;
   flex-direction: row;
   justify-content: center;
+  justify-self: end;
   gap: 8px;
+}
+
+@media (max-width: 500px) {
+  .layout {
+    grid-template-columns: 1fr;
+  }
 }
 
 .info-message {

@@ -224,9 +224,8 @@ getNotificationSound(store.zugUsername === 'Ben').then((notificationSound) => {
     </div>
   </OverlayPanel>
   <main>
-    <MatchInvite :matchID="matchID" />
     <div class="player-info">
-      <span />
+      <MatchInvite :matchID="matchID" />
       <span :class="{ checked: playerID === 0 }">
         {{ matchData ? matchData[0].name : 'player 1' }}</span
       >
