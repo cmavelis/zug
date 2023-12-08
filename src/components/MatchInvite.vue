@@ -8,24 +8,27 @@ interface MatchInviteProps {
 
 const props = defineProps<MatchInviteProps>();
 
-const toast = useToast();
+const { origin } = window.location;
+const link = `${origin}/match/${props.matchID}?join`;
 
+const toast = useToast();
 const showCopyMessage = () => {
   toast.add({
     severity: 'info',
-    summary: 'Link copied',
+    summary: 'Invite link copied',
+    detail: link,
     life: 4000,
   });
 };
 
 const copyLink = () => {
-  navigator.clipboard.writeText(`hello ${props.matchID}`);
+  navigator.clipboard.writeText(link);
   showCopyMessage();
 };
 </script>
 
 <template>
-  <Button @click="copyLink">copy link</Button>
+  <Button @click="copyLink">Copy invite link</Button>
 </template>
 
 <style scoped></style>
