@@ -1,9 +1,11 @@
 <script setup lang="ts">
 import { RouterLink, RouterView } from 'vue-router';
 import { store } from './store';
+import Toast from 'primevue/toast';
 </script>
 
 <template>
+  <Toast />
   <header>
     <div class="wrapper">
       <nav>

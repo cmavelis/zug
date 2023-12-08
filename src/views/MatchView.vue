@@ -27,6 +27,7 @@ import {
   startTitleNotification,
   stopTitleNotification,
 } from '@/utils/titleAnimation';
+import MatchInvite from '@/components/MatchInvite.vue';
 
 const windowHasFocus = useWindowFocus();
 
@@ -218,6 +219,7 @@ getNotificationSound(store.zugUsername === 'Ben').then((notificationSound) => {
     </div>
   </OverlayPanel>
   <main>
+    <MatchInvite :matchID="matchID" />
     <p v-if="!isPlayerSelected">Choose a player</p>
     <div class="player-info">
       <span />
