@@ -7,9 +7,9 @@ import { getServerURL } from '@/utils';
 const server = getServerURL();
 
 export class SimulChessClient {
-  client: _ClientImpl<any, { G: GameState; playerID: number }>;
+  client: _ClientImpl<any, { G: GameState; playerID: number | null }>;
   constructor(
-    playerID: string,
+    playerID: string | null,
     matchID?: string,
     credentials?: string,
     local?: boolean,
@@ -21,6 +21,7 @@ export class SimulChessClient {
         : SocketIO({
             server,
           }),
+      // @ts-expect-error [TS-2322]
       playerID,
       matchID,
       debug: false,
