@@ -28,6 +28,7 @@ import {
   stopTitleNotification,
 } from '@/utils/titleAnimation';
 import MatchInvite from '@/components/MatchInvite.vue';
+import BoardDisplayV2 from '@/components/BoardDisplayV2.vue';
 
 const windowHasFocus = useWindowFocus();
 
@@ -169,7 +170,7 @@ watch(
 
 const gamePhase = computed(() => {
   if (playerID.value === null) {
-    return '';
+    return 'spectate';
   }
   if (gameState.ctx.activePlayers) {
     return gameState.ctx.activePlayers[playerID.value] || '?';
@@ -252,7 +253,8 @@ getNotificationSound(store.zugUsername === 'Ben').then((notificationSound) => {
       <button class="match-info-button" @click="toggleMatchInfo">?</button>
     </div>
 
-    <p v-if="!winner">
+    <p v-if="gamePhase === 'spectate'">You are spectating this game</p>
+    <p v-else-if="!winner">
       phase:
       {{ gamePhase }}
     </p>
@@ -265,7 +267,7 @@ getNotificationSound(store.zugUsername === 'Ben').then((notificationSound) => {
       Your opponent is waiting for you to finish...
     </p>
     <BoardComponent
-      v-if="gameStateLoaded"
+      v-if="gameStateLoaded && playerID !== null"
       :client="matchClientOne.client"
       :state="gameState"
       :playerID="playerID"
@@ -356,5 +358,10 @@ main {
   font-size: 2rem;
   font-weight: bold;
   color: var(--color-theme-green);
+}
+
+.center {
+  display: flex;
+  justify-content: center;
 }
 </style>
