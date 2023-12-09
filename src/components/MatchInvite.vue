@@ -9,13 +9,13 @@ interface MatchInviteProps {
 const props = defineProps<MatchInviteProps>();
 
 const { origin } = window.location;
-const link = `${origin}/match/${props.matchID}?join`;
+const link = `${origin}/match/${props.matchID}`;
 
 const toast = useToast();
 const showCopyMessage = () => {
   toast.add({
     severity: 'info',
-    summary: 'Invite link copied',
+    summary: 'Match link copied',
     detail: link,
     life: 4000,
   });
