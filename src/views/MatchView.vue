@@ -9,11 +9,12 @@ import {
   type Ref,
 } from 'vue';
 import { useRoute } from 'vue-router';
-import OverlayPanel from 'primevue/overlaypanel';
 
 import type { ClientState } from 'boardgame.io/dist/types/src/client/client';
 import type { Ctx, FilteredMetadata } from 'boardgame.io/dist/types/src/types';
 import { isEqual } from 'lodash';
+import Button from 'primevue/button';
+import { useToast } from 'primevue/usetoast';
 
 import BoardComponent from '@/components/BoardComponent.vue';
 import BoardDisplay from '@/components/BoardDisplay.vue';
@@ -27,8 +28,18 @@ import {
   startTitleNotification,
   stopTitleNotification,
 } from '@/utils/titleAnimation';
+import MatchInvite from '@/components/MatchInvite.vue';
+import LoginComponent from '@/components/LoginComponent.vue';
+import { useMatch } from '@/composables/useMatch';
+import { LobbyClient } from 'boardgame.io/client';
+import { getServerURL } from '@/utils';
 
 const windowHasFocus = useWindowFocus();
+const toast = useToast();
+
+const server = getServerURL();
+const lobbyClient = new LobbyClient({ server });
+const { joinStatus, requestJoinMatch } = useMatch(lobbyClient);
 
 watch(windowHasFocus, (newFocus) => {
   if (newFocus) {
@@ -50,7 +61,7 @@ interface ReactiveGameState {
 }
 
 const route = useRoute();
-let playerIDDefault = -1;
+let playerIDDefault: number | null = null;
 
 if (route.query.player) {
   if ([1, 2].includes(Number(route.query.player))) {
@@ -59,12 +70,12 @@ if (route.query.player) {
     store.setIsDebug();
   }
 }
-const playerID = ref(playerIDDefault);
+const playerID = ref<number | null>(playerIDDefault);
 const isPlayerSelected = computed(() => {
   return playerID.value === 0 || playerID.value === 1;
 });
 const keyListener = (event: KeyboardEvent) => {
-  // @ts-expect-error tagname DNE
+  // @ts-expect-error tagName DNE
   if (event?.target?.tagName?.toLowerCase() === 'input') {
     return;
   }
@@ -94,13 +105,15 @@ if (typeof route.params.matchID === 'string') {
  * TODO: allow side-by-side clients in testing matches or while spectating (playerID=null)
  */
 const matchClientOne = new SimulChessClient(
-  String(playerID.value),
+  playerID.value === null ? playerID.value : String(playerID.value),
   matchID,
   store.zugToken,
 );
 
 watch(playerID, () => {
-  matchClientOne.client.updatePlayerID(String(playerID.value));
+  matchClientOne.client.updatePlayerID(
+    playerID.value === null ? playerID.value : String(playerID.value),
+  );
 });
 
 const gameState: ReactiveGameState = reactive({
@@ -120,6 +133,21 @@ const updateGameState = (state: ClientState<{ G: GObject; ctx: Ctx }>) => {
   }
 };
 matchClientOne.client.subscribe(updateGameState);
+
+watch(gameStateLoaded, () => {
+  if (!gameStateLoaded.value) {
+    return;
+  }
+  if (!playerIDDefault) {
+    // determine player # from user, set automatically
+    const joinedPlayerID = matchClientOne.client.matchData?.findIndex(
+      (player) => player.name && player.name === store.zugUsername,
+    );
+    if (joinedPlayerID !== undefined && joinedPlayerID >= 0) {
+      playerID.value = joinedPlayerID;
+    }
+  }
+});
 
 const historyTurn = ref(1);
 function incrementHistoryTurn() {
@@ -153,6 +181,35 @@ function setHistoryStep(value: number) {
   historyTurnStep.value = value;
 }
 
+const canJoin = computed(() => {
+  const openPlayerSlot = matchClientOne.client.matchData?.some(
+    (player) => player.name === undefined,
+  );
+  return playerID.value === null && !gameLastTurn.value && openPlayerSlot;
+});
+const handleJoin = () => {
+  requestJoinMatch(matchID)
+    .then((resp) => {
+      if (resp) {
+        playerID.value = Number(resp.playerID);
+      } else {
+        toast.add({
+          severity: 'error',
+          summary: 'Error',
+          detail: 'There was a problem joining the match',
+        });
+      }
+    })
+    .catch((e) => {
+      console.error(e);
+      toast.add({
+        severity: 'error',
+        summary: 'Error',
+        detail: 'There was a problem joining the match',
+      });
+    });
+};
+
 // new turn watcher
 watch(
   () => gameState.G.history,
@@ -165,6 +222,9 @@ watch(
 );
 
 const gamePhase = computed(() => {
+  if (playerID.value === null) {
+    return 'spectate';
+  }
   if (gameState.ctx.activePlayers) {
     return gameState.ctx.activePlayers[playerID.value] || '?';
   } else {
@@ -187,11 +247,6 @@ const opponentWaiting = computed(() => {
   return gameState.ctx.activePlayers[opponentPlayerID] === 'resolution';
 });
 
-const op = ref();
-const toggleMatchInfo = (event: Event) => {
-  op.value.toggle(event);
-};
-
 // "your turn" sound
 getNotificationSound(store.zugUsername === 'Ben').then((notificationSound) => {
   const audio = new Audio(notificationSound);
@@ -211,22 +266,16 @@ getNotificationSound(store.zugUsername === 'Ben').then((notificationSound) => {
 </script>
 
 <template>
-  <OverlayPanel ref="op" appendTo="body">
-    <div>
-      <!--prettier-ignore-->
-      <pre>{{JSON.stringify(gameState.G.config, null, 2).trim()}}</pre>
-    </div>
-  </OverlayPanel>
   <main>
-    <p v-if="!isPlayerSelected">Choose a player</p>
+    <div v-if="canJoin">
+      <p>To join, first sign in</p>
+      <LoginComponent />
+      <p>Then click join:</p>
+      <Button label="Join" @click="handleJoin"></Button>
+      <p>{{ joinStatus }}</p>
+    </div>
     <div class="player-info">
       <span />
-      <input
-        type="radio"
-        v-if="store.isDebug || !isPlayerSelected"
-        v-model="playerID"
-        :value="0"
-      />
       <span :class="{ checked: playerID === 0 }">
         {{ matchData ? matchData[0].name : 'player 1' }}</span
       >
@@ -236,16 +285,10 @@ getNotificationSound(store.zugUsername === 'Ben').then((notificationSound) => {
       <span :class="{ checked: playerID === 1 }"
         >{{ matchData ? matchData[1].name : 'player 2' }}
       </span>
-      <input
-        type="radio"
-        v-if="store.isDebug || !isPlayerSelected"
-        v-model="playerID"
-        :value="1"
-      />
-      <button class="match-info-button" @click="toggleMatchInfo">?</button>
+      <MatchInvite :matchID="matchID" />
     </div>
-
-    <p v-if="!winner">
+    <p v-if="gamePhase === 'spectate'">You are spectating this game</p>
+    <p v-else-if="!winner">
       phase:
       {{ gamePhase }}
     </p>
@@ -258,13 +301,14 @@ getNotificationSound(store.zugUsername === 'Ben').then((notificationSound) => {
       Your opponent is waiting for you to finish...
     </p>
     <BoardComponent
-      v-if="gameStateLoaded"
+      v-if="gameStateLoaded && playerID !== null"
       :client="matchClientOne.client"
       :state="gameState"
       :playerID="playerID"
       :showOrders="isPlayerSelected"
     />
     <div v-if="gameLastTurn">
+      <p>HISTORY</p>
       <button @click="historyTurn = 1">
         {{ '|<' }}
       </button>
@@ -279,7 +323,7 @@ getNotificationSound(store.zugUsername === 'Ben').then((notificationSound) => {
         +
       </button>
       <button @click="setHistoryLastTurn()">>|</button>
-      <div>TURN {{ historyTurn }}</div>
+      <div>TURN {{ historyTurn }} STEP {{ historyTurnStep }}</div>
       <button @click="setHistoryStep(1)">
         {{ '|<' }}
       </button>
@@ -300,6 +344,11 @@ getNotificationSound(store.zugUsername === 'Ben').then((notificationSound) => {
         :orderNumber="historyTurnStep"
       />
     </div>
+    <div v-if="gameState.G.config" class="match-settings">
+      <p>match settings</p>
+      <!--prettier-ignore-->
+      <pre>{{JSON.stringify(gameState.G.config, null, 2).trim()}}</pre>
+    </div>
   </main>
 </template>
 
@@ -312,23 +361,8 @@ main {
   display: grid;
   grid-template-columns: 1fr 100px auto 100px 1fr;
   justify-content: center;
+  align-items: center;
   gap: 0.2rem;
-}
-
-.match-info-button {
-  --circle-size: 1.8rem;
-  background: transparent;
-  font-size: 1.2rem;
-  font-weight: bold;
-  color: var(--color-theme-green);
-  border: 2px solid var(--color-theme-green);
-  border-radius: var(--circle-size);
-  width: var(--circle-size);
-  height: var(--circle-size);
-}
-
-.match-info-button:hover {
-  background-color: var(--color-border-hover);
 }
 
 .info-message {
@@ -349,5 +383,13 @@ main {
   font-size: 2rem;
   font-weight: bold;
   color: var(--color-theme-green);
+}
+
+.match-settings {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  text-align: left;
+  align-items: center;
 }
 </style>

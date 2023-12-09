@@ -6,11 +6,12 @@ import { LobbyClient } from 'boardgame.io/client';
 import LobbyMatch from '@/components/LobbyMatch.vue';
 import type { GameSetupData } from '@/game/Game';
 import { store } from '@/store';
+import { getServerURL } from '@/utils';
+import { useMatch } from '@/composables/useMatch';
 import type { EnhancedMatch } from '../../server/types';
 
 const matches: Ref<EnhancedMatch[]> = ref([]);
-const { protocol, hostname, port } = window.location;
-const server = `${protocol}//${hostname}:${port}`;
+const server = getServerURL();
 
 // todo: poll match list or show refresh button
 const lobbyClient = new LobbyClient({ server });
@@ -31,41 +32,13 @@ const createMatch = async (setupData: GameSetupData = {}) => {
   await requestJoinMatch(createdMatch.matchID, setupData);
 };
 
-const joinStatus = ref('');
-const requestJoinMatch = async (matchID: string, setupData?: GameSetupData) => {
-  joinStatus.value = 'loading';
-  let authHeader = setupData?.empty ? 'open' : 'error';
-  try {
-    const resp = await lobbyClient.joinMatch(
-      'zug',
-      matchID,
-      { playerName: store.zugUsername || 'error' },
-      { headers: { authorization: store.zugToken || authHeader } },
-    );
-    if (resp.playerID) {
-      joinStatus.value = 'success';
-      navigateToMatch(matchID, resp.playerID, setupData);
-    } else {
-      joinStatus.value = 'failed';
-    }
-  } catch (e) {
-    console.error(e);
-    joinStatus.value = 'failed';
-  }
-};
+const { joinStatus, requestJoinMatch } = useMatch(lobbyClient);
 
-const navigateToMatch = (
-  matchID: string,
-  playerID: string,
-  setupData?: GameSetupData,
-) => {
+const navigateToMatch = (matchID: string) => {
   router.push({
     name: 'match',
     params: {
       matchID,
-    },
-    query: {
-      player: setupData?.empty ? 9 : Number(playerID) + 1,
     },
   });
 };
@@ -129,9 +102,7 @@ watch(matches, () => {
         :match="match"
         :highlight="!match.gameover"
         :handle-match-join="() => requestJoinMatch(match.matchID)"
-        :handle-match-navigate="
-          (playerName: string) => navigateToMatch(match.matchID, playerName)
-        "
+        :handle-match-navigate="() => navigateToMatch(match.matchID)"
       />
     </section>
     <h3>Open matches</h3>
@@ -142,9 +113,7 @@ watch(matches, () => {
         :match="match"
         :highlight="usersMatches.includes(match.matchID)"
         :handle-match-join="() => requestJoinMatch(match.matchID)"
-        :handle-match-navigate="
-          (playerName: string) => navigateToMatch(match.matchID, playerName)
-        "
+        :handle-match-navigate="() => navigateToMatch(match.matchID)"
       />
     </section>
     <h3>Other matches</h3>
@@ -155,9 +124,7 @@ watch(matches, () => {
         :match="match"
         :highlight="usersMatches.includes(match.matchID)"
         :handle-match-join="() => requestJoinMatch(match.matchID)"
-        :handle-match-navigate="
-          (playerName: string) => navigateToMatch(match.matchID, playerName)
-        "
+        :handle-match-navigate="() => navigateToMatch(match.matchID)"
       />
     </section>
   </main>

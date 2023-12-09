@@ -5,7 +5,7 @@ import type { EnhancedMatch } from '../../server/types';
 interface LobbyMatchProps {
   match: EnhancedMatch;
   handleMatchJoin: () => any;
-  handleMatchNavigate: (playerNumber: string) => void;
+  handleMatchNavigate: () => void;
   highlight?: boolean;
 }
 
@@ -26,7 +26,7 @@ const props = defineProps<LobbyMatchProps>();
         {{ player.name }}
         <button
           v-if="player.name && player.name === store.zugUsername"
-          @click="() => handleMatchNavigate(String(i))"
+          @click="() => handleMatchNavigate()"
         >
           go to
         </button>

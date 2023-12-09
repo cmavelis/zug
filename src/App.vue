@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { RouterLink, RouterView } from 'vue-router';
 import { store } from './store';
+import Toast from 'primevue/toast';
 import { BOARD_PIXEL_SIZE } from '@/constants';
 
 const squareSize = BOARD_PIXEL_SIZE + 'px';
@@ -10,6 +11,7 @@ root.style.setProperty('--square-size', squareSize);
 </script>
 
 <template>
+  <Toast />
   <header>
     <div class="wrapper">
       <nav>
