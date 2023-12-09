@@ -9,7 +9,6 @@ import {
   type Ref,
 } from 'vue';
 import { useRoute } from 'vue-router';
-import Button from 'primevue/button';
 
 import type { ClientState } from 'boardgame.io/dist/types/src/client/client';
 import type { Ctx, FilteredMetadata } from 'boardgame.io/dist/types/src/types';
@@ -192,11 +191,6 @@ const opponentWaiting = computed(() => {
   const opponentPlayerID = playerID.value === 1 ? 0 : 1;
   return gameState.ctx.activePlayers[opponentPlayerID] === 'resolution';
 });
-
-const op = ref();
-const toggleMatchInfo = (event: Event) => {
-  op.value.toggle(event);
-};
 
 // "your turn" sound
 getNotificationSound(store.zugUsername === 'Ben').then((notificationSound) => {
