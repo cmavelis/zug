@@ -308,22 +308,6 @@ main {
   gap: 0.2rem;
 }
 
-.match-info-button {
-  --circle-size: 1.8rem;
-  background: transparent;
-  font-size: 1.2rem;
-  font-weight: bold;
-  color: var(--color-theme-green);
-  border: 2px solid var(--color-theme-green);
-  border-radius: var(--circle-size);
-  width: var(--circle-size);
-  height: var(--circle-size);
-}
-
-.match-info-button:hover {
-  background-color: var(--color-border-hover);
-}
-
 .info-message {
   color: coral;
 }
