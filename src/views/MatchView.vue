@@ -14,6 +14,7 @@ import type { ClientState } from 'boardgame.io/dist/types/src/client/client';
 import type { Ctx, FilteredMetadata } from 'boardgame.io/dist/types/src/types';
 import { isEqual } from 'lodash';
 import Button from 'primevue/button';
+import { useToast } from 'primevue/usetoast';
 
 import BoardComponent from '@/components/BoardComponent.vue';
 import BoardDisplay from '@/components/BoardDisplay.vue';
@@ -34,6 +35,7 @@ import { LobbyClient } from 'boardgame.io/client';
 import { getServerURL } from '@/utils';
 
 const windowHasFocus = useWindowFocus();
+const toast = useToast();
 
 const server = getServerURL();
 const lobbyClient = new LobbyClient({ server });
@@ -191,10 +193,21 @@ const handleJoin = () => {
       if (resp) {
         playerID.value = Number(resp.playerID);
       } else {
-        //todo: toast error
+        toast.add({
+          severity: 'error',
+          summary: 'Error',
+          detail: 'There was a problem joining the match',
+        });
       }
     })
-    .catch(console.error);
+    .catch((e) => {
+      console.error(e);
+      toast.add({
+        severity: 'error',
+        summary: 'Error',
+        detail: 'There was a problem joining the match',
+      });
+    });
 };
 
 // new turn watcher
