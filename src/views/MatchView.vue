@@ -179,6 +179,12 @@ function setHistoryStep(value: number) {
   historyTurnStep.value = value;
 }
 
+const canJoin = computed(() => {
+  const openPlayerSlot = matchClientOne.client.matchData?.some(
+    (player) => player.name === undefined,
+  );
+  return playerID.value === null && !gameLastTurn.value && openPlayerSlot;
+});
 const handleJoin = () => {
   requestJoinMatch(matchID)
     .then((resp) => {
@@ -248,7 +254,7 @@ getNotificationSound(store.zugUsername === 'Ben').then((notificationSound) => {
 
 <template>
   <main>
-    <div v-if="playerID === null && !gameLastTurn">
+    <div v-if="canJoin">
       <p>To join, first sign in</p>
       <LoginComponent />
       <p>Then click join:</p>
