@@ -102,9 +102,7 @@ watch(matches, () => {
         v-bind="match"
         :highlight="!match.gameover"
         :handle-match-join="() => requestJoinMatch(match.matchID)"
-        :handle-match-navigate="
-          (playerName: string) => navigateToMatch(match.matchID)
-        "
+        :handle-match-navigate="() => navigateToMatch(match.matchID)"
       />
     </section>
     <h3>Open matches</h3>
@@ -116,9 +114,7 @@ watch(matches, () => {
         :players="match.players"
         :highlight="usersMatches.includes(match.matchID)"
         :handle-match-join="() => requestJoinMatch(match.matchID)"
-        :handle-match-navigate="
-          (playerName: string) => navigateToMatch(match.matchID)
-        "
+        :handle-match-navigate="() => navigateToMatch(match.matchID)"
       />
     </section>
     <h3>Other matches</h3>
@@ -130,9 +126,7 @@ watch(matches, () => {
         :players="match.players"
         :highlight="usersMatches.includes(match.matchID)"
         :handle-match-join="() => requestJoinMatch(match.matchID)"
-        :handle-match-navigate="
-          (playerName: string) => navigateToMatch(match.matchID)
-        "
+        :handle-match-navigate="() => navigateToMatch(match.matchID)"
       />
     </section>
   </main>
