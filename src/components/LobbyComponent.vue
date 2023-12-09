@@ -29,7 +29,7 @@ const createMatch = async (setupData: GameSetupData = {}) => {
     setupData,
     unlisted: setupData?.empty,
   });
-  await requestJoinMatch(createdMatch.matchID, setupData);
+  await requestJoinMatch(createdMatch.matchID, setupData, navigateToMatch);
 };
 
 const { joinStatus, requestJoinMatch } = useMatch(lobbyClient);
