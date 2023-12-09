@@ -280,9 +280,11 @@ getNotificationSound(store.zugUsername === 'Ben').then((notificationSound) => {
       <span :class="{ checked: playerID === 0 }">
         {{ matchData ? matchData[0].name : 'player 1' }}</span
       >
-      ({{ gameState.G.score ? gameState.G.score[0] : '?' }}) - ({{
-        gameState.G.score ? gameState.G.score[1] : '?'
-      }})
+      <span class="score">
+        ({{ gameState.G.score ? gameState.G.score[0] : '?' }}) - ({{
+          gameState.G.score ? gameState.G.score[1] : '?'
+        }})
+      </span>
       <span :class="{ checked: playerID === 1 }"
         >{{ matchData ? matchData[1].name : 'player 2' }}
       </span>
@@ -364,6 +366,10 @@ main {
   justify-content: center;
   align-items: center;
   gap: 0.2rem;
+}
+
+.score {
+  white-space: nowrap;
 }
 
 .info-message {

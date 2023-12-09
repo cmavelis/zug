@@ -56,7 +56,7 @@ const handeShowQR = () => {
   >
     <canvas ref="canvas"></canvas>
   </Dialog>
-  <span class="p-buttonset">
+  <span class="p-buttonset nowrap">
     <Button
       icon="pi pi-link"
       outlined
@@ -78,4 +78,9 @@ const handeShowQR = () => {
   </span>
 </template>
 
-<style scoped></style>
+<style scoped>
+.nowrap {
+  display: flex;
+  flex-wrap: nowrap;
+}
+</style>
