@@ -19,14 +19,8 @@ const { koaBody } = require('koa-body');
 const { Sequelize } = require('sequelize');
 const axios = require('axios');
 
-const makeMatchURL = ({
-  matchID,
-  playerID,
-}: {
-  matchID: string;
-  playerID: 0 | 1;
-}) => {
-  return `${process.env.HOST_URL}/match/${matchID}?player=${playerID + 1}`;
+const makeMatchURL = ({ matchID }: { matchID: string }) => {
+  return `${process.env.HOST_URL}/match/${matchID}`;
 };
 
 const sequelize = new Sequelize(process.env.DATABASE_URL, {
@@ -66,7 +60,6 @@ Game.beforeUpsert(async (created) => {
               user.discordUser.id,
               `It's your turn: \n ${makeMatchURL({
                 matchID: created.id,
-                playerID: p as 0 | 1,
               })}`,
             )
 
