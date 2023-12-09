@@ -192,6 +192,7 @@ const handleJoin = () => {
     .then((resp) => {
       if (resp) {
         playerID.value = Number(resp.playerID);
+        location.reload();
       } else {
         toast.add({
           severity: 'error',
