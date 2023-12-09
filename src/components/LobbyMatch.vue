@@ -21,7 +21,7 @@ const props = defineProps<LobbyMatchProps>();
   >
     <div class="match-name">{{ props.match.matchID }}</div>
     <div>
-      <div :key="player.name" v-for="player in props.match.players">
+      <div :key="player.name" v-for="(player, i) in props.match.players">
         ({{ props.match.score[i as 0 | 1] }})
         {{ player.name }}
         <button
