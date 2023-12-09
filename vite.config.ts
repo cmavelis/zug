@@ -23,5 +23,8 @@ export default defineConfig((config) => {
         external: ['react'],
       },
     },
+    define: {
+      __VUE_PROD_DEVTOOLS__: config.mode === 'development',
+    },
   };
 });

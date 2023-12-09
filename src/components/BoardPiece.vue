@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import type { Piece } from '@/game/pieces';
+import { BOARD_PIXEL_SIZE } from '@/constants';
 
 interface BoardPiece extends Piece {
   iconClass?: { [key: string]: boolean };
@@ -8,7 +9,7 @@ interface BoardPiece extends Piece {
 
 const props = defineProps<BoardPiece>();
 
-const squareSize = 50;
+const squareSize = BOARD_PIXEL_SIZE;
 
 const styleObject = computed(() => {
   const translateX = `${props.position.x * squareSize}px`;
@@ -20,8 +21,6 @@ const styleObject = computed(() => {
     height: squareSize + 'px',
   };
 });
-
-// need this? //const pieceColor = computed(() => (props.owner === 0 ? '#729bf1' : '#62d368'));
 
 const pieceColor = props.owner === 0 ? '#729bf1' : '#62d368';
 </script>
@@ -42,6 +41,9 @@ const pieceColor = props.owner === 0 ? '#729bf1' : '#62d368';
   align-items: center;
   justify-content: center;
   z-index: 1; /* below the order overlay */
+  transition: transform 0.5s ease-out;
+  font-size: medium;
+  font-weight: bold;
 }
 
 .pieceIcon {

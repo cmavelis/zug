@@ -2,6 +2,12 @@
 import { RouterLink, RouterView } from 'vue-router';
 import { store } from './store';
 import Toast from 'primevue/toast';
+import { BOARD_PIXEL_SIZE } from '@/constants';
+
+const squareSize = BOARD_PIXEL_SIZE + 'px';
+const root = document.querySelector(':root');
+// @ts-expect-error
+root.style.setProperty('--square-size', squareSize);
 </script>
 
 <template>
