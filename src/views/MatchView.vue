@@ -50,7 +50,7 @@ interface ReactiveGameState {
 }
 
 const route = useRoute();
-let playerIDDefault = null;
+let playerIDDefault: number | null = null;
 
 if (route.query.player) {
   if ([1, 2].includes(Number(route.query.player))) {
@@ -122,6 +122,21 @@ const updateGameState = (state: ClientState<{ G: GObject; ctx: Ctx }>) => {
   }
 };
 matchClientOne.client.subscribe(updateGameState);
+
+watch(gameStateLoaded, () => {
+  if (!gameStateLoaded.value) {
+    return;
+  }
+  if (!playerIDDefault) {
+    // determine player # from user, set automatically
+    const joinedPlayerID = matchClientOne.client.matchData?.findIndex(
+      (player) => player.name === store.zugUsername,
+    );
+    if (joinedPlayerID) {
+      playerID.value = joinedPlayerID;
+    }
+  }
+});
 
 const historyTurn = ref(1);
 function incrementHistoryTurn() {
