@@ -48,9 +48,12 @@ button {
   }
 }
 
+.halo-shadow {
+  --color: #b8ddff;
+}
+
 .halo-shadow::before {
   content: "";
-  --color: #5b8598;
   border-radius: 50%;
   animation-duration: 2.5s;
   animation-name: halo;
@@ -63,7 +66,6 @@ button {
 }
 .halo-shadow::after {
   content: "";
-  --color: #5b8598;
   border-radius: 50%;
   position: absolute;
   background-color: var(--color);
