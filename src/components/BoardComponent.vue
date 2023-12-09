@@ -362,6 +362,12 @@ section {
   padding: 1rem;
 }
 
+@media (max-width: 500px) {
+  section {
+    padding: 0;
+  }
+}
+
 svg {
   position: absolute;
   z-index: 2;
