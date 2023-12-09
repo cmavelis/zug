@@ -231,52 +231,55 @@ onUnmounted(() => {
           severity="secondary"
           :disabled="actionsUsed.includes('move-straight')"
           @click="selectAction('move-straight')"
+          label="move"
+          icon="pi pi-arrow-up"
         >
-          move (straight)
         </Button>
         <Button
           size="small"
           severity="secondary"
           :disabled="actionsUsed.includes('push-straight')"
           @click="selectAction('push-straight')"
+          label="push"
+          icon="pi pi-arrow-up"
         >
-          push (straight)
         </Button>
         <Button
           size="small"
           severity="secondary"
           :disabled="actionsUsed.includes('move-diagonal')"
           @click="selectAction('move-diagonal')"
+          label="move"
+          icon="pi pi-arrow-up-right"
         >
-          move (diagonal)
         </Button>
         <Button
           size="small"
           severity="secondary"
           :disabled="actionsUsed.includes('push-diagonal')"
           @click="selectAction('push-diagonal')"
-        >
-          push (diagonal)
-        </Button>
+          label="push"
+          icon="pi pi-arrow-up-right"
+        />
         <input
           v-if="store.isDebug"
           v-model.number="pieceToPlace"
           type="number"
         />
-        <div>
-          <Button
-            size="small"
-            severity="secondary"
-            :disabled="piecesToPlace === 0"
-            @click="selectAction('place')"
-          >
-            place new piece
-          </Button>
-          ({{ piecesToPlace }})
-        </div>
-        <Button size="small" severity="secondary" @click="clearAction()"
-          >clear current action</Button
-        >
+        <Button
+          label="place new piece"
+          size="small"
+          severity="secondary"
+          :disabled="piecesToPlace === 0"
+          :badge="String(piecesToPlace)"
+          @click="selectAction('place')"
+        />
+        <Button
+          size="small"
+          severity="secondary"
+          @click="clearAction()"
+          label="clear current action"
+        ></Button>
       </div>
     </div>
     <div class="actions-text" v-if="props.showOrders">
@@ -290,16 +293,19 @@ onUnmounted(() => {
       </p>
       <p>action: {{ selectedAction || 'none selected' }}</p>
       <p>ACTIONS</p>
-      <Button size="small" severity="secondary" @click="undoLastOrder()"
-        >undo last action</Button
-      >
+      <Button
+        size="small"
+        severity="secondary"
+        @click="undoLastOrder()"
+        label="undo last action"
+      />
       <Button
         size="small"
         :severity="canEndTurn ? 'primary' : 'secondary'"
         @click="handleEndTurn"
         :class="{ 'halo-shadow': canEndTurn }"
+        label="end turn"
       >
-        end turn
       </Button>
       <p v-if="endTurnMessage" class="info-message">{{ endTurnMessage }}</p>
       <template
