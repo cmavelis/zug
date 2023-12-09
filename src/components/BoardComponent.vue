@@ -283,16 +283,6 @@ onUnmounted(() => {
       </div>
     </div>
     <div class="actions-text" v-if="props.showOrders">
-      <p>
-        piece:
-        {{
-          typeof selectedPiece === 'number'
-            ? String(selectedPiece)
-            : 'none selected'
-        }}
-      </p>
-      <p>action: {{ selectedAction || 'none selected' }}</p>
-      <p>ACTIONS</p>
       <Button
         size="small"
         severity="secondary"
@@ -305,8 +295,17 @@ onUnmounted(() => {
         @click="handleEndTurn"
         :class="{ 'halo-shadow': canEndTurn }"
         label="end turn"
-      >
-      </Button>
+      />
+      <p>
+        piece:
+        {{
+          typeof selectedPiece === 'number'
+            ? String(selectedPiece)
+            : 'none selected'
+        }}
+      </p>
+      <p>action: {{ selectedAction || 'none selected' }}</p>
+      <p>ACTIONS</p>
       <p v-if="endTurnMessage" class="info-message">{{ endTurnMessage }}</p>
       <template
         v-for="order in props.state.G.orders[props.playerID]"

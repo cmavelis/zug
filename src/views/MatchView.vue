@@ -252,6 +252,7 @@ getNotificationSound(store.zugUsername === 'Ben').then((notificationSound) => {
       :showOrders="isPlayerSelected"
     />
     <div v-if="gameLastTurn">
+      <p>HISTORY</p>
       <button @click="historyTurn = 1">
         {{ '|<' }}
       </button>
@@ -266,7 +267,7 @@ getNotificationSound(store.zugUsername === 'Ben').then((notificationSound) => {
         +
       </button>
       <button @click="setHistoryLastTurn()">>|</button>
-      <div>TURN {{ historyTurn }}</div>
+      <div>TURN {{ historyTurn }} STEP {{ historyTurnStep }}</div>
       <button @click="setHistoryStep(1)">
         {{ '|<' }}
       </button>
