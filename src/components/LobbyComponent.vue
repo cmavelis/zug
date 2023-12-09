@@ -45,7 +45,7 @@ const requestJoinMatch = async (matchID: string, setupData?: GameSetupData) => {
     console.log(resp);
     if (resp.playerID) {
       joinStatus.value = 'success';
-      navigateToMatch(matchID, resp.playerID, setupData);
+      navigateToMatch(matchID);
     } else {
       joinStatus.value = 'failed';
     }
@@ -55,18 +55,11 @@ const requestJoinMatch = async (matchID: string, setupData?: GameSetupData) => {
   }
 };
 
-const navigateToMatch = (
-  matchID: string,
-  playerID: string,
-  setupData?: GameSetupData,
-) => {
+const navigateToMatch = (matchID: string) => {
   router.push({
     name: 'match',
     params: {
       matchID,
-    },
-    query: {
-      player: setupData?.empty ? 9 : Number(playerID) + 1,
     },
   });
 };
@@ -131,7 +124,7 @@ watch(matches, () => {
         :highlight="!match.gameover"
         :handle-match-join="() => requestJoinMatch(match.matchID)"
         :handle-match-navigate="
-          (playerName: string) => navigateToMatch(match.matchID, playerName)
+          (playerName: string) => navigateToMatch(match.matchID)
         "
       />
     </section>
@@ -145,7 +138,7 @@ watch(matches, () => {
         :highlight="usersMatches.includes(match.matchID)"
         :handle-match-join="() => requestJoinMatch(match.matchID)"
         :handle-match-navigate="
-          (playerName: string) => navigateToMatch(match.matchID, playerName)
+          (playerName: string) => navigateToMatch(match.matchID)
         "
       />
     </section>
@@ -159,7 +152,7 @@ watch(matches, () => {
         :highlight="usersMatches.includes(match.matchID)"
         :handle-match-join="() => requestJoinMatch(match.matchID)"
         :handle-match-navigate="
-          (playerName: string) => navigateToMatch(match.matchID, playerName)
+          (playerName: string) => navigateToMatch(match.matchID)
         "
       />
     </section>

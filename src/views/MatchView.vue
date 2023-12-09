@@ -132,7 +132,7 @@ watch(gameStateLoaded, () => {
     const joinedPlayerID = matchClientOne.client.matchData?.findIndex(
       (player) => player.name === store.zugUsername,
     );
-    if (joinedPlayerID) {
+    if (joinedPlayerID !== undefined) {
       playerID.value = joinedPlayerID;
     }
   }
@@ -227,6 +227,7 @@ getNotificationSound(store.zugUsername === 'Ben').then((notificationSound) => {
 
 <template>
   <main>
+    <div v-if="playerID === null">to join this game</div>
     <div class="player-info">
       <span />
       <span :class="{ checked: playerID === 0 }">
