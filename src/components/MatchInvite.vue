@@ -28,11 +28,16 @@ const copyLink = () => {
 </script>
 
 <template>
-  <Button @click="copyLink" size="small" outlined>Copy invite link</Button>
+  <Button
+    icon="pi pi-link"
+    rounded
+    outlined
+    @click="copyLink"
+    size="small"
+    :pt="{
+      icon: { style: 'font-size: 1.2rem' },
+    }"
+  />
 </template>
 
-<style scoped>
-button {
-  width: fit-content;
-}
-</style>
+<style scoped></style>

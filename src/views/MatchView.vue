@@ -9,7 +9,7 @@ import {
   type Ref,
 } from 'vue';
 import { useRoute } from 'vue-router';
-import OverlayPanel from 'primevue/overlaypanel';
+import Button from 'primevue/button';
 
 import type { ClientState } from 'boardgame.io/dist/types/src/client/client';
 import type { Ctx, FilteredMetadata } from 'boardgame.io/dist/types/src/types';
@@ -217,15 +217,9 @@ getNotificationSound(store.zugUsername === 'Ben').then((notificationSound) => {
 </script>
 
 <template>
-  <OverlayPanel ref="op" appendTo="body">
-    <div>
-      <!--prettier-ignore-->
-      <pre>{{JSON.stringify(gameState.G.config, null, 2).trim()}}</pre>
-    </div>
-  </OverlayPanel>
   <main>
     <div class="player-info">
-      <MatchInvite :matchID="matchID" />
+      <span />
       <span :class="{ checked: playerID === 0 }">
         {{ matchData ? matchData[0].name : 'player 1' }}</span
       >
@@ -235,9 +229,8 @@ getNotificationSound(store.zugUsername === 'Ben').then((notificationSound) => {
       <span :class="{ checked: playerID === 1 }"
         >{{ matchData ? matchData[1].name : 'player 2' }}
       </span>
-      <button class="match-info-button" @click="toggleMatchInfo">?</button>
+      <MatchInvite :matchID="matchID" />
     </div>
-
     <p v-if="gamePhase === 'spectate'">You are spectating this game</p>
     <p v-else-if="!winner">
       phase:
@@ -294,6 +287,11 @@ getNotificationSound(store.zugUsername === 'Ben').then((notificationSound) => {
         :orderNumber="historyTurnStep"
       />
     </div>
+    <div class="match-settings">
+      <p>match settings</p>
+      <!--prettier-ignore-->
+      <pre>{{JSON.stringify(gameState.G.config, null, 2).trim()}}</pre>
+    </div>
   </main>
 </template>
 
@@ -306,6 +304,7 @@ main {
   display: grid;
   grid-template-columns: 1fr 100px auto 100px 1fr;
   justify-content: center;
+  align-items: center;
   gap: 0.2rem;
 }
 
@@ -343,5 +342,13 @@ main {
   font-size: 2rem;
   font-weight: bold;
   color: var(--color-theme-green);
+}
+
+.match-settings {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  text-align: left;
+  align-items: center;
 }
 </style>
