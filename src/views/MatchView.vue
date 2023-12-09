@@ -282,7 +282,7 @@ getNotificationSound(store.zugUsername === 'Ben').then((notificationSound) => {
         :orderNumber="historyTurnStep"
       />
     </div>
-    <div class="match-settings">
+    <div v-if="gameState.G.config" class="match-settings">
       <p>match settings</p>
       <!--prettier-ignore-->
       <pre>{{JSON.stringify(gameState.G.config, null, 2).trim()}}</pre>
