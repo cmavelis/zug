@@ -130,9 +130,9 @@ watch(gameStateLoaded, () => {
   if (!playerIDDefault) {
     // determine player # from user, set automatically
     const joinedPlayerID = matchClientOne.client.matchData?.findIndex(
-      (player) => player.name === store.zugUsername,
+      (player) => player.name && player.name === store.zugUsername,
     );
-    if (joinedPlayerID !== undefined) {
+    if (joinedPlayerID !== undefined && joinedPlayerID >= 0) {
       playerID.value = joinedPlayerID;
     }
   }
