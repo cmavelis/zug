@@ -13,6 +13,7 @@ import { useRoute } from 'vue-router';
 import type { ClientState } from 'boardgame.io/dist/types/src/client/client';
 import type { Ctx, FilteredMetadata } from 'boardgame.io/dist/types/src/types';
 import { isEqual } from 'lodash';
+import Button from 'primevue/button';
 
 import BoardComponent from '@/components/BoardComponent.vue';
 import BoardDisplay from '@/components/BoardDisplay.vue';
@@ -27,8 +28,16 @@ import {
   stopTitleNotification,
 } from '@/utils/titleAnimation';
 import MatchInvite from '@/components/MatchInvite.vue';
+import LoginComponent from '@/components/LoginComponent.vue';
+import { useMatch } from '@/composables/useMatch';
+import { LobbyClient } from 'boardgame.io/client';
+import { getServerURL } from '@/utils';
 
 const windowHasFocus = useWindowFocus();
+
+const server = getServerURL();
+const lobbyClient = new LobbyClient({ server });
+const { joinStatus, requestJoinMatch } = useMatch(lobbyClient);
 
 watch(windowHasFocus, (newFocus) => {
   if (newFocus) {
@@ -170,6 +179,18 @@ function setHistoryStep(value: number) {
   historyTurnStep.value = value;
 }
 
+const handleJoin = () => {
+  requestJoinMatch(matchID)
+    .then((resp) => {
+      if (resp) {
+        playerID.value = Number(resp.playerID);
+      } else {
+        //todo: toast error
+      }
+    })
+    .catch(console.error);
+};
+
 // new turn watcher
 watch(
   () => gameState.G.history,
@@ -227,7 +248,13 @@ getNotificationSound(store.zugUsername === 'Ben').then((notificationSound) => {
 
 <template>
   <main>
-    <div v-if="playerID === null">to join this game</div>
+    <div v-if="playerID === null && !gameLastTurn">
+      <p>To join, first sign in</p>
+      <LoginComponent />
+      <p>Then click join:</p>
+      <Button label="Join" @click="handleJoin"></Button>
+      <p>{{ joinStatus }}</p>
+    </div>
     <div class="player-info">
       <span />
       <span :class="{ checked: playerID === 0 }">

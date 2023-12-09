@@ -8,6 +8,7 @@ import LobbyMatch from '@/components/LobbyMatch.vue';
 import type { GameSetupData } from '@/game/Game';
 import { store } from '@/store';
 import { getServerURL } from '@/utils';
+import { useMatch } from '@/composables/useMatch';
 
 const matches: Ref<LobbyAPI.Match[]> = ref([]);
 const server = getServerURL();
@@ -31,29 +32,7 @@ const createMatch = async (setupData: GameSetupData = {}) => {
   await requestJoinMatch(createdMatch.matchID, setupData);
 };
 
-const joinStatus = ref('');
-const requestJoinMatch = async (matchID: string, setupData?: GameSetupData) => {
-  joinStatus.value = 'loading';
-  let authHeader = setupData?.empty ? 'open' : 'error';
-  try {
-    const resp = await lobbyClient.joinMatch(
-      'zug',
-      matchID,
-      { playerName: store.zugUsername || 'error' },
-      { headers: { authorization: store.zugToken || authHeader } },
-    );
-    console.log(resp);
-    if (resp.playerID) {
-      joinStatus.value = 'success';
-      navigateToMatch(matchID);
-    } else {
-      joinStatus.value = 'failed';
-    }
-  } catch (e) {
-    console.error(e);
-    joinStatus.value = 'failed';
-  }
-};
+const { joinStatus, requestJoinMatch } = useMatch(lobbyClient);
 
 const navigateToMatch = (matchID: string) => {
   router.push({
