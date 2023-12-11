@@ -96,6 +96,15 @@ const handlePieceClick = (id: number) => {
   }
 };
 
+const handlePieceHover = (id: number) => {
+  const piece = getPiece(props.state.G, id);
+  if (!piece) return;
+
+  handleCellHover(
+    coordinatesToArray(piece.position, props.state.G.config.board),
+  );
+};
+
 const getPieceCoords = (pieceID: number, G: GameState) => {
   const piece = G.pieces.find((p) => p.id === pieceID);
   if (!piece) {
@@ -225,6 +234,7 @@ onUnmounted(() => {
         :handle-cell-hover="handleCellHover"
         :handle-cell-click="handleCellClick"
         :handle-piece-click="handlePieceClick"
+        :handlePieceHover="handlePieceHover"
         :highlighted-cells="highlightedSquares"
         :selected-piece-id="selectedPiece"
         :show-orders="props.showOrders"

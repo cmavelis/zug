@@ -18,6 +18,7 @@ interface BoardDisplayV2Props {
   handleCellClick?: (cellID: number) => void;
   handleCellHover?: (index: number) => void;
   handlePieceClick?: (id: number) => void;
+  handlePieceHover?: (id: number) => void;
   hoveredCell?: number;
   highlightedCells?: number[];
   selectedPieceId?: number;
@@ -30,6 +31,7 @@ const props = withDefaults(defineProps<BoardDisplayV2Props>(), {
   handleCellClick: () => {},
   handleCellHover: () => {},
   handlePieceClick: () => {},
+  handlePieceHover: () => {},
 });
 
 const toast = useToast();
@@ -104,12 +106,13 @@ const svgSideLength = BOARD_PIXEL_SIZE * 4;
       }"
       v-bind="piece"
       @click="handlePieceClick(piece.id)"
+      @mouseover="handlePieceHover(piece.id)"
     >
       <template #menu>
         <SpeedDial
           :visible="props.selectedPieceId === piece.id"
           :model="items"
-          :radius="60"
+          :radius="50"
           type="semi-circle"
           direction="up"
           :tooltipOptions="{ event: undefined, position: 'top' }"
