@@ -112,14 +112,10 @@ const svgSideLength = BOARD_PIXEL_SIZE * 4;
           :radius="60"
           type="semi-circle"
           direction="up"
+          :tooltipOptions="{ event: undefined, position: 'top' }"
           :style="{
             left: 'calc(50% - 2rem)',
             bottom: 0,
-          }"
-          :pt="{
-            button: {
-              style: { background: 'transparent' },
-            },
           }"
         /> </template
     ></BoardPiece>
@@ -191,8 +187,18 @@ svg {
   z-index: 4;
 }
 
-/* used */
-.speed-dial-button {
+:deep(.p-speeddial-button) {
   background: transparent;
+  color: transparent;
+  border: none;
+}
+
+:deep(.p-speeddial-action) {
+  background-color: white;
+}
+
+:deep(.p-speeddial-action:hover) {
+  background-color: var(--color-theme-green);
+  color: white;
 }
 </style>

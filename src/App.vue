@@ -48,4 +48,15 @@ nav * {
 nav *:first-child {
   border: 0;
 }
+
+a {
+  color: var(--color-theme-green);
+  transition: 0.4s;
+}
+
+@media (hover: hover) {
+  a:hover {
+    background-color: hsla(160, 100%, 37%, 0.2);
+  }
+}
 </style>
