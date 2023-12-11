@@ -80,6 +80,7 @@ const addOrder = (order: Omit<Order, 'owner'>) => {
 };
 
 const handlePieceClick = (id: number) => {
+  console.log('piece click', id);
   const piece = getPiece(props.state.G, id);
   if (!piece) return;
 
@@ -88,7 +89,11 @@ const handlePieceClick = (id: number) => {
     return;
   }
 
-  selectedPiece.value = id;
+  if (id === selectedPiece.value) {
+    selectedPiece.value = undefined;
+  } else {
+    selectedPiece.value = id;
+  }
 };
 
 const getPieceCoords = (pieceID: number, G: GameState) => {
