@@ -22,7 +22,6 @@ import { store } from '@/store';
 
 const NUMBER_PIECES = 4;
 
-// TODO: display-only board, no client prop
 interface BoardProps {
   client: _ClientImpl<GameState>;
   state: { G: GameState; ctx: any };
@@ -117,6 +116,13 @@ const getNumberPiecesMissing = (G: GameState, playerID: number) => {
   return NUMBER_PIECES - G.pieces.filter((p) => p.owner === playerID).length;
 };
 
+// todo: switching to radial menu
+// when piece clicked:
+//  pass down menu items
+//  if piece has action, show "cancel" option
+// when cell clicked:
+//  deselect piece if no action
+
 // select piece, then action, then cell
 const handleCellClick = (cellID: number) => {
   const pieceID = props.state.G.cells[cellID];
@@ -166,6 +172,8 @@ const handleCellClick = (cellID: number) => {
     // if invalid, early return && msg
     addOrder(order);
     clearAction();
+  } else {
+    selectedPiece.value = undefined;
   }
 };
 
