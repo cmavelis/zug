@@ -1,14 +1,14 @@
 <script setup lang="ts">
+import { computed } from 'vue';
+import SpeedDial from 'primevue/speeddial';
+import type { MenuItem } from 'primevue/menuitem';
+
+import { BOARD_PIXEL_SIZE } from '@/constants';
 import type { Coordinates } from '@/game/common';
 import type { Piece } from '@/game/pieces';
 import type { Order } from '@/game/orders';
 import BoardPiece from './BoardPiece.vue';
 import OrderOverlay from './OrderOverlay.vue';
-import { computed, ref } from 'vue';
-import { BOARD_PIXEL_SIZE } from '@/constants';
-
-import { useToast } from 'primevue/usetoast';
-import SpeedDial from 'primevue/speeddial';
 
 interface BoardDisplayV2Props {
   board: Coordinates;
@@ -23,6 +23,7 @@ interface BoardDisplayV2Props {
   highlightedCells?: number[];
   selectedPieceId?: number;
   emphasizedPieceIds?: number[];
+  actionMenuItems?: MenuItem[];
 }
 
 const props = withDefaults(defineProps<BoardDisplayV2Props>(), {
@@ -32,47 +33,8 @@ const props = withDefaults(defineProps<BoardDisplayV2Props>(), {
   handleCellHover: () => {},
   handlePieceClick: () => {},
   handlePieceHover: () => {},
+  actionMenuItems: () => [],
 });
-
-const toast = useToast();
-const items = ref([
-  {
-    label: 'Add',
-    icon: 'pi pi-pencil',
-    command: () => {
-      toast.add({ severity: 'info', summary: 'Add', detail: 'Data Added' });
-    },
-  },
-  {
-    label: 'Update',
-    icon: 'pi pi-refresh',
-    command: () => {
-      toast.add({
-        severity: 'success',
-        summary: 'Update',
-        detail: 'Data Updated',
-      });
-    },
-  },
-  {
-    label: 'Delete',
-    icon: 'pi pi-trash',
-    command: () => {
-      toast.add({
-        severity: 'error',
-        summary: 'Delete',
-        detail: 'Data Deleted',
-      });
-    },
-  },
-  {
-    label: 'Vue Website',
-    icon: 'pi pi-external-link',
-    command: () => {
-      window.location.href = 'https://vuejs.org/';
-    },
-  },
-]);
 
 const boardCells = Array(props.board.x * props.board.y);
 // cols, rows, used by css
@@ -111,7 +73,7 @@ const svgSideLength = BOARD_PIXEL_SIZE * 4;
       <template #menu>
         <SpeedDial
           :visible="props.selectedPieceId === piece.id"
-          :model="items"
+          :model="props.actionMenuItems"
           :radius="50"
           type="semi-circle"
           direction="up"

@@ -19,6 +19,7 @@ import {
   isValidPlaceOrder,
 } from '@/game/zugzwang/validators';
 import { store } from '@/store';
+import { MenuItem } from 'primevue/menuitem';
 
 const NUMBER_PIECES = 4;
 
@@ -191,6 +192,19 @@ const handleEndTurn = () => {
   if (endStage) endStage();
 };
 
+const actionMenuItems: MenuItem[] = [
+  {
+    label: 'Move straight',
+    icon: 'pi pi-arrow-up',
+    command: () => selectAction('move-straight'),
+  },
+  {
+    label: 'Move diagonal',
+    icon: 'pi pi-arrow-up-right',
+    command: () => selectAction('move-diagonal'),
+  },
+];
+
 const selectAction = (action: OrderTypes) => {
   selectedAction.value = action;
   if (action === 'place') {
@@ -247,6 +261,7 @@ onUnmounted(() => {
         :selected-piece-id="selectedPiece"
         :show-orders="props.showOrders"
         :emphasized-piece-ids="piecesWithoutActions"
+        :action-menu-items="actionMenuItems"
       />
       <div class="order-button-group">
         <Button
