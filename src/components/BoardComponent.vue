@@ -165,7 +165,7 @@ const getNumberPiecesMissing = (G: GameState, playerID: number) => {
 
 // todo: switching to radial menu
 // when piece clicked:
-//  todo pass down menu items
+//  todo  pass down menu items <--
 //  todo  if piece has action, show "cancel" option
 // when cell clicked:
 //  [x] deselect piece if no action
@@ -241,36 +241,38 @@ const handleEndTurn = () => {
   if (endStage) endStage();
 };
 
-const actionMenuItems: MenuItem[] = [
-  {
-    label: 'Move straight',
-    icon: 'pi pi-arrow-up',
-    command: () => selectAction('move-straight'),
-  },
-  {
-    label: 'Push straight',
-    icon: 'pi pi-arrow-up',
-    command: () => selectAction('push-straight'),
-  },
-  {
-    label: 'Move diagonal',
-    icon: 'pi pi-arrow-up-right',
-    command: () => selectAction('move-diagonal'),
-  },
+const actionMenuPerPiece = computed(() => {
+  const actionMenuItems: MenuItem[] = [
+    {
+      label: 'Move straight',
+      icon: 'pi pi-arrow-up',
+      command: () => selectAction('move-straight'),
+      disabled: actionsUsed.value.includes('move-straight'),
+    },
+    {
+      label: 'Push straight',
+      icon: 'pi pi-arrow-up',
+      command: () => selectAction('push-straight'),
+      disabled: actionsUsed.value.includes('push-straight'),
+    },
+    {
+      label: 'Move diagonal',
+      icon: 'pi pi-arrow-up-right',
+      command: () => selectAction('move-diagonal'),
+      disabled: actionsUsed.value.includes('move-diagonal'),
+    },
 
-  {
-    label: 'Push diagonal',
-    icon: 'pi pi-arrow-up-right',
-    command: () => selectAction('push-diagonal'),
-  },
-  { label: 'Place', icon: 'pi pi-download', disabled: true },
-].reverse();
+    {
+      label: 'Push diagonal',
+      icon: 'pi pi-arrow-up-right',
+      command: () => selectAction('push-diagonal'),
+      disabled: actionsUsed.value.includes('push-diagonal'),
+    },
+    // { label: 'Place', icon: 'pi pi-download', disabled: true },
+  ].reverse();
 
-const actionMenuPerPiece = {
-  0: actionMenuItems,
-  1: actionMenuItems,
-  2: actionMenuItems,
-};
+  return { ...Array(8).fill(actionMenuItems) };
+});
 
 const selectAction = (action: OrderTypes) => {
   selectedAction.value = action;
