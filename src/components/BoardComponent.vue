@@ -96,6 +96,7 @@ const handlePieceClick = (id: number, e?: Event) => {
   if (typeof selectedPiece.value === 'number') {
     if (id === selectedPiece.value) {
       selectedPiece.value = undefined;
+      return;
     }
     if (selectedAction.value) {
       console.debug('target clicked piece');
@@ -189,7 +190,7 @@ const handleCellClick = (cellID: number) => {
     addOrder(order);
     clearAction();
   } else {
-    // selectedPiece.value = undefined;
+    selectedPiece.value = undefined;
   }
 };
 
