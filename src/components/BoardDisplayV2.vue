@@ -23,7 +23,7 @@ interface BoardDisplayV2Props {
   highlightedCells?: number[];
   selectedPieceId?: number;
   emphasizedPieceIds?: number[];
-  actionMenuItems?: MenuItem[];
+  actionMenuItems?: { [key: number]: MenuItem[] };
 }
 
 const props = withDefaults(defineProps<BoardDisplayV2Props>(), {
@@ -33,7 +33,7 @@ const props = withDefaults(defineProps<BoardDisplayV2Props>(), {
   handleCellHover: () => {},
   handlePieceClick: () => {},
   handlePieceHover: () => {},
-  actionMenuItems: () => [],
+  actionMenuItems: () => ({}),
 });
 
 const boardCells = Array(props.board.x * props.board.y);
@@ -58,6 +58,7 @@ const svgSideLength = BOARD_PIXEL_SIZE * 4;
     />
     <BoardPiece
       v-for="piece in props.pieces"
+      :data-zug-piece-id="piece.id"
       :key="piece.id"
       :class="{
         selected: props.selectedPieceId === piece.id,
@@ -67,18 +68,19 @@ const svgSideLength = BOARD_PIXEL_SIZE * 4;
         'halo-shadow': Boolean(props.emphasizedPieceIds?.includes(piece.id)),
       }"
       v-bind="piece"
-      @click="handlePieceClick(piece.id)"
+      @click.stop="(e) => handlePieceClick(piece.id, e)"
       @mouseover="handlePieceHover(piece.id)"
     >
-      <template #menu>
+      <template v-if="props.actionMenuItems[piece.id]" #menu>
         <SpeedDial
           :visible="props.selectedPieceId === piece.id"
-          :model="props.actionMenuItems"
-          :radius="50"
+          :model="props.actionMenuItems[piece.id]"
+          :radius="60"
           type="semi-circle"
           direction="up"
           :tooltipOptions="{ event: undefined, position: 'top' }"
           :style="{
+            pointerEvents: 'none',
             left: 'calc(50% - 2rem)',
             bottom: 0,
           }"
@@ -153,6 +155,7 @@ svg {
 }
 
 :deep(.p-speeddial-button) {
+  pointer-events: none;
   background: transparent;
   color: transparent;
   border: none;

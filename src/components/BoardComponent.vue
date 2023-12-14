@@ -79,8 +79,17 @@ const addOrder = (order: Omit<Order, 'owner'>) => {
   props.client.moves.addOrder(order);
 };
 
-const handlePieceClick = (id: number) => {
-  console.log('piece click', id);
+// todo: need to tell difference between action button click and piece click
+const handlePieceClick = (id: number, e?: Event) => {
+  console.log(e?.target?.attributes?.getNamedItem('role')?.value);
+  console.log(e);
+  // action menu items have menuitem role
+  //@ts-expect-error attributes on EventTarget
+  // if (typeof e?.target?.getAttribute('data-zug-piece-id') !== 'string') {
+  //   console.log('ignoring click event from action menu');
+  //   return;
+  // }
+
   const piece = getPiece(props.state.G, id);
   if (!piece) return;
 
@@ -174,7 +183,7 @@ const handleCellClick = (cellID: number) => {
     addOrder(order);
     clearAction();
   } else {
-    selectedPiece.value = undefined;
+    // selectedPiece.value = undefined;
   }
 };
 
@@ -199,11 +208,33 @@ const actionMenuItems: MenuItem[] = [
     command: () => selectAction('move-straight'),
   },
   {
+    label: 'Push straight',
+    icon: 'pi pi-arrow-up',
+    command: () => selectAction('push-straight'),
+  },
+  {
     label: 'Move diagonal',
     icon: 'pi pi-arrow-up-right',
-    command: () => selectAction('move-diagonal'),
+    command: (e) => {
+      console.log(e);
+      selectAction('move-diagonal');
+      e.originalEvent.stopPropagation();
+    },
   },
-];
+
+  {
+    label: 'Push diagonal',
+    icon: 'pi pi-arrow-up-right',
+    command: () => selectAction('push-diagonal'),
+  },
+  { label: 'Place', icon: 'pi pi-download', disabled: true },
+].reverse();
+
+const actionMenuPerPiece = {
+  0: actionMenuItems,
+  1: actionMenuItems,
+  2: actionMenuItems,
+};
 
 const selectAction = (action: OrderTypes) => {
   selectedAction.value = action;
@@ -261,7 +292,7 @@ onUnmounted(() => {
         :selected-piece-id="selectedPiece"
         :show-orders="props.showOrders"
         :emphasized-piece-ids="piecesWithoutActions"
-        :action-menu-items="actionMenuItems"
+        :action-menu-items="actionMenuPerPiece"
       />
       <div class="order-button-group">
         <Button
