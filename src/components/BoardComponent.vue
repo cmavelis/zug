@@ -64,7 +64,7 @@ const piecesWithoutActions = computed(() => {
   return Array.from(idSet);
 });
 
-const highlightedSquares: Ref<number[]> = computed(() => {
+const validSquares: Ref<number[]> = computed(() => {
   if (selectedAction.value === 'place') {
     return getValidSquaresForOrder({
       playerID: props.playerID,
@@ -165,10 +165,12 @@ const getNumberPiecesMissing = (G: GameState, playerID: number) => {
 
 // todo: switching to radial menu
 // when piece clicked:
-//  pass down menu items
-//  if piece has action, show "cancel" option
+//  todo pass down menu items
+//  todo  if piece has action, show "cancel" option
 // when cell clicked:
-//  deselect piece if no action
+//  [x] deselect piece if no action
+// general:
+//  todo  ignore illegal moves
 
 // select piece, then action, then cell
 const handleCellClick = (cellID: number) => {
@@ -322,7 +324,7 @@ onUnmounted(() => {
         :handle-cell-click="handleCellClick"
         :handle-piece-click="handlePieceClick"
         :handlePieceHover="handlePieceHover"
-        :highlighted-cells="highlightedSquares"
+        :highlighted-cells="validSquares"
         :selected-piece-id="selectedPiece"
         :show-orders="props.showOrders"
         :emphasized-piece-ids="piecesWithoutActions"
