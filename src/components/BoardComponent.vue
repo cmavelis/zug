@@ -72,7 +72,38 @@ const highlightedSquares: Ref<number[]> = computed(() => {
       orderType: 'place',
     }).map((coord) => coordinatesToArray(coord, props.state.G.config.board));
   }
+  if (
+    selectionPhase.value === SELECTION_PHASES.targeting &&
+    selectedAction.value &&
+    selectedPiece.value !== undefined
+  ) {
+    const piece = getPiece(props.state.G, selectedPiece.value);
+    if (piece)
+      return getValidSquaresForOrder({
+        playerID: props.playerID,
+        board: props.state.G.config.board,
+        orderType: selectedAction.value,
+        origin: piece.position,
+      }).map((coord) => coordinatesToArray(coord, props.state.G.config.board));
+  }
   return [];
+});
+
+const SELECTION_PHASES = {
+  ready: 'ready',
+  menu: 'menu',
+  targeting: 'targeting',
+};
+// todo: can use this to simplify logic in click handlers
+const selectionPhase = computed(() => {
+  if (selectedPiece.value !== undefined) {
+    if (selectedAction.value !== undefined) {
+      return SELECTION_PHASES.targeting;
+    } else {
+      return SELECTION_PHASES.menu;
+    }
+  }
+  return SELECTION_PHASES.ready;
 });
 
 const addOrder = (order: Omit<Order, 'owner'>) => {
