@@ -79,30 +79,35 @@ const addOrder = (order: Omit<Order, 'owner'>) => {
   props.client.moves.addOrder(order);
 };
 
-// todo: need to tell difference between action button click and piece click
 const handlePieceClick = (id: number, e?: Event) => {
-  console.log(e?.target?.attributes?.getNamedItem('role')?.value);
-  console.log(e);
-  // action menu items have menuitem role
-  //@ts-expect-error attributes on EventTarget
-  // if (typeof e?.target?.getAttribute('data-zug-piece-id') !== 'string') {
-  //   console.log('ignoring click event from action menu');
-  //   return;
-  // }
+  // @ts-expect-error attributes on EventTarget
+  if (e?.target?.closest('.p-speeddial')) {
+    // handle primevue speeddial and its children actions on their own
+    return;
+  }
 
   const piece = getPiece(props.state.G, id);
   if (!piece) return;
 
-  // ignore selecting oppo piece
-  if (piece.owner !== props.playerID) {
-    return;
-  }
+  // pieces now capture the click, not the cell
+  console.debug('piece click', id);
 
-  if (id === selectedPiece.value) {
-    selectedPiece.value = undefined;
+  // already piece selected
+  if (typeof selectedPiece.value === 'number') {
+    if (id === selectedPiece.value) {
+      selectedPiece.value = undefined;
+    }
+    if (selectedAction.value) {
+      console.debug('target clicked piece');
+      return;
+    }
   } else {
-    selectedPiece.value = id;
+    // ignore selecting oppo piece
+    if (piece.owner !== props.playerID) {
+      return;
+    }
   }
+  selectedPiece.value = id;
 };
 
 const handlePieceHover = (id: number) => {
@@ -135,6 +140,7 @@ const getNumberPiecesMissing = (G: GameState, playerID: number) => {
 
 // select piece, then action, then cell
 const handleCellClick = (cellID: number) => {
+  console.debug('cell click', cellID);
   const pieceID = props.state.G.cells[cellID];
   endTurnMessage.value = '';
 
@@ -215,11 +221,7 @@ const actionMenuItems: MenuItem[] = [
   {
     label: 'Move diagonal',
     icon: 'pi pi-arrow-up-right',
-    command: (e) => {
-      console.log(e);
-      selectAction('move-diagonal');
-      e.originalEvent.stopPropagation();
-    },
+    command: () => selectAction('move-diagonal'),
   },
 
   {
