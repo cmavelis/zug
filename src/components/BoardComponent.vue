@@ -112,8 +112,7 @@ const addOrder = (order: Omit<Order, 'owner'>) => {
 };
 
 const handlePieceClick = (id: number, e?: Event) => {
-  // @ts-expect-error attributes on EventTarget
-  if (e?.target?.closest('.p-speeddial')) {
+  if (e?.target instanceof Element && e?.target?.closest('.p-speeddial')) {
     // handle primevue speeddial and its children actions on their own
     return;
   }
