@@ -275,7 +275,7 @@ watch(actionsUsed, () =>
       },
       {
         label: 'Push straight',
-        icon: 'pi pi-arrow-up',
+        icon: 'zi zi-arrow-up-flat',
         command: () => selectAction('push-straight'),
         disabled: actionsUsed.value.includes('push-straight'),
       },
@@ -288,7 +288,7 @@ watch(actionsUsed, () =>
 
       {
         label: 'Push diagonal',
-        icon: 'pi pi-arrow-up-right',
+        icon: 'zi zi-arrow-up-right-flat',
         command: () => selectAction('push-diagonal'),
         disabled: actionsUsed.value.includes('push-diagonal'),
       },

@@ -7,6 +7,7 @@ import router from './router';
 import './assets/main.css';
 import 'primevue/resources/themes/lara-dark-green/theme.css';
 import 'primeicons/primeicons.css';
+import './assets/icons/zug-icons.css';
 
 const app = createApp(App);
 
