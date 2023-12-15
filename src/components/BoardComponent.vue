@@ -16,6 +16,7 @@ import {
 import { createOrder } from '@/game/orders';
 import {
   getValidSquaresForOrder,
+  isValidOrder,
   isValidPlaceOrder,
 } from '@/game/zugzwang/validators';
 import { store } from '@/store';
@@ -130,7 +131,7 @@ const handlePieceClick = (id: number, e?: Event) => {
       return;
     }
     if (selectedAction.value) {
-      console.debug('target clicked piece');
+      targetClick();
       return;
     }
   } else {
@@ -174,6 +175,53 @@ const getNumberPiecesMissing = (G: GameState, playerID: number) => {
 //  todo allow click of other pieces when targeting
 //  [ ] click same piece => deselect action
 
+const targetClick = () => {
+  if (
+    !(
+      typeof selectedPiece.value === 'number' &&
+      selectedAction.value &&
+      typeof cellHover.value === 'number'
+    )
+  ) {
+    return;
+  }
+  let pieceCoords = { x: 0, y: 0 };
+  // negative value is nonexistent piece, use absolute coords
+  if (selectedPiece.value >= 0) {
+    pieceCoords = getPieceCoords(selectedPiece.value, props.state.G);
+  }
+  const targetCoords = arrayToCoordinates(
+    cellHover.value,
+    props.state.G.config.board,
+  );
+
+  const toTarget = getDisplacement(pieceCoords, targetCoords);
+  const order = createOrder(
+    {
+      owner: props.playerID,
+      sourcePieceId: selectedPiece.value,
+      toTarget,
+    },
+    selectedAction.value,
+  );
+  // check order for validity
+  if (order.type === 'place') {
+    if (!isValidPlaceOrder(order) && !store.isDebug) {
+      return;
+    }
+    if (pieceToPlace.value > 0) {
+      order.newPiecePriority = pieceToPlace.value;
+    }
+  }
+
+  if (!isValidOrder(props.playerID as 0 | 1, order)) {
+    return;
+  }
+
+  addOrder(order);
+  clearAction();
+};
+
 // select piece, then action, then cell
 const handleCellClick = (cellID: number) => {
   console.debug('cell click', cellID);
@@ -192,38 +240,7 @@ const handleCellClick = (cellID: number) => {
     selectedAction.value &&
     typeof cellHover.value === 'number'
   ) {
-    let pieceCoords = { x: 0, y: 0 };
-    // negative value is nonexistent piece, use absolute coords
-    if (selectedPiece.value >= 0) {
-      pieceCoords = getPieceCoords(selectedPiece.value, props.state.G);
-    }
-    const targetCoords = arrayToCoordinates(
-      cellHover.value,
-      props.state.G.config.board,
-    );
-
-    const toTarget = getDisplacement(pieceCoords, targetCoords);
-    const order = createOrder(
-      {
-        owner: props.playerID,
-        sourcePieceId: selectedPiece.value,
-        toTarget,
-      },
-      selectedAction.value,
-    );
-    // check order for validity
-    if (order.type === 'place') {
-      if (!isValidPlaceOrder(order) && !store.isDebug) {
-        return;
-      }
-      if (pieceToPlace.value > 0) {
-        order.newPiecePriority = pieceToPlace.value;
-      }
-    }
-
-    // if invalid, early return && msg
-    addOrder(order);
-    clearAction();
+    targetClick();
   } else {
     selectedPiece.value = undefined;
   }
@@ -299,7 +316,7 @@ watch(actionsUsed, () =>
     }
 
     actionMenuPerPiece.value = actionMenuFiltered;
-  }, 100),
+  }, 200),
 );
 
 const selectAction = (action: OrderTypes) => {

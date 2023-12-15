@@ -74,12 +74,12 @@ const ORDER_CONFIG: {
   },
 };
 
-export function isValidOrder(piece: Piece, order: Order): boolean {
+export function isValidOrder(pieceOwner: 0 | 1, order: Order): boolean {
   const config = ORDER_CONFIG[order.type as ConfigOrderType];
   const { shape, xAllowed, yAllowed } = config;
 
   const yRelative = order.toTarget.y;
-  const yChange = piece.owner === 0 ? yRelative : -yRelative;
+  const yChange = pieceOwner === 0 ? yRelative : -yRelative;
 
   const xChange = order.toTarget.x;
 
