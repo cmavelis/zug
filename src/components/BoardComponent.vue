@@ -127,7 +127,7 @@ const handlePieceClick = (id: number, e?: Event) => {
   // already piece selected
   if (typeof selectedPiece.value === 'number') {
     if (id === selectedPiece.value) {
-      selectedPiece.value = undefined;
+      clearAction();
       return;
     }
     if (selectedAction.value) {
@@ -172,8 +172,8 @@ const getNumberPiecesMissing = (G: GameState, playerID: number) => {
 //  [x] deselect piece if no action
 // general:
 //  todo  ignore illegal moves
-//  todo allow click of other pieces when targeting
-//  [ ] click same piece => deselect action
+//  [x] allow click of other pieces when targeting
+//  [x] click same piece => deselect action
 
 const targetClick = () => {
   if (
