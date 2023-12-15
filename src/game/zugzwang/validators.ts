@@ -151,7 +151,7 @@ export function getValidSquaresForOrder({
   // TODO:  make vectors, invert, translate
 
   const config = ORDER_CONFIG[orderType];
-  let rawVectors: Coordinates[] = [];
+  const rawVectors: Coordinates[] = [];
   if (config.shape === 'straight') {
     config.xAllowed?.forEach((x) => rawVectors.push({ x, y: 0 }));
     config.yAllowed?.forEach((y) =>
