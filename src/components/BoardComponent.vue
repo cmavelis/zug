@@ -164,17 +164,6 @@ const getNumberPiecesMissing = (G: GameState, playerID: number) => {
   return NUMBER_PIECES - G.pieces.filter((p) => p.owner === playerID).length;
 };
 
-// todo: switching to radial menu
-// when piece clicked:
-//  [x] pass down menu items
-//  [x] if piece has action, show "cancel" option
-// when cell clicked:
-//  [x] deselect piece if no action
-// general:
-//  todo  ignore illegal moves
-//  [x] allow click of other pieces when targeting
-//  [x] click same piece => deselect action
-
 const targetClick = () => {
   if (
     !(
