@@ -367,41 +367,6 @@ onUnmounted(() => {
         :action-menu-items="actionMenuPerPiece"
       />
       <div class="order-button-group">
-        <Button
-          size="small"
-          severity="secondary"
-          :disabled="actionsUsed.includes('move-straight')"
-          @click="selectAction('move-straight')"
-          label="move"
-          icon="pi pi-arrow-up"
-        >
-        </Button>
-        <Button
-          size="small"
-          severity="secondary"
-          :disabled="actionsUsed.includes('push-straight')"
-          @click="selectAction('push-straight')"
-          label="push"
-          icon="pi pi-arrow-up"
-        >
-        </Button>
-        <Button
-          size="small"
-          severity="secondary"
-          :disabled="actionsUsed.includes('move-diagonal')"
-          @click="selectAction('move-diagonal')"
-          label="move"
-          icon="pi pi-arrow-up-right"
-        >
-        </Button>
-        <Button
-          size="small"
-          severity="secondary"
-          :disabled="actionsUsed.includes('push-diagonal')"
-          @click="selectAction('push-diagonal')"
-          label="push"
-          icon="pi pi-arrow-up-right"
-        />
         <input
           v-if="store.isDebug"
           v-model.number="pieceToPlace"
@@ -415,12 +380,6 @@ onUnmounted(() => {
           :badge="String(piecesToPlace)"
           @click="selectAction('place')"
         />
-        <Button
-          size="small"
-          severity="secondary"
-          @click="clearAction()"
-          label="clear current action"
-        ></Button>
       </div>
     </div>
     <div class="actions-text" v-if="props.showOrders">
@@ -471,7 +430,7 @@ onUnmounted(() => {
 .board-with-controls {
   position: relative;
   display: flex;
-  flex-direction: row;
+  flex-direction: column;
   justify-content: center;
   justify-self: end;
   gap: 8px;
@@ -480,6 +439,9 @@ onUnmounted(() => {
 @media (max-width: 500px) {
   .layout {
     grid-template-columns: 1fr;
+  }
+  .board-with-controls {
+    justify-self: center;
   }
 }
 
