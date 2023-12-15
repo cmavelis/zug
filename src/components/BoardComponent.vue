@@ -165,12 +165,13 @@ const getNumberPiecesMissing = (G: GameState, playerID: number) => {
 
 // todo: switching to radial menu
 // when piece clicked:
-//  todo  pass down menu items <--
-//  todo  if piece has action, show "cancel" option
+//  [x] pass down menu items
+//  [x] if piece has action, show "cancel" option
 // when cell clicked:
 //  [x] deselect piece if no action
 // general:
 //  todo  ignore illegal moves
+//  todo allow click of other pieces when targeting
 
 // select piece, then action, then cell
 const handleCellClick = (cellID: number) => {
@@ -241,6 +242,14 @@ const handleEndTurn = () => {
   if (endStage) endStage();
 };
 
+const createCancelMenuItem = (pieceID: number) => {
+  return {
+    label: 'Cancel action',
+    icon: 'pi pi-times',
+    command: () => props.client.moves.removeOrder(pieceID),
+  };
+};
+
 const actionMenuPerPiece = computed(() => {
   const actionMenuItems: MenuItem[] = [
     {
@@ -271,7 +280,16 @@ const actionMenuPerPiece = computed(() => {
     // { label: 'Place', icon: 'pi pi-download', disabled: true },
   ].reverse();
 
-  return { ...Array(8).fill(actionMenuItems) };
+  const actionMenuFiltered = { ...Array(8).fill(actionMenuItems) };
+
+  // add "cancel" items for pieces that have an action already
+  for (let i in Array(8).fill(1)) {
+    if (flatOrders.value.find((order) => order.sourcePieceId === +i)) {
+      actionMenuFiltered[i] = [createCancelMenuItem(+i)];
+    }
+  }
+
+  return actionMenuFiltered;
 });
 
 const selectAction = (action: OrderTypes) => {

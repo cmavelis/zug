@@ -174,6 +174,17 @@ export const SimulChess: Game<GObject> = {
             },
             noLimit: true,
           },
+          removeOrder: {
+            move: ({ G }: { G: GameState }, pieceID: number) => {
+              for (const i of [0, 1]) {
+                if (!G.orders[i]) return;
+                G.orders[i] = G.orders[i].filter(
+                  (order) => order.sourcePieceId !== pieceID,
+                );
+              }
+            },
+            noLimit: true,
+          },
         },
         next: 'resolution',
       },
