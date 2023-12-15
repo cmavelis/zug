@@ -169,4 +169,9 @@ svg {
   background-color: var(--color-theme-green);
   color: white;
 }
+
+:deep(.p-disabled) {
+  opacity: 1;
+  background-color: #727272;
+}
 </style>
