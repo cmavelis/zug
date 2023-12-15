@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref, onMounted, onUnmounted } from 'vue';
+import { computed, ref, onMounted, onUnmounted, watch } from 'vue';
 import type { Ref } from 'vue';
 import type { _ClientImpl } from 'boardgame.io/dist/types/src/client/client';
 import Button from 'primevue/button';
@@ -172,6 +172,7 @@ const getNumberPiecesMissing = (G: GameState, playerID: number) => {
 // general:
 //  todo  ignore illegal moves
 //  todo allow click of other pieces when targeting
+//  [ ] click same piece => deselect action
 
 // select piece, then action, then cell
 const handleCellClick = (cellID: number) => {
@@ -250,47 +251,51 @@ const createCancelMenuItem = (pieceID: number) => {
   };
 };
 
-const actionMenuPerPiece = computed(() => {
-  const actionMenuItems: MenuItem[] = [
-    {
-      label: 'Move straight',
-      icon: 'pi pi-arrow-up',
-      command: () => selectAction('move-straight'),
-      disabled: actionsUsed.value.includes('move-straight'),
-    },
-    {
-      label: 'Push straight',
-      icon: 'pi pi-arrow-up',
-      command: () => selectAction('push-straight'),
-      disabled: actionsUsed.value.includes('push-straight'),
-    },
-    {
-      label: 'Move diagonal',
-      icon: 'pi pi-arrow-up-right',
-      command: () => selectAction('move-diagonal'),
-      disabled: actionsUsed.value.includes('move-diagonal'),
-    },
+const actionMenuPerPiece = ref();
 
-    {
-      label: 'Push diagonal',
-      icon: 'pi pi-arrow-up-right',
-      command: () => selectAction('push-diagonal'),
-      disabled: actionsUsed.value.includes('push-diagonal'),
-    },
-    // { label: 'Place', icon: 'pi pi-download', disabled: true },
-  ].reverse();
+watch(actionsUsed, () =>
+  setTimeout(() => {
+    const actionMenuItems: MenuItem[] = [
+      {
+        label: 'Move straight',
+        icon: 'pi pi-arrow-up',
+        command: () => selectAction('move-straight'),
+        disabled: actionsUsed.value.includes('move-straight'),
+      },
+      {
+        label: 'Push straight',
+        icon: 'pi pi-arrow-up',
+        command: () => selectAction('push-straight'),
+        disabled: actionsUsed.value.includes('push-straight'),
+      },
+      {
+        label: 'Move diagonal',
+        icon: 'pi pi-arrow-up-right',
+        command: () => selectAction('move-diagonal'),
+        disabled: actionsUsed.value.includes('move-diagonal'),
+      },
 
-  const actionMenuFiltered = { ...Array(8).fill(actionMenuItems) };
+      {
+        label: 'Push diagonal',
+        icon: 'pi pi-arrow-up-right',
+        command: () => selectAction('push-diagonal'),
+        disabled: actionsUsed.value.includes('push-diagonal'),
+      },
+      // { label: 'Place', icon: 'pi pi-download', disabled: true },
+    ].reverse();
 
-  // add "cancel" items for pieces that have an action already
-  for (let i in Array(8).fill(1)) {
-    if (flatOrders.value.find((order) => order.sourcePieceId === +i)) {
-      actionMenuFiltered[i] = [createCancelMenuItem(+i)];
+    const actionMenuFiltered = { ...Array(8).fill(actionMenuItems) };
+
+    // add "cancel" items for pieces that have an action already
+    for (let i in Array(8).fill(1)) {
+      if (flatOrders.value.find((order) => order.sourcePieceId === +i)) {
+        actionMenuFiltered[i] = [createCancelMenuItem(+i)];
+      }
     }
-  }
 
-  return actionMenuFiltered;
-});
+    actionMenuPerPiece.value = actionMenuFiltered;
+  }, 100),
+);
 
 const selectAction = (action: OrderTypes) => {
   selectedAction.value = action;
