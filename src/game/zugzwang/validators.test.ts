@@ -4,7 +4,7 @@ import {
   isValidOrder,
 } from '@/game/zugzwang/validators';
 import type { Piece } from '@/game/pieces';
-import type { AttackOrder, PushStraightOrder } from '@/game/orders';
+import type { AttackOrder, PlaceOrder, PushStraightOrder } from '@/game/orders';
 
 const testPiece: Piece = {
   id: 0,
@@ -46,6 +46,22 @@ const testPushS2: PushStraightOrder = {
   priority: 1,
 };
 
+const testPlace0: PlaceOrder = {
+  sourcePieceId: -1,
+  toTarget: { x: 0, y: 0 },
+  type: 'place',
+  owner: 0,
+  priority: 1,
+};
+
+const testPlace1: PlaceOrder = {
+  sourcePieceId: -1,
+  toTarget: { x: 3, y: 3 },
+  type: 'place',
+  owner: 1,
+  priority: 1,
+};
+
 test('attackValidator valid', () => {
   expect(isValidOrder(testPiece.owner, testAttack1)).toEqual(true);
 });
@@ -60,6 +76,19 @@ test('push straight valid', () => {
 
 test('push straight invalid', () => {
   expect(isValidOrder(testPiece.owner, testPushS2)).toEqual(false);
+});
+
+test('player 0 place valid', () => {
+  expect(isValidOrder(testPlace0.owner, testPlace0)).toEqual(true);
+});
+test('player 0 place invalid', () => {
+  expect(isValidOrder(1, testPlace0)).toEqual(false);
+});
+test('player 1 place valid', () => {
+  expect(isValidOrder(testPlace1.owner, testPlace1)).toEqual(true);
+});
+test('player 1 place invalid', () => {
+  expect(isValidOrder(0, testPlace1)).toEqual(false);
 });
 
 test('getSquares for place order', () => {
