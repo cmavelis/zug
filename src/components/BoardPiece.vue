@@ -36,7 +36,6 @@ const pieceColor = props.owner === 0 ? '#729bf1' : '#62d368';
 
 <style scoped>
 .piece {
-  //pointer-events: none;
   position: absolute;
   display: flex;
   align-items: center;
