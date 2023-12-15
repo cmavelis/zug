@@ -157,7 +157,7 @@ export const SimulChess: Game<GObject> = {
                 }
 
                 // validate type/direction
-                if (!isValidOrder(movedPiece, order)) {
+                if (!isValidOrder(movedPiece.owner, order)) {
                   return INVALID_MOVE;
                 }
               }

@@ -47,19 +47,19 @@ const testPushS2: PushStraightOrder = {
 };
 
 test('attackValidator valid', () => {
-  expect(isValidOrder(testPiece, testAttack1)).toEqual(true);
+  expect(isValidOrder(testPiece.owner, testAttack1)).toEqual(true);
 });
 
 test('attackValidator invalid', () => {
-  expect(isValidOrder(testPiece2, testAttack1)).toEqual(false);
+  expect(isValidOrder(testPiece2.owner, testAttack1)).toEqual(false);
 });
 
 test('push straight valid', () => {
-  expect(isValidOrder(testPiece, testPushS1)).toEqual(true);
+  expect(isValidOrder(testPiece.owner, testPushS1)).toEqual(true);
 });
 
 test('push straight invalid', () => {
-  expect(isValidOrder(testPiece, testPushS2)).toEqual(false);
+  expect(isValidOrder(testPiece.owner, testPushS2)).toEqual(false);
 });
 
 test('getSquares for place order', () => {

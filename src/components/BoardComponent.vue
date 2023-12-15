@@ -20,7 +20,7 @@ import {
   isValidPlaceOrder,
 } from '@/game/zugzwang/validators';
 import { store } from '@/store';
-import { MenuItem } from 'primevue/menuitem';
+import type { MenuItem } from 'primevue/menuitem';
 
 const NUMBER_PIECES = 4;
 
@@ -198,7 +198,7 @@ const targetClick = () => {
   const toTarget = getDisplacement(pieceCoords, targetCoords);
   const order = createOrder(
     {
-      owner: props.playerID,
+      owner: props.playerID as 0 | 1,
       sourcePieceId: selectedPiece.value,
       toTarget,
     },

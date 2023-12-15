@@ -22,7 +22,7 @@ import { PRIORITIES_LIST, MOVES_CAN_PUSH } from '@/game/zugzwang/config';
 export interface OrderBase {
   sourcePieceId: number;
   toTarget: Coordinates;
-  owner: number;
+  owner: 0 | 1;
   priority: number;
 }
 
@@ -401,7 +401,7 @@ export function orderResolver({ G }: { G: GObject }) {
         return;
       }
 
-      if (!(actingPiece && isValidOrder(actingPiece, order))) {
+      if (!(actingPiece && isValidOrder(actingPiece.owner, order))) {
         console.log(order && JSON.parse(JSON.stringify(order)));
         console.log(actingPiece && JSON.parse(JSON.stringify(actingPiece)));
         reportError('Invalid action received');

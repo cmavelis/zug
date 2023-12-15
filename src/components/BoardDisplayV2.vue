@@ -17,7 +17,7 @@ interface BoardDisplayV2Props {
   showOrders?: boolean;
   handleCellClick?: (cellID: number) => void;
   handleCellHover?: (index: number) => void;
-  handlePieceClick?: (id: number) => void;
+  handlePieceClick?: (id: number, e?: Event) => void;
   handlePieceHover?: (id: number) => void;
   hoveredCell?: number;
   highlightedCells?: number[];
