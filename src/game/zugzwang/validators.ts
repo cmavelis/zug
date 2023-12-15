@@ -70,7 +70,7 @@ const ORDER_CONFIG: {
   place: {
     shape: 'area',
     yAllowed: [0],
-    absolute: true,
+    absolute: true, // meaning not relative to piece
   },
 };
 
@@ -92,6 +92,9 @@ export function isValidOrder(pieceOwner: 0 | 1, order: Order): boolean {
   }
   if (shape === 'diagonal') {
     angleValid = isDiagonal(order.toTarget);
+  }
+  if (order.type === 'place') {
+    return isValidPlaceOrder(order);
   }
 
   let xValid = true;

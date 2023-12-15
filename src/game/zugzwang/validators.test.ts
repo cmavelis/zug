@@ -5,6 +5,7 @@ import {
 } from '@/game/zugzwang/validators';
 import type { Piece } from '@/game/pieces';
 import type { AttackOrder, PlaceOrder, PushStraightOrder } from '@/game/orders';
+import { cloneDeep } from 'lodash';
 
 const testPiece: Piece = {
   id: 0,
@@ -54,6 +55,9 @@ const testPlace0: PlaceOrder = {
   priority: 1,
 };
 
+const testPlace0Bad: PlaceOrder = cloneDeep(testPlace0);
+testPlace0Bad.owner = 1;
+
 const testPlace1: PlaceOrder = {
   sourcePieceId: -1,
   toTarget: { x: 3, y: 3 },
@@ -61,6 +65,8 @@ const testPlace1: PlaceOrder = {
   owner: 1,
   priority: 1,
 };
+const testPlace1Bad: PlaceOrder = cloneDeep(testPlace1);
+testPlace1Bad.owner = 0;
 
 test('attackValidator valid', () => {
   expect(isValidOrder(testPiece.owner, testAttack1)).toEqual(true);
@@ -82,13 +88,13 @@ test('player 0 place valid', () => {
   expect(isValidOrder(testPlace0.owner, testPlace0)).toEqual(true);
 });
 test('player 0 place invalid', () => {
-  expect(isValidOrder(1, testPlace0)).toEqual(false);
+  expect(isValidOrder(testPlace0Bad.owner, testPlace0Bad)).toEqual(false);
 });
 test('player 1 place valid', () => {
   expect(isValidOrder(testPlace1.owner, testPlace1)).toEqual(true);
 });
 test('player 1 place invalid', () => {
-  expect(isValidOrder(0, testPlace1)).toEqual(false);
+  expect(isValidOrder(testPlace1Bad.owner, testPlace1Bad)).toEqual(false);
 });
 
 test('getSquares for place order', () => {
