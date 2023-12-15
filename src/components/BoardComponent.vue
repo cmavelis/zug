@@ -243,11 +243,16 @@ const handleEndTurn = () => {
   if (endStage) endStage();
 };
 
+const handleCancelAction = (pieceID: number) => {
+  props.client.moves.removeOrder(pieceID);
+  clearAction();
+};
+
 const createCancelMenuItem = (pieceID: number) => {
   return {
     label: 'Cancel action',
     icon: 'pi pi-times',
-    command: () => props.client.moves.removeOrder(pieceID),
+    command: () => handleCancelAction(pieceID),
   };
 };
 
