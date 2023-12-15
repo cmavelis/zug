@@ -11,7 +11,7 @@ type Optional<T, K extends keyof T> = Omit<T, K> & Partial<Pick<T, K>>;
 export interface Piece {
   id: number;
   position: Coordinates;
-  owner: number;
+  owner: 0 | 1;
   isDefending: boolean;
   priority: number;
 }

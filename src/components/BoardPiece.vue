@@ -30,12 +30,12 @@ const pieceColor = props.owner === 0 ? '#729bf1' : '#62d368';
     <div :class="{ pieceIcon: true, ...props.iconClass }">
       {{ props.priority }}
     </div>
+    <slot name="menu"></slot>
   </div>
 </template>
 
 <style scoped>
 .piece {
-  pointer-events: none;
   position: absolute;
   display: flex;
   align-items: center;

@@ -70,16 +70,16 @@ const ORDER_CONFIG: {
   place: {
     shape: 'area',
     yAllowed: [0],
-    absolute: true,
+    absolute: true, // meaning not relative to piece
   },
 };
 
-export function isValidOrder(piece: Piece, order: Order): boolean {
+export function isValidOrder(pieceOwner: 0 | 1, order: Order): boolean {
   const config = ORDER_CONFIG[order.type as ConfigOrderType];
   const { shape, xAllowed, yAllowed } = config;
 
   const yRelative = order.toTarget.y;
-  const yChange = piece.owner === 0 ? yRelative : -yRelative;
+  const yChange = pieceOwner === 0 ? yRelative : -yRelative;
 
   const xChange = order.toTarget.x;
 
@@ -92,6 +92,9 @@ export function isValidOrder(piece: Piece, order: Order): boolean {
   }
   if (shape === 'diagonal') {
     angleValid = isDiagonal(order.toTarget);
+  }
+  if (order.type === 'place') {
+    return isValidPlaceOrder(order);
   }
 
   let xValid = true;
@@ -148,7 +151,7 @@ export function getValidSquaresForOrder({
   // TODO:  make vectors, invert, translate
 
   const config = ORDER_CONFIG[orderType];
-  let rawVectors: Coordinates[] = [];
+  const rawVectors: Coordinates[] = [];
   if (config.shape === 'straight') {
     config.xAllowed?.forEach((x) => rawVectors.push({ x, y: 0 }));
     config.yAllowed?.forEach((y) =>

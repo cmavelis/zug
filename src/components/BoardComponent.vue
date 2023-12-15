@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref, onMounted, onUnmounted } from 'vue';
+import { computed, ref, onMounted, onUnmounted, watch } from 'vue';
 import type { Ref } from 'vue';
 import type { _ClientImpl } from 'boardgame.io/dist/types/src/client/client';
 import Button from 'primevue/button';
@@ -16,13 +16,14 @@ import {
 import { createOrder } from '@/game/orders';
 import {
   getValidSquaresForOrder,
+  isValidOrder,
   isValidPlaceOrder,
 } from '@/game/zugzwang/validators';
 import { store } from '@/store';
+import type { MenuItem } from 'primevue/menuitem';
 
 const NUMBER_PIECES = 4;
 
-// TODO: display-only board, no client prop
 interface BoardProps {
   client: _ClientImpl<GameState>;
   state: { G: GameState; ctx: any };
@@ -64,7 +65,7 @@ const piecesWithoutActions = computed(() => {
   return Array.from(idSet);
 });
 
-const highlightedSquares: Ref<number[]> = computed(() => {
+const validSquares: Ref<number[]> = computed(() => {
   if (selectedAction.value === 'place') {
     return getValidSquaresForOrder({
       playerID: props.playerID,
@@ -72,23 +73,82 @@ const highlightedSquares: Ref<number[]> = computed(() => {
       orderType: 'place',
     }).map((coord) => coordinatesToArray(coord, props.state.G.config.board));
   }
+  if (
+    selectionPhase.value === SELECTION_PHASES.targeting &&
+    selectedAction.value &&
+    selectedPiece.value !== undefined
+  ) {
+    const piece = getPiece(props.state.G, selectedPiece.value);
+    if (piece)
+      return getValidSquaresForOrder({
+        playerID: props.playerID,
+        board: props.state.G.config.board,
+        orderType: selectedAction.value,
+        origin: piece.position,
+      }).map((coord) => coordinatesToArray(coord, props.state.G.config.board));
+  }
   return [];
+});
+
+const SELECTION_PHASES = {
+  ready: 'ready',
+  menu: 'menu',
+  targeting: 'targeting',
+};
+// todo: can use this to simplify logic in click handlers
+const selectionPhase = computed(() => {
+  if (selectedPiece.value !== undefined) {
+    if (selectedAction.value !== undefined) {
+      return SELECTION_PHASES.targeting;
+    } else {
+      return SELECTION_PHASES.menu;
+    }
+  }
+  return SELECTION_PHASES.ready;
 });
 
 const addOrder = (order: Omit<Order, 'owner'>) => {
   props.client.moves.addOrder(order);
 };
 
-const handlePieceClick = (id: number) => {
-  const piece = getPiece(props.state.G, id);
-  if (!piece) return;
-
-  // ignore selecting oppo piece
-  if (piece.owner !== props.playerID) {
+const handlePieceClick = (id: number, e?: Event) => {
+  if (e?.target instanceof Element && e?.target?.closest('.p-speeddial')) {
+    // handle primevue speeddial and its children actions on their own
     return;
   }
 
+  const piece = getPiece(props.state.G, id);
+  if (!piece) return;
+
+  // pieces now capture the click, not the cell
+  console.debug('piece click', id);
+
+  // already piece selected
+  if (typeof selectedPiece.value === 'number') {
+    if (id === selectedPiece.value) {
+      clearAction();
+      return;
+    }
+    if (selectedAction.value) {
+      targetClick();
+      return;
+    }
+  } else {
+    // ignore selecting oppo piece
+    if (piece.owner !== props.playerID) {
+      return;
+    }
+  }
   selectedPiece.value = id;
+};
+
+const handlePieceHover = (id: number) => {
+  const piece = getPiece(props.state.G, id);
+  if (!piece) return;
+
+  handleCellHover(
+    coordinatesToArray(piece.position, props.state.G.config.board),
+  );
 };
 
 const getPieceCoords = (pieceID: number, G: GameState) => {
@@ -103,8 +163,56 @@ const getNumberPiecesMissing = (G: GameState, playerID: number) => {
   return NUMBER_PIECES - G.pieces.filter((p) => p.owner === playerID).length;
 };
 
+const targetClick = () => {
+  if (
+    !(
+      typeof selectedPiece.value === 'number' &&
+      selectedAction.value &&
+      typeof cellHover.value === 'number'
+    )
+  ) {
+    return;
+  }
+  let pieceCoords = { x: 0, y: 0 };
+  // negative value is nonexistent piece, use absolute coords
+  if (selectedPiece.value >= 0) {
+    pieceCoords = getPieceCoords(selectedPiece.value, props.state.G);
+  }
+  const targetCoords = arrayToCoordinates(
+    cellHover.value,
+    props.state.G.config.board,
+  );
+
+  const toTarget = getDisplacement(pieceCoords, targetCoords);
+  const order = createOrder(
+    {
+      owner: props.playerID as 0 | 1,
+      sourcePieceId: selectedPiece.value,
+      toTarget,
+    },
+    selectedAction.value,
+  );
+  // check order for validity
+  if (order.type === 'place') {
+    if (!isValidPlaceOrder(order) && !store.isDebug) {
+      return;
+    }
+    if (pieceToPlace.value > 0) {
+      order.newPiecePriority = pieceToPlace.value;
+    }
+  }
+
+  if (!isValidOrder(props.playerID as 0 | 1, order)) {
+    return;
+  }
+
+  addOrder(order);
+  clearAction();
+};
+
 // select piece, then action, then cell
 const handleCellClick = (cellID: number) => {
+  console.debug('cell click', cellID);
   const pieceID = props.state.G.cells[cellID];
   endTurnMessage.value = '';
 
@@ -120,38 +228,9 @@ const handleCellClick = (cellID: number) => {
     selectedAction.value &&
     typeof cellHover.value === 'number'
   ) {
-    let pieceCoords = { x: 0, y: 0 };
-    // negative value is nonexistent piece, use absolute coords
-    if (selectedPiece.value >= 0) {
-      pieceCoords = getPieceCoords(selectedPiece.value, props.state.G);
-    }
-    const targetCoords = arrayToCoordinates(
-      cellHover.value,
-      props.state.G.config.board,
-    );
-
-    const toTarget = getDisplacement(pieceCoords, targetCoords);
-    const order = createOrder(
-      {
-        owner: props.playerID,
-        sourcePieceId: selectedPiece.value,
-        toTarget,
-      },
-      selectedAction.value,
-    );
-    // check order for validity
-    if (order.type === 'place') {
-      if (!isValidPlaceOrder(order) && !store.isDebug) {
-        return;
-      }
-      if (pieceToPlace.value > 0) {
-        order.newPiecePriority = pieceToPlace.value;
-      }
-    }
-
-    // if invalid, early return && msg
-    addOrder(order);
-    clearAction();
+    targetClick();
+  } else {
+    selectedPiece.value = undefined;
   }
 };
 
@@ -168,6 +247,65 @@ const handleEndTurn = () => {
   }
   if (endStage) endStage();
 };
+
+const handleCancelAction = (pieceID: number) => {
+  props.client.moves.removeOrder(pieceID);
+  clearAction();
+};
+
+const createCancelMenuItem = (pieceID: number) => {
+  return {
+    label: 'Cancel action',
+    icon: 'pi pi-times',
+    command: () => handleCancelAction(pieceID),
+  };
+};
+
+const actionMenuPerPiece = ref();
+
+watch(actionsUsed, () =>
+  setTimeout(() => {
+    const actionMenuItems: MenuItem[] = [
+      {
+        label: 'Move straight',
+        icon: 'pi pi-arrow-up',
+        command: () => selectAction('move-straight'),
+        disabled: actionsUsed.value.includes('move-straight'),
+      },
+      {
+        label: 'Push straight',
+        icon: 'zi zi-arrow-up-flat',
+        command: () => selectAction('push-straight'),
+        disabled: actionsUsed.value.includes('push-straight'),
+      },
+      {
+        label: 'Move diagonal',
+        icon: 'pi pi-arrow-up-right',
+        command: () => selectAction('move-diagonal'),
+        disabled: actionsUsed.value.includes('move-diagonal'),
+      },
+
+      {
+        label: 'Push diagonal',
+        icon: 'zi zi-arrow-up-right-flat',
+        command: () => selectAction('push-diagonal'),
+        disabled: actionsUsed.value.includes('push-diagonal'),
+      },
+      // { label: 'Place', icon: 'pi pi-download', disabled: true },
+    ].reverse();
+
+    const actionMenuFiltered = { ...Array(8).fill(actionMenuItems) };
+
+    // add "cancel" items for pieces that have an action already
+    for (let i in Array(8).fill(1)) {
+      if (flatOrders.value.find((order) => order.sourcePieceId === +i)) {
+        actionMenuFiltered[i] = [createCancelMenuItem(+i)];
+      }
+    }
+
+    actionMenuPerPiece.value = actionMenuFiltered;
+  }, 200),
+);
 
 const selectAction = (action: OrderTypes) => {
   selectedAction.value = action;
@@ -220,47 +358,14 @@ onUnmounted(() => {
         :handle-cell-hover="handleCellHover"
         :handle-cell-click="handleCellClick"
         :handle-piece-click="handlePieceClick"
-        :highlighted-cells="highlightedSquares"
+        :handlePieceHover="handlePieceHover"
+        :highlighted-cells="validSquares"
         :selected-piece-id="selectedPiece"
         :show-orders="props.showOrders"
         :emphasized-piece-ids="piecesWithoutActions"
+        :action-menu-items="actionMenuPerPiece"
       />
       <div class="order-button-group">
-        <Button
-          size="small"
-          severity="secondary"
-          :disabled="actionsUsed.includes('move-straight')"
-          @click="selectAction('move-straight')"
-          label="move"
-          icon="pi pi-arrow-up"
-        >
-        </Button>
-        <Button
-          size="small"
-          severity="secondary"
-          :disabled="actionsUsed.includes('push-straight')"
-          @click="selectAction('push-straight')"
-          label="push"
-          icon="pi pi-arrow-up"
-        >
-        </Button>
-        <Button
-          size="small"
-          severity="secondary"
-          :disabled="actionsUsed.includes('move-diagonal')"
-          @click="selectAction('move-diagonal')"
-          label="move"
-          icon="pi pi-arrow-up-right"
-        >
-        </Button>
-        <Button
-          size="small"
-          severity="secondary"
-          :disabled="actionsUsed.includes('push-diagonal')"
-          @click="selectAction('push-diagonal')"
-          label="push"
-          icon="pi pi-arrow-up-right"
-        />
         <input
           v-if="store.isDebug"
           v-model.number="pieceToPlace"
@@ -274,12 +379,6 @@ onUnmounted(() => {
           :badge="String(piecesToPlace)"
           @click="selectAction('place')"
         />
-        <Button
-          size="small"
-          severity="secondary"
-          @click="clearAction()"
-          label="clear current action"
-        ></Button>
       </div>
     </div>
     <div class="actions-text" v-if="props.showOrders">
@@ -330,7 +429,7 @@ onUnmounted(() => {
 .board-with-controls {
   position: relative;
   display: flex;
-  flex-direction: row;
+  flex-direction: column;
   justify-content: center;
   justify-self: end;
   gap: 8px;
@@ -339,6 +438,9 @@ onUnmounted(() => {
 @media (max-width: 500px) {
   .layout {
     grid-template-columns: 1fr;
+  }
+  .board-with-controls {
+    justify-self: center;
   }
 }
 

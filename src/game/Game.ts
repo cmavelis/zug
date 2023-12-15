@@ -157,7 +157,7 @@ export const SimulChess: Game<GObject> = {
                 }
 
                 // validate type/direction
-                if (!isValidOrder(movedPiece, order)) {
+                if (!isValidOrder(movedPiece.owner, order)) {
                   return INVALID_MOVE;
                 }
               }
@@ -171,6 +171,17 @@ export const SimulChess: Game<GObject> = {
             move: ({ G, playerID }: { G: GameState; playerID: string }) => {
               const playerNumber = +playerID;
               G.orders[playerNumber].pop();
+            },
+            noLimit: true,
+          },
+          removeOrder: {
+            move: ({ G }: { G: GameState }, pieceID: number) => {
+              for (const i of [0, 1]) {
+                if (!G.orders[i]) return;
+                G.orders[i] = G.orders[i].filter(
+                  (order) => order.sourcePieceId !== pieceID,
+                );
+              }
             },
             noLimit: true,
           },

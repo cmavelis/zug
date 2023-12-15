@@ -2,16 +2,11 @@ import { fileURLToPath, URL } from 'node:url';
 
 import { defineConfig } from 'vite';
 import vue from '@vitejs/plugin-vue';
-// @ts-expect-error
-import VueTypeImports from 'vite-plugin-vue-type-imports';
 
 // https://vitejs.dev/config/
 export default defineConfig((config) => {
   return {
-    plugins: [
-      vue({ isProduction: config.mode === 'production' }),
-      VueTypeImports(),
-    ],
+    plugins: [vue({ isProduction: config.mode === 'production' })],
     resolve: {
       alias: {
         '@': fileURLToPath(new URL('./src', import.meta.url)),
