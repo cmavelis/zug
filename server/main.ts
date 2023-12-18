@@ -51,6 +51,7 @@ Game.beforeUpsert(async (created) => {
     }
     const player = oldMatch.players[p];
     if (!player.isConnected) {
+      const otherPlayer = oldMatch.players[p === 0 ? 1 : 0];
       // send discord message
       User.findOne({ where: { name: player.name } })
         .then((user) => {
@@ -58,7 +59,7 @@ Game.beforeUpsert(async (created) => {
           botClient.users
             .send(
               user.discordUser.id,
-              `It's your turn: \n ${makeMatchURL({
+              `It's your turn against ${otherPlayer.name}: \n ${makeMatchURL({
                 matchID: created.id,
               })}`,
             )
