@@ -383,9 +383,6 @@ server.router.post('/games/:name/:id/poke', koaBody(), async (ctx) => {
   }
 
   const match: Match | null = await Game.findByPk(matchID);
-  // const match = await db.fetch(matchID, {
-  //   metadata: true,
-  // });
 
   if (!match) {
     ctx.throw(404, 'Match ' + matchID + ' not found');
