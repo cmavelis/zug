@@ -6,7 +6,8 @@ import { decodeToken, encodeToken } from './auth';
 import { type ZugUser } from '../src/utils/auth';
 import { type EnhancedMatch } from './types';
 import { type LobbyAPI } from 'boardgame.io/dist/types/src/types';
-import { db, sequelize, User, UserMatch, TempUser, Match } from './db';
+import { db, sequelize, User, TempUser, Match, dbInitialized } from './db';
+import connectUserMatches from './scripts/connectUserMatches';
 
 // TODO: figure out which process needs this to be commonJS syntax
 const { Server, Origins } = require('boardgame.io/server');
@@ -23,6 +24,8 @@ const makeMatchURL = ({ matchID }: { matchID: string }) => {
 
 const DAY_IN_MILLISECONDS = 1000 * 60 * 60 * 24;
 const POKE_TIMEOUT = DAY_IN_MILLISECONDS;
+
+dbInitialized.then(connectUserMatches);
 
 // notify players when it's their turn
 Match.beforeUpsert(async (created) => {

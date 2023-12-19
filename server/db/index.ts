@@ -40,7 +40,13 @@ export const UserMatch = sequelize.define('UserMatch', {
 });
 Match.belongsToMany(User, { through: UserMatch });
 User.belongsToMany(Match, { through: UserMatch });
-sequelize
+export const dbInitialized = sequelize
   .sync()
-  .then(() => console.log('All models synced!'))
-  .catch(console.error);
+  .then(() => {
+    console.log('All models synced!');
+    return true;
+  })
+  .catch((e) => {
+    console.error(e);
+    return false;
+  });
