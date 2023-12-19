@@ -23,6 +23,9 @@ const makeMatchURL = ({ matchID }: { matchID: string }) => {
   return `${process.env.HOST_URL}/match/${matchID}`;
 };
 
+const DAY_IN_MILLISECONDS = 1000 * 60 * 60 * 24;
+const POKE_TIMEOUT = DAY_IN_MILLISECONDS;
+
 const sequelize = new Sequelize(process.env.DATABASE_URL, {
   dialect: 'postgres',
 });
@@ -115,7 +118,7 @@ const UserMatch = sequelize.define('UserMatch', {
       key: 'id',
     },
   },
-  lastPing: { type: DataTypes.TIME, allowNull: true },
+  lastPoke: { type: DataTypes.DATE, allowNull: true },
 });
 Game.belongsToMany(User, { through: UserMatch });
 User.belongsToMany(Game, { through: UserMatch });
@@ -373,7 +376,6 @@ server.router.get(
 );
 
 server.router.post('/games/:name/:id/poke', koaBody(), async (ctx) => {
-  const gameName = ctx.params.name;
   const matchID = ctx.params.id;
   const playerID = ctx.request.body.playerID;
   if (typeof playerID === 'undefined' || playerID === null) {
@@ -396,7 +398,6 @@ server.router.post('/games/:name/:id/poke', koaBody(), async (ctx) => {
   if (!playerUserName) {
     ctx.throw(404, 'Player ' + playerID + ' not available');
   }
-
   const users = await match.getUsers({ where: { name: playerUserName } });
   const user = users[0];
 
@@ -408,32 +409,29 @@ server.router.post('/games/:name/:id/poke', koaBody(), async (ctx) => {
   }
 
   const userMatch = user.UserMatch;
-  console.log(userMatch);
   if (!userMatch) {
     ctx.throw(404);
   }
-  const { lastPing } = userMatch;
-  console.log(lastPing);
+  const { lastPoke } = userMatch;
+  const lastPokeDate = new Date(lastPoke);
+  const nowDate = new Date();
 
-  // OR last ping more than time limit ago
-  if (!lastPing) {
-    //do ping
+  if (!lastPoke || nowDate - lastPokeDate > POKE_TIMEOUT) {
+    botClient.users
+      .send(
+        user.discordUser.id,
+        `Your opponent is reminding you to make a move! ${makeMatchURL({
+          matchID,
+        })}`,
+      )
+      .catch(console.error);
 
-    userMatch.lastPing = sequelize.literal('CURRENT_TIMESTAMP');
+    userMatch.lastPoke = sequelize.literal('CURRENT_TIMESTAMP');
     userMatch.save();
     ctx.status = 200;
   } else {
-    ctx.body = { error: 'Cannot ping again yet' };
+    ctx.body = { error: 'Cannot poke again yet' };
   }
-
-  // look for lastPoke of this player
-  // if >24hrs have passed OR no lastpoke
-  // update/create lastPoke
-  // get discord user
-  // notify
-
-  // else
-  // send 200, but error message
 });
 
 server.run(Number(process.env.PORT) || 8000, () => {
