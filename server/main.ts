@@ -93,15 +93,36 @@ const TempUser = sequelize.define('TempUser', {
   name: { type: DataTypes.TEXT, allowNull: false },
   credentials: { type: DataTypes.UUID, allowNull: false },
 });
-TempUser.sync().catch(console.error);
-
 const User = sequelize.define('User', {
   name: { type: DataTypes.TEXT, allowNull: false, unique: true },
   credentials: { type: DataTypes.UUID, allowNull: false },
   discordUser: DataTypes.JSON,
   discordOauth: DataTypes.JSON,
 });
-User.sync().catch(console.error);
+
+const UserMatch = sequelize.define('UserMatch', {
+  MatchId: {
+    type: DataTypes.INTEGER,
+    references: {
+      model: Game, // should rename "Match"
+      key: 'id',
+    },
+  },
+  UserId: {
+    type: DataTypes.INTEGER,
+    references: {
+      model: User,
+      key: 'id',
+    },
+  },
+  lastPing: { type: DataTypes.TIME, allowNull: true },
+});
+Game.belongsToMany(User, { through: UserMatch });
+User.belongsToMany(Game, { through: UserMatch });
+sequelize
+  .sync()
+  .then(() => console.log('All models synced!'))
+  .catch(console.error);
 
 interface ZugToken extends ZugUser {
   iat: number; // 'instantiated at'
@@ -295,6 +316,33 @@ server.router.get(
   },
 );
 
+interface MatchContext extends Koa.Context {
+  body: LobbyAPI.JoinedMatch;
+}
+server.router.post(
+  '/games/:name/:id/join',
+  async (ctx: MatchContext, next: (ctx: Koa.Context) => Promise<void>) => {
+    const gameName = ctx.params.name;
+    const matchID = ctx.params.id;
+    if (gameName !== 'zug') {
+      await next(ctx);
+      return;
+    }
+    await next(ctx);
+
+    const body = ctx.body;
+    if (body.playerID) {
+      const match = await Game.findByPk(matchID);
+      const { players } = match;
+      const player = players[+body.playerID];
+      User.findOne({ where: { name: player.name } }).then((user) => {
+        if (!user) return;
+        user.addMatch(match);
+      });
+    }
+  },
+);
+
 interface MatchesContext extends Koa.Context {
   body: {
     matches: LobbyAPI.Match[];
@@ -324,41 +372,69 @@ server.router.get(
   },
 );
 
-server.router.post(
-  '/games/:name/:id/poke',
-  koaBody(),
-  async (ctx: MatchContext) => {
-    const gameName = ctx.params.name;
-    const matchID = ctx.params.id;
-    const playerID = ctx.request.body.playerID;
-    if (typeof playerID === 'undefined' || playerID === null) {
-      ctx.throw(400, 'playerID is required');
-    }
+server.router.post('/games/:name/:id/poke', koaBody(), async (ctx) => {
+  const gameName = ctx.params.name;
+  const matchID = ctx.params.id;
+  const playerID = ctx.request.body.playerID;
+  if (typeof playerID === 'undefined' || playerID === null) {
+    ctx.throw(400, 'playerID is required');
+  }
 
-    const { metadata } = await db.fetch(matchID, {
-      metadata: true,
-    });
-    if (!metadata) {
-      ctx.throw(404, 'Match ' + matchID + ' not found');
-    }
+  const match: Match | null = await Game.findByPk(matchID);
+  // const match = await db.fetch(matchID, {
+  //   metadata: true,
+  // });
 
-    if (!metadata.players[playerID]) {
-      ctx.throw(404, 'Player ' + playerID + ' not found');
-    }
-    if (metadata.players[playerID].name) {
-      ctx.throw(404, 'Player ' + playerID + ' not available');
-    }
+  if (!match) {
+    ctx.throw(404, 'Match ' + matchID + ' not found');
+  }
 
-    // look for lastPoke of this player
-    // if >24hrs have passed OR no lastpoke
-    // update/create lastPoke
-    // get discord user
-    // notify
+  if (!match.players[playerID]) {
+    ctx.throw(404, 'Player ' + playerID + ' not found');
+  }
+  const playerUserName = match.players[playerID].name;
+  if (!playerUserName) {
+    ctx.throw(404, 'Player ' + playerID + ' not available');
+  }
 
-    // else
-    // send 200, but error message
-  },
-);
+  const users = await match.getUsers({ where: { name: playerUserName } });
+  const user = users[0];
+
+  if (!user) {
+    ctx.throw(
+      404,
+      'User ' + playerUserName + ' not found associated with match',
+    );
+  }
+
+  const userMatch = user.UserMatch;
+  console.log(userMatch);
+  if (!userMatch) {
+    ctx.throw(404);
+  }
+  const { lastPing } = userMatch;
+  console.log(lastPing);
+
+  // OR last ping more than time limit ago
+  if (!lastPing) {
+    //do ping
+
+    userMatch.lastPing = sequelize.literal('CURRENT_TIMESTAMP');
+    userMatch.save();
+    ctx.status = 200;
+  } else {
+    ctx.body = { error: 'Cannot ping again yet' };
+  }
+
+  // look for lastPoke of this player
+  // if >24hrs have passed OR no lastpoke
+  // update/create lastPoke
+  // get discord user
+  // notify
+
+  // else
+  // send 200, but error message
+});
 
 server.run(Number(process.env.PORT) || 8000, () => {
   server.app.use(
