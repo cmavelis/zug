@@ -324,6 +324,42 @@ server.router.get(
   },
 );
 
+server.router.post(
+  '/games/:name/:id/poke',
+  koaBody(),
+  async (ctx: MatchContext) => {
+    const gameName = ctx.params.name;
+    const matchID = ctx.params.id;
+    const playerID = ctx.request.body.playerID;
+    if (typeof playerID === 'undefined' || playerID === null) {
+      ctx.throw(400, 'playerID is required');
+    }
+
+    const { metadata } = await db.fetch(matchID, {
+      metadata: true,
+    });
+    if (!metadata) {
+      ctx.throw(404, 'Match ' + matchID + ' not found');
+    }
+
+    if (!metadata.players[playerID]) {
+      ctx.throw(404, 'Player ' + playerID + ' not found');
+    }
+    if (metadata.players[playerID].name) {
+      ctx.throw(404, 'Player ' + playerID + ' not available');
+    }
+
+    // look for lastPoke of this player
+    // if >24hrs have passed OR no lastpoke
+    // update/create lastPoke
+    // get discord user
+    // notify
+
+    // else
+    // send 200, but error message
+  },
+);
+
 server.run(Number(process.env.PORT) || 8000, () => {
   server.app.use(
     async (ctx: any, next: any) =>
