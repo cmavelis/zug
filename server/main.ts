@@ -1,6 +1,4 @@
 import 'dotenv/config';
-import { PostgresStore } from 'bgio-postgres';
-import { DataTypes } from 'sequelize';
 import { randomUUID } from 'crypto';
 import * as Koa from 'koa';
 
@@ -8,6 +6,8 @@ import { decodeToken, encodeToken } from './auth';
 import { type ZugUser } from '../src/utils/auth';
 import { type EnhancedMatch } from './types';
 import { type LobbyAPI } from 'boardgame.io/dist/types/src/types';
+import { db, sequelize, User, TempUser, Match, dbInitialized } from './db';
+import connectUserMatches from './scripts/connectUserMatches';
 
 // TODO: figure out which process needs this to be commonJS syntax
 const { Server, Origins } = require('boardgame.io/server');
@@ -16,7 +16,6 @@ const { botClient } = require('./discordBot');
 const path = require('path');
 const serve = require('koa-static');
 const { koaBody } = require('koa-body');
-const { Sequelize } = require('sequelize');
 const axios = require('axios');
 
 const makeMatchURL = ({ matchID }: { matchID: string }) => {
@@ -26,19 +25,12 @@ const makeMatchURL = ({ matchID }: { matchID: string }) => {
 const DAY_IN_MILLISECONDS = 1000 * 60 * 60 * 24;
 const POKE_TIMEOUT = DAY_IN_MILLISECONDS;
 
-const sequelize = new Sequelize(process.env.DATABASE_URL, {
-  dialect: 'postgres',
-});
-const db = new PostgresStore(process.env.DATABASE_URL as string, {
-  dialect: 'postgres',
-});
-
-const Game = db.sequelize.model('Match');
+dbInitialized.then(connectUserMatches);
 
 // notify players when it's their turn
-Game.beforeUpsert(async (created) => {
+Match.beforeUpsert(async (created) => {
   const { id } = created;
-  const oldMatch = await Game.findByPk(id);
+  const oldMatch = await Match.findByPk(id);
   const oldActivePlayers = oldMatch?.state?.ctx.activePlayers;
   const newActivePlayers = created?.state?.ctx.activePlayers;
 
@@ -91,41 +83,6 @@ interface IBaseUser {
 interface IUser extends IBaseUser {
   discord?: any;
 }
-
-const TempUser = sequelize.define('TempUser', {
-  name: { type: DataTypes.TEXT, allowNull: false },
-  credentials: { type: DataTypes.UUID, allowNull: false },
-});
-const User = sequelize.define('User', {
-  name: { type: DataTypes.TEXT, allowNull: false, unique: true },
-  credentials: { type: DataTypes.UUID, allowNull: false },
-  discordUser: DataTypes.JSON,
-  discordOauth: DataTypes.JSON,
-});
-
-const UserMatch = sequelize.define('UserMatch', {
-  MatchId: {
-    type: DataTypes.INTEGER,
-    references: {
-      model: Game, // should rename "Match"
-      key: 'id',
-    },
-  },
-  UserId: {
-    type: DataTypes.INTEGER,
-    references: {
-      model: User,
-      key: 'id',
-    },
-  },
-  lastPoke: { type: DataTypes.DATE, allowNull: true },
-});
-Game.belongsToMany(User, { through: UserMatch });
-User.belongsToMany(Game, { through: UserMatch });
-sequelize
-  .sync()
-  .then(() => console.log('All models synced!'))
-  .catch(console.error);
 
 interface ZugToken extends ZugUser {
   iat: number; // 'instantiated at'
@@ -335,7 +292,7 @@ server.router.post(
 
     const body = ctx.body;
     if (body.playerID) {
-      const match = await Game.findByPk(matchID);
+      const match = await Match.findByPk(matchID);
       const { players } = match;
       const player = players[+body.playerID];
       User.findOne({ where: { name: player.name } }).then((user) => {
@@ -382,7 +339,7 @@ server.router.post('/games/:name/:id/poke', koaBody(), async (ctx) => {
     ctx.throw(400, 'playerID is required');
   }
 
-  const match: Match | null = await Game.findByPk(matchID);
+  const match = await Match.findByPk(matchID);
 
   if (!match) {
     ctx.throw(404, 'Match ' + matchID + ' not found');
