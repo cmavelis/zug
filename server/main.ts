@@ -33,12 +33,12 @@ const db = new PostgresStore(process.env.DATABASE_URL as string, {
   dialect: 'postgres',
 });
 
-const Game = db.sequelize.model('Match');
+const Match = db.sequelize.model('Match');
 
 // notify players when it's their turn
-Game.beforeUpsert(async (created) => {
+Match.beforeUpsert(async (created) => {
   const { id } = created;
-  const oldMatch = await Game.findByPk(id);
+  const oldMatch = await Match.findByPk(id);
   const oldActivePlayers = oldMatch?.state?.ctx.activePlayers;
   const newActivePlayers = created?.state?.ctx.activePlayers;
 
@@ -107,7 +107,7 @@ const UserMatch = sequelize.define('UserMatch', {
   MatchId: {
     type: DataTypes.INTEGER,
     references: {
-      model: Game, // should rename "Match"
+      model: Match,
       key: 'id',
     },
   },
@@ -120,8 +120,8 @@ const UserMatch = sequelize.define('UserMatch', {
   },
   lastPoke: { type: DataTypes.DATE, allowNull: true },
 });
-Game.belongsToMany(User, { through: UserMatch });
-User.belongsToMany(Game, { through: UserMatch });
+Match.belongsToMany(User, { through: UserMatch });
+User.belongsToMany(Match, { through: UserMatch });
 sequelize
   .sync()
   .then(() => console.log('All models synced!'))
@@ -335,7 +335,7 @@ server.router.post(
 
     const body = ctx.body;
     if (body.playerID) {
-      const match = await Game.findByPk(matchID);
+      const match = await Match.findByPk(matchID);
       const { players } = match;
       const player = players[+body.playerID];
       User.findOne({ where: { name: player.name } }).then((user) => {
@@ -382,7 +382,7 @@ server.router.post('/games/:name/:id/poke', koaBody(), async (ctx) => {
     ctx.throw(400, 'playerID is required');
   }
 
-  const match: Match | null = await Game.findByPk(matchID);
+  const match: Match | null = await Match.findByPk(matchID);
 
   if (!match) {
     ctx.throw(404, 'Match ' + matchID + ' not found');
