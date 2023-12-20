@@ -14,7 +14,8 @@ import type { ClientState } from 'boardgame.io/dist/types/src/client/client';
 import type { Ctx, FilteredMetadata } from 'boardgame.io/dist/types/src/types';
 import { isEqual } from 'lodash';
 import Button from 'primevue/button';
-import { useToast } from 'primevue/usetoast';
+import { useToast } from '@/composables/useToast';
+import axios from 'axios';
 
 import BoardComponent from '@/components/BoardComponent.vue';
 import BoardDisplay from '@/components/BoardDisplay.vue';
@@ -211,6 +212,27 @@ const handleJoin = () => {
     });
 };
 
+const serverURL = getServerURL();
+const handlePoke = async () => {
+  const resp = await axios.post(`${serverURL}/games/zug/${matchID}/poke`, {
+    playerID: playerID.value === 0 ? 1 : 0,
+  });
+  if (resp.status === 200) {
+    const { data } = resp;
+    if (data.error) {
+      toast.add({
+        severity: 'error',
+        summary: data.error,
+        detail: 'Try again tomorrow?',
+      });
+    } else {
+      toast.add({
+        summary: 'Poked!',
+      });
+    }
+  }
+};
+
 // new turn watcher
 watch(
   () => gameState.G.history,
@@ -290,19 +312,17 @@ getNotificationSound(store.zugUsername === 'Ben').then((notificationSound) => {
       </span>
       <MatchInvite :matchID="matchID" />
     </div>
-    <p v-if="gamePhase === 'spectate'">You are spectating this game</p>
-    <p v-else-if="!winner">
-      phase:
-      {{ gamePhase }}
-    </p>
-    <p class="game-over" v-else>{{ winner }} wins!</p>
-
-    <p v-if="gamePhase === 'resolution'" class="info-message">
-      Waiting for opponent to finish turn...
-    </p>
-    <p v-if="opponentWaiting" class="info-message">
-      Your opponent is waiting for you to finish...
-    </p>
+    <div class="game-phase-text">
+      <p v-if="gamePhase === 'spectate'">You are spectating this game</p>
+      <span v-else-if="gamePhase === 'resolution'" class="info-message">
+        <span>Waiting for opponent to finish turn...</span>
+        <button @click="handlePoke">poke?</button>
+      </span>
+      <p v-else-if="opponentWaiting" class="info-message">
+        Your opponent is waiting for you to finish...
+      </p>
+      <p class="game-over" v-else-if="winner">{{ winner }} wins!</p>
+    </div>
     <BoardComponent
       v-if="gameStateLoaded && playerID !== null"
       :client="matchClientOne.client"
@@ -384,6 +404,11 @@ main {
 .checked {
   color: var(--color-theme-green);
   font-weight: bold;
+}
+
+.game-phase-text {
+  min-height: 1.6rem;
+  padding: 0.2rem;
 }
 
 .game-over {
