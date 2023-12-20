@@ -15,6 +15,7 @@ import type { Ctx, FilteredMetadata } from 'boardgame.io/dist/types/src/types';
 import { isEqual } from 'lodash';
 import Button from 'primevue/button';
 import { useToast } from '@/composables/useToast';
+import { useErrorHandler } from '@/composables/useErrorHandler';
 import axios from 'axios';
 
 import BoardComponent from '@/components/BoardComponent.vue';
@@ -37,6 +38,7 @@ import { getServerURL } from '@/utils';
 
 const windowHasFocus = useWindowFocus();
 const toast = useToast();
+const { handleError } = useErrorHandler();
 
 const server = getServerURL();
 const lobbyClient = new LobbyClient({ server });
@@ -214,9 +216,13 @@ const handleJoin = () => {
 
 const serverURL = getServerURL();
 const handlePoke = async () => {
-  const resp = await axios.post(`${serverURL}/games/zug/${matchID}/poke`, {
-    playerID: playerID.value === 0 ? 1 : 0,
-  });
+  const resp = await axios
+    .post(`${serverURL}/games/zug/${matchID}/poke`, {
+      playerID: playerID.value === 0 ? 1 : 0,
+    })
+    .catch((e) =>
+      handleError(e, 'Could not find a way to poke your opponent.'),
+    );
   if (resp.status === 200) {
     const { data } = resp;
     if (data.error) {
