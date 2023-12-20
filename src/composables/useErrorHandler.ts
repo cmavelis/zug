@@ -3,7 +3,7 @@ import { useToast } from './useToast';
 export const useErrorHandler = () => {
   const toast = useToast();
 
-  const handleError = (error: Error, errorMessage: string) => {
+  const handleError = (error: any, errorMessage: string) => {
     console.error(error);
     toast.add({ severity: 'error', summary: 'Error', detail: errorMessage });
   };

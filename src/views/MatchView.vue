@@ -216,26 +216,26 @@ const handleJoin = () => {
 
 const serverURL = getServerURL();
 const handlePoke = async () => {
-  const resp = await axios
-    .post(`${serverURL}/games/zug/${matchID}/poke`, {
+  try {
+    const resp = await axios.post(`${serverURL}/games/zug/${matchID}/poke`, {
       playerID: playerID.value === 0 ? 1 : 0,
-    })
-    .catch((e) =>
-      handleError(e, 'Could not find a way to poke your opponent.'),
-    );
-  if (resp.status === 200) {
-    const { data } = resp;
-    if (data.error) {
-      toast.add({
-        severity: 'error',
-        summary: data.error,
-        detail: 'Try again tomorrow?',
-      });
-    } else {
-      toast.add({
-        summary: 'Poked!',
-      });
+    });
+    if (resp.status === 200) {
+      const { data } = resp;
+      if (data.error) {
+        toast.add({
+          severity: 'error',
+          summary: data.error,
+          detail: 'Try again tomorrow?',
+        });
+      } else {
+        toast.add({
+          summary: 'Poked!',
+        });
+      }
     }
+  } catch (e) {
+    handleError(e, 'Could not find a way to poke your opponent.');
   }
 };
 
