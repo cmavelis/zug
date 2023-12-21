@@ -2,6 +2,7 @@
 import Button from 'primevue/button';
 import InputSwitch from 'primevue/inputswitch';
 import SelectButton from 'primevue/selectbutton';
+import Slider from 'primevue/slider';
 import { ref } from 'vue';
 import { OUT_OF_BOUNDS_MODES, PRIORITY_MODES } from '@/game/zugzwang/config';
 
@@ -12,6 +13,10 @@ const priorityOptions = Object.values(PRIORITY_MODES);
 
 const obRule = ref(OUT_OF_BOUNDS_MODES.turnEnd);
 const obOptions = Object.values(OUT_OF_BOUNDS_MODES);
+
+const maxPiecePriority = ref(6);
+
+const piecePriorityOverlap = ref(false);
 
 // todo: 2-col layout
 //  insert left/right elements
@@ -29,10 +34,6 @@ const obOptions = Object.values(OUT_OF_BOUNDS_MODES);
     <h3>Configuration</h3>
     <div class="layout">
       <div class="config-item">
-        <span>Best rule</span>
-        <InputSwitch />
-      </div>
-      <div class="config-item">
         <span>Priority</span>
         <SelectButton
           v-model="priorityRule"
@@ -47,6 +48,21 @@ const obOptions = Object.values(OUT_OF_BOUNDS_MODES);
           :options="obOptions"
           :allow-empty="false"
         />
+      </div>
+      <div class="config-item">
+        <span>Piece priority range</span>
+        <span>1-{{ maxPiecePriority }}</span>
+        <Slider
+          v-model="maxPiecePriority"
+          :step="1"
+          :min="1"
+          :max="10"
+          class="slider"
+        />
+      </div>
+      <div class="config-item">
+        <span>Piece priority: allow duplicates</span>
+        <InputSwitch v-model="piecePriorityOverlap" />
       </div>
       <div v-for="i in team" :key="i" class="config-item">
         <span>Other rule</span> <InputSwitch />
@@ -74,6 +90,11 @@ const obOptions = Object.values(OUT_OF_BOUNDS_MODES);
   flex-direction: row;
   align-items: center;
   gap: 4px;
+}
+
+.slider {
+  width: 14rem;
+  margin: 0 8px;
 }
 
 .mock {
