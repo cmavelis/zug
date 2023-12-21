@@ -13,6 +13,8 @@ import {
   type ZugConfig,
 } from '@/game/zugzwang/config';
 
+const unlisted = ref(false);
+
 const priorityRule = ref(PRIORITY_MODES.piece);
 const priorityOptions = Object.values(PRIORITY_MODES);
 
@@ -44,6 +46,10 @@ const ruleSet = computed<ZugConfig>(() => {
     </span>
     <h3>Configuration</h3>
     <div class="layout">
+      <div class="config-item">
+        <span>Private match</span>
+        <InputSwitch v-model="unlisted" />
+      </div>
       <div class="config-item">
         <span>Priority</span>
         <SelectButton
@@ -96,13 +102,14 @@ const ruleSet = computed<ZugConfig>(() => {
   flex-direction: column;
   justify-content: center;
   max-width: 800px;
-  gap: 4px;
+  gap: 8px;
 }
 
 .config-item {
   display: flex;
   flex-direction: row;
   align-items: center;
+  justify-content: space-between;
   gap: 4px;
 }
 
