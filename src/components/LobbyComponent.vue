@@ -101,7 +101,9 @@ watch(matches, () => {
         :key="match.matchID"
         :match="match"
         :highlight="!match.gameover"
-        :handle-match-join="() => requestJoinMatch(match.matchID)"
+        :handle-match-join="
+          () => requestJoinMatch(match.matchID, {}, navigateToMatch)
+        "
         :handle-match-navigate="() => navigateToMatch(match.matchID)"
       />
     </section>
