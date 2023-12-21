@@ -3,19 +3,27 @@ import Button from 'primevue/button';
 import InputSwitch from 'primevue/inputswitch';
 import SelectButton from 'primevue/selectbutton';
 import { ref } from 'vue';
-import { PRIORITY_MODES } from '@/game/zugzwang/config';
+import { OUT_OF_BOUNDS_MODES, PRIORITY_MODES } from '@/game/zugzwang/config';
 
 const team = Array(8).fill('1');
 
 const priorityRule = ref(PRIORITY_MODES.piece);
 const priorityOptions = Object.values(PRIORITY_MODES);
+
+const obRule = ref(OUT_OF_BOUNDS_MODES.turnEnd);
+const obOptions = Object.values(OUT_OF_BOUNDS_MODES);
+
+// todo: 2-col layout
+//  insert left/right elements
+//  left: label with "info" hover => populate with description object
+//  right: selector
 </script>
 
 <template>
   <div class="page-layout">
     <h2>Creating Match</h2>
     <span class="p-buttonset">
-      <Button label="Standard" />
+      <Button label="Default" severity="secondary" />
       <Button label="Create match" />
     </span>
     <h3>Configuration</h3>
@@ -29,6 +37,14 @@ const priorityOptions = Object.values(PRIORITY_MODES);
         <SelectButton
           v-model="priorityRule"
           :options="priorityOptions"
+          :allow-empty="false"
+        />
+      </div>
+      <div class="config-item">
+        <span>Out of bounds</span>
+        <SelectButton
+          v-model="obRule"
+          :options="obOptions"
           :allow-empty="false"
         />
       </div>
