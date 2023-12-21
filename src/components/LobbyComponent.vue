@@ -83,7 +83,11 @@ watch(matches, () => {
     <h2>Create a match</h2>
     <span class="p-buttonset">
       <Button @click="createMatch({ priority: 'piece' })">Standard</Button>
-      <RouterLink to="match-configure"><Button>Custom</Button></RouterLink>
+      <Button severity="secondary"
+        ><RouterLink to="match-configure" class="black-font"
+          >Custom</RouterLink
+        ></Button
+      >
     </span>
     <h2>Matches</h2>
     <span>{{ joinStatus }}</span>
@@ -144,6 +148,10 @@ watch(matches, () => {
 }
 button {
   width: fit-content;
+}
+
+.black-font {
+  color: black;
 }
 
 .button-big {
