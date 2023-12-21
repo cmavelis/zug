@@ -12,6 +12,9 @@ import {
   PUSH_ONLY_LOWER_NUMBERS,
   type ZugConfig,
 } from '@/game/zugzwang/config';
+import { getServerURL } from '@/utils';
+import { LobbyClient } from 'boardgame.io/client';
+import { useMatch } from '@/composables/useMatch';
 
 const unlisted = ref(false);
 
@@ -32,6 +35,25 @@ const ruleSet = computed<ZugConfig>(() => {
   };
 });
 
+const server = getServerURL();
+
+const lobbyClient = new LobbyClient({ server });
+const { navigateToMatch } = useMatch(lobbyClient);
+const createMatch = async () => {
+  try {
+    const createdMatch = await lobbyClient.createMatch('zug', {
+      numPlayers: 2,
+      setupData: ruleSet.value,
+      unlisted: unlisted.value,
+    });
+    if (createdMatch) {
+      await navigateToMatch(createdMatch.matchID);
+    }
+  } catch (e) {
+    console.error(e);
+  }
+};
+
 // todo: 2-col layout
 //  insert left/right elements
 //  left: label with "info" hover => populate with description object
@@ -42,7 +64,7 @@ const ruleSet = computed<ZugConfig>(() => {
   <div class="page-layout">
     <h2>Creating Match</h2>
     <span class="p-buttonset">
-      <Button label="Create match" />
+      <Button label="Create match" @click="createMatch" />
     </span>
     <h3>Configuration</h3>
     <div class="layout">
