@@ -16,7 +16,7 @@ import {
 import { logProxy } from '@/utils';
 import type { Piece, PieceToCreate } from '@/game/pieces';
 import { createPiece } from '@/game/pieces';
-import { PRIORITIES_LIST, MOVES_CAN_PUSH } from '@/game/zugzwang/config';
+import { PIECE_PRIORITIES_LIST, MOVES_CAN_PUSH } from '@/game/zugzwang/config';
 
 // orders are stored with displacement from piece to target
 export interface OrderBase {
@@ -127,8 +127,8 @@ export function orderResolver({ G }: { G: GObject }) {
   // iterate through orders, slotting in the right spot (error if occupied)
   // tack on "other" orders at the end (place, etc)
   if (G.config.priority === 'piece') {
-    sortedOrders1 = PRIORITIES_LIST.map(() => null);
-    sortedOrders2 = PRIORITIES_LIST.map(() => null);
+    sortedOrders1 = PIECE_PRIORITIES_LIST.map(() => null);
+    sortedOrders2 = PIECE_PRIORITIES_LIST.map(() => null);
 
     const arrangeOrders = (targetArray: (Order | null)[]) => (order: Order) => {
       const piece = getPiece(G, order.sourcePieceId);

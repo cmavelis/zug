@@ -1,5 +1,9 @@
-export const PRIORITIES_LIST = [1, 2, 3, 4, 5, 6];
+export const PIECE_PRIORITIES_LIST = [1, 2, 3, 4, 5, 6];
+export const PIECE_PRIORITY_DUPLICATES = false;
+
 export const MOVES_CAN_PUSH = false;
+// when true: pieces can't push heavier pieces / higher numbers than them
+export const PUSH_ONLY_LOWER_NUMBERS = false;
 
 export const PRIORITY_MODES = {
   piece: 'piece',

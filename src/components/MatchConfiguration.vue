@@ -4,9 +4,13 @@ import InputSwitch from 'primevue/inputswitch';
 import SelectButton from 'primevue/selectbutton';
 import Slider from 'primevue/slider';
 import { ref } from 'vue';
-import { OUT_OF_BOUNDS_MODES, PRIORITY_MODES } from '@/game/zugzwang/config';
-
-const team = Array(8).fill('1');
+import {
+  OUT_OF_BOUNDS_MODES,
+  PRIORITY_MODES,
+  PIECE_PRIORITY_DUPLICATES,
+  PIECE_PRIORITIES_LIST,
+  PUSH_ONLY_LOWER_NUMBERS,
+} from '@/game/zugzwang/config';
 
 const priorityRule = ref(PRIORITY_MODES.piece);
 const priorityOptions = Object.values(PRIORITY_MODES);
@@ -14,9 +18,9 @@ const priorityOptions = Object.values(PRIORITY_MODES);
 const obRule = ref(OUT_OF_BOUNDS_MODES.turnEnd);
 const obOptions = Object.values(OUT_OF_BOUNDS_MODES);
 
-const maxPiecePriority = ref(6);
-
-const piecePriorityOverlap = ref(false);
+const maxPiecePriority = ref(PIECE_PRIORITIES_LIST.slice(-1));
+const piecePriorityOverlap = ref(PIECE_PRIORITY_DUPLICATES);
+const pieceOnlyPushLowerNumbers = ref(PUSH_ONLY_LOWER_NUMBERS);
 
 // todo: 2-col layout
 //  insert left/right elements
@@ -49,6 +53,7 @@ const piecePriorityOverlap = ref(false);
           :allow-empty="false"
         />
       </div>
+      <p>(The following aren't implemented yet)</p>
       <div class="config-item">
         <span>Piece priority range</span>
         <span>1-{{ maxPiecePriority }}</span>
@@ -64,8 +69,9 @@ const piecePriorityOverlap = ref(false);
         <span>Piece priority: allow duplicates</span>
         <InputSwitch v-model="piecePriorityOverlap" />
       </div>
-      <div v-for="i in team" :key="i" class="config-item">
-        <span>Other rule</span> <InputSwitch />
+      <div class="config-item">
+        <span>Piece priority: can only push lower numbers</span>
+        <InputSwitch v-model="pieceOnlyPushLowerNumbers" />
       </div>
     </div>
   </div>
