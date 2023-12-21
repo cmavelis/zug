@@ -86,7 +86,7 @@ watch(matches, () => {
       <button @click="createMatch({ outOfBounds: 'turn-end' })">
         Standard + "Greatest"
       </button>
-      <button @click="createMatch({ priority: 'order-choice' })">
+      <button @click="createMatch({ priority: 'choice' })">
         "Action order" priority setting
       </button>
       <button @click="createMatch({ empty: true })">Testing</button>

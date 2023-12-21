@@ -2,7 +2,7 @@ export const PRIORITIES_LIST = [1, 2, 3, 4, 5, 6];
 export const MOVES_CAN_PUSH = false;
 
 export type PriorityMode =
-  | 'order-choice' // the original; orders get priority based on when they were assigned in the turn
+  | 'choice' // the original; orders get priority based on when they were assigned in the turn
   | 'piece'; // pieces have their own priorities based on their ID, instead of order
 
 export const PRIORITY_MODES = {
