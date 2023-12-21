@@ -18,7 +18,7 @@ const priorityOptions = Object.values(PRIORITY_MODES);
 const obRule = ref(OUT_OF_BOUNDS_MODES.turnEnd);
 const obOptions = Object.values(OUT_OF_BOUNDS_MODES);
 
-const maxPiecePriority = ref(PIECE_PRIORITIES_LIST.slice(-1));
+const maxPiecePriority = ref(PIECE_PRIORITIES_LIST.slice(-1)[0]);
 const piecePriorityOverlap = ref(PIECE_PRIORITY_DUPLICATES);
 const pieceOnlyPushLowerNumbers = ref(PUSH_ONLY_LOWER_NUMBERS);
 
