@@ -109,7 +109,6 @@ const createMatch = async () => {
         <InputSwitch v-model="pieceOnlyPushLowerNumbers" />
       </div>
     </div>
-    <pre>{{ ruleSet }}</pre>
   </div>
 </template>
 
@@ -138,9 +137,5 @@ const createMatch = async () => {
 .slider {
   width: 14rem;
   margin: 0 8px;
-}
-
-.mock {
-  border: 1px solid red;
 }
 </style>
