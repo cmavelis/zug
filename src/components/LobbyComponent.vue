@@ -3,6 +3,8 @@ import { computed, ref, watch } from 'vue';
 import type { Ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { LobbyClient } from 'boardgame.io/client';
+import Button from 'primevue/button';
+
 import LobbyMatch from '@/components/LobbyMatch.vue';
 import type { GameSetupData } from '@/game/Game';
 import { store } from '@/store';
@@ -79,19 +81,10 @@ watch(matches, () => {
   <main>
     <h1>Matches Lobby</h1>
     <h2>Create a match</h2>
-    <button class="button-big" @click="createMatch({ priority: 'piece' })">
-      Standard
-    </button>
-    <section class="button-group">
-      <button @click="createMatch({ outOfBounds: 'turnEnd' })">
-        Standard + "Greatest"
-      </button>
-      <button @click="createMatch({ priority: 'actionChoice' })">
-        "Action order" priority setting
-      </button>
-      <button @click="createMatch({ empty: true })">Testing</button>
-    </section>
-
+    <span class="p-buttonset">
+      <Button @click="createMatch({ priority: 'piece' })">Standard</Button>
+      <RouterLink to="match-configure"><Button>Custom</Button></RouterLink>
+    </span>
     <h2>Matches</h2>
     <span>{{ joinStatus }}</span>
     <h3>Your matches</h3>
