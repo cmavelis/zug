@@ -83,7 +83,7 @@ watch(matches, () => {
       Standard
     </button>
     <section class="button-group">
-      <button @click="createMatch({ outOfBounds: 'turn-end' })">
+      <button @click="createMatch({ outOfBounds: 'turnEnd' })">
         Standard + "Greatest"
       </button>
       <button @click="createMatch({ priority: 'choice' })">
