@@ -6,6 +6,7 @@ import {
   stripSecrets,
 } from '@/game/common';
 import type { GameState } from '@/game/Game';
+import { DEFAULT_ZUG_CONFIG } from '@/game/zugzwang/config';
 
 test('0,0 coords, 3,4 shape', () => {
   expect(coordinatesToArray({ x: 0, y: 0 }, { x: 3, y: 4 })).toEqual(0);
@@ -67,9 +68,8 @@ test('orthogonal diagonal vectors', () => {
 const setupGame = (partialG?: Partial<GameState>) => {
   const G: GameState = {
     config: {
+      ...DEFAULT_ZUG_CONFIG,
       board: { x: 3, y: 3 },
-      outOfBounds: 'immediate',
-      priority: 'piece',
     },
     cells: [],
     pieces: [],

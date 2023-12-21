@@ -1,10 +1,20 @@
 export interface ZugConfig {
   outOfBounds: OutOfBoundsMode;
   priority: PriorityMode;
+  piecePriorityOptions: number[];
+  piecePriorityDuplicates: boolean;
 }
 
-export const PIECE_PRIORITIES_LIST = [1, 2, 3, 4, 5, 6];
-export const PIECE_PRIORITY_DUPLICATES = false;
+export const DEFAULT_ZUG_CONFIG: ZugConfig = {
+  outOfBounds: 'immediate',
+  priority: 'piece',
+  piecePriorityOptions: [1, 2, 3, 4, 5, 6],
+  piecePriorityDuplicates: false,
+};
+
+export const PIECE_PRIORITIES_LIST = DEFAULT_ZUG_CONFIG.piecePriorityOptions;
+export const PIECE_PRIORITY_DUPLICATES =
+  DEFAULT_ZUG_CONFIG.piecePriorityDuplicates;
 
 export const MOVES_CAN_PUSH = false;
 // when true: pieces can't push heavier pieces / higher numbers than them

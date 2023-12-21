@@ -11,8 +11,10 @@ import type {
   ZugConfig as CommonGameConfig,
 } from '@/game/zugzwang/config';
 import { stripSecrets } from '@/game/common';
+import { DEFAULT_ZUG_CONFIG } from '@/game/zugzwang/config';
 
-export interface GameSetupData extends Partial<CommonGameConfig> {
+export interface GameSetupData {
+  config: Partial<CommonGameConfig>;
   empty?: boolean;
 }
 
@@ -55,8 +57,8 @@ export const SimulChess: Game<GObject> = {
     const initialGame = {
       config: {
         board,
-        outOfBounds: setupData?.outOfBounds || ('immediate' as OutOfBoundsMode),
-        priority: setupData?.priority || ('piece' as PriorityMode),
+        ...DEFAULT_ZUG_CONFIG,
+        ...setupData.config,
       },
       cells: Array(board.x * board.y).fill(null),
       pieces: [],

@@ -25,13 +25,15 @@ const obRule = ref(OUT_OF_BOUNDS_MODES.turnEnd);
 const obOptions = Object.values(OUT_OF_BOUNDS_MODES);
 
 const maxPiecePriority = ref(PIECE_PRIORITIES_LIST.slice(-1)[0]);
-const piecePriorityOverlap = ref(PIECE_PRIORITY_DUPLICATES);
+const piecePriorityDuplicates = ref(PIECE_PRIORITY_DUPLICATES);
 const pieceOnlyPushLowerNumbers = ref(PUSH_ONLY_LOWER_NUMBERS);
 
 const ruleSet = computed<ZugConfig>(() => {
   return {
     priority: priorityRule.value,
     outOfBounds: obRule.value,
+    piecePriorityOptions: [1, 2, 3, 4, 5, 6], // TODO make range
+    piecePriorityDuplicates: piecePriorityDuplicates.value,
   };
 });
 
@@ -102,7 +104,7 @@ const createMatch = async () => {
       </div>
       <div class="config-item">
         <span>Piece priority: allow duplicates</span>
-        <InputSwitch v-model="piecePriorityOverlap" />
+        <InputSwitch v-model="piecePriorityDuplicates" />
       </div>
       <div class="config-item">
         <span>Piece priority: can only push lower numbers</span>
