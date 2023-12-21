@@ -5,20 +5,12 @@ import type { Order, Orders } from '@/game/orders';
 import { orderResolver } from '@/game/orders';
 import type { Coordinates } from '@/game/common';
 import { isValidOrder } from '@/game/zugzwang/validators';
+import type {
+  OutOfBoundsMode,
+  PriorityMode,
+  ZugConfig as CommonGameConfig,
+} from '@/game/zugzwang/config';
 import { stripSecrets } from '@/game/common';
-
-export type PriorityMode =
-  | 'order-choice' // the original; orders get priority based on when they were assigned in the turn
-  | 'piece'; // pieces have their own priorities based on their ID, instead of order
-
-export type OutOfBoundsMode =
-  | 'immediate' // pieces will be removed from play immediately after being knocked out of bounds
-  | 'turn-end'; // pieces removed from play if OB at end of turn
-
-interface CommonGameConfig {
-  outOfBounds: OutOfBoundsMode;
-  priority: PriorityMode;
-}
 
 export interface GameSetupData extends Partial<CommonGameConfig> {
   empty?: boolean;

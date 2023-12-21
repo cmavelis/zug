@@ -1,6 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router';
 import HomeView from '../views/HomeView.vue';
 import MatchView from '../views/MatchView.vue';
+import MatchConfiguration from '@/components/MatchConfiguration.vue';
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -27,6 +28,11 @@ const router = createRouter({
       path: '/match/:matchID',
       name: 'match',
       component: MatchView,
+    },
+    {
+      path: '/match-configure',
+      name: 'match-configure',
+      component: MatchConfiguration,
     },
     {
       path: '/login',

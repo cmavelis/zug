@@ -3,6 +3,8 @@ import { computed, ref, watch } from 'vue';
 import type { Ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { LobbyClient } from 'boardgame.io/client';
+import Button from 'primevue/button';
+
 import LobbyMatch from '@/components/LobbyMatch.vue';
 import type { GameSetupData } from '@/game/Game';
 import { store } from '@/store';
@@ -79,19 +81,14 @@ watch(matches, () => {
   <main>
     <h1>Matches Lobby</h1>
     <h2>Create a match</h2>
-    <button class="button-big" @click="createMatch({ priority: 'piece' })">
-      Standard
-    </button>
-    <section class="button-group">
-      <button @click="createMatch({ outOfBounds: 'turn-end' })">
-        Standard + "Greatest"
-      </button>
-      <button @click="createMatch({ priority: 'order-choice' })">
-        "Action order" priority setting
-      </button>
-      <button @click="createMatch({ empty: true })">Testing</button>
-    </section>
-
+    <span class="p-buttonset">
+      <Button @click="createMatch({ priority: 'piece' })">Standard</Button>
+      <Button severity="secondary"
+        ><RouterLink to="match-configure" class="black-font"
+          >Custom</RouterLink
+        ></Button
+      >
+    </span>
     <h2>Matches</h2>
     <span>{{ joinStatus }}</span>
     <h3>Your matches</h3>
@@ -101,7 +98,9 @@ watch(matches, () => {
         :key="match.matchID"
         :match="match"
         :highlight="!match.gameover"
-        :handle-match-join="() => requestJoinMatch(match.matchID)"
+        :handle-match-join="
+          () => requestJoinMatch(match.matchID, {}, navigateToMatch)
+        "
         :handle-match-navigate="() => navigateToMatch(match.matchID)"
       />
     </section>
@@ -149,6 +148,10 @@ watch(matches, () => {
 }
 button {
   width: fit-content;
+}
+
+.black-font {
+  color: black;
 }
 
 .button-big {

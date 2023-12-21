@@ -2,6 +2,20 @@ import { ref } from 'vue';
 import { type GameSetupData } from '@/game/Game';
 import { store } from '@/store';
 import type { LobbyClient } from 'boardgame.io/client';
+import router from '@/router';
+
+const navigateToMatch = async (matchID: string) => {
+  try {
+    return await router.push({
+      name: 'match',
+      params: {
+        matchID,
+      },
+    });
+  } catch (message) {
+    return console.error(message);
+  }
+};
 
 export const useMatch = (lobbyClient: LobbyClient) => {
   const joinStatus = ref('');
@@ -34,5 +48,5 @@ export const useMatch = (lobbyClient: LobbyClient) => {
     }
   };
 
-  return { joinStatus, requestJoinMatch };
+  return { joinStatus, requestJoinMatch, navigateToMatch };
 };
