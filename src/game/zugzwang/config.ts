@@ -1,3 +1,8 @@
+export interface ZugConfig {
+  outOfBounds: OutOfBoundsMode;
+  priority: PriorityMode;
+}
+
 export const PIECE_PRIORITIES_LIST = [1, 2, 3, 4, 5, 6];
 export const PIECE_PRIORITY_DUPLICATES = false;
 
@@ -8,7 +13,7 @@ export const PUSH_ONLY_LOWER_NUMBERS = false;
 export const PRIORITY_MODES = {
   piece: 'piece',
   actionChoice: 'actionChoice',
-};
+} as const;
 export type PriorityMode = keyof typeof PRIORITY_MODES;
 export const PRIORITY_DESCRIPTIONS: { [Property in PriorityMode]: string } = {
   piece:
@@ -19,7 +24,7 @@ export const PRIORITY_DESCRIPTIONS: { [Property in PriorityMode]: string } = {
 export const OUT_OF_BOUNDS_MODES = {
   immediate: 'immediate',
   turnEnd: 'turnEnd',
-};
+} as const;
 export type OutOfBoundsMode = keyof typeof OUT_OF_BOUNDS_MODES;
 export const OUT_OF_BOUNDS_DESCRIPTIONS: {
   [Property in OutOfBoundsMode]: string;

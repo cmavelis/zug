@@ -3,13 +3,14 @@ import Button from 'primevue/button';
 import InputSwitch from 'primevue/inputswitch';
 import SelectButton from 'primevue/selectbutton';
 import Slider from 'primevue/slider';
-import { ref } from 'vue';
+import { computed, ref } from 'vue';
 import {
   OUT_OF_BOUNDS_MODES,
   PRIORITY_MODES,
   PIECE_PRIORITY_DUPLICATES,
   PIECE_PRIORITIES_LIST,
   PUSH_ONLY_LOWER_NUMBERS,
+  type ZugConfig,
 } from '@/game/zugzwang/config';
 
 const priorityRule = ref(PRIORITY_MODES.piece);
@@ -22,6 +23,13 @@ const maxPiecePriority = ref(PIECE_PRIORITIES_LIST.slice(-1)[0]);
 const piecePriorityOverlap = ref(PIECE_PRIORITY_DUPLICATES);
 const pieceOnlyPushLowerNumbers = ref(PUSH_ONLY_LOWER_NUMBERS);
 
+const ruleSet = computed<ZugConfig>(() => {
+  return {
+    priority: priorityRule.value,
+    outOfBounds: obRule.value,
+  };
+});
+
 // todo: 2-col layout
 //  insert left/right elements
 //  left: label with "info" hover => populate with description object
@@ -32,7 +40,6 @@ const pieceOnlyPushLowerNumbers = ref(PUSH_ONLY_LOWER_NUMBERS);
   <div class="page-layout">
     <h2>Creating Match</h2>
     <span class="p-buttonset">
-      <Button label="Default" severity="secondary" />
       <Button label="Create match" />
     </span>
     <h3>Configuration</h3>
@@ -74,6 +81,7 @@ const pieceOnlyPushLowerNumbers = ref(PUSH_ONLY_LOWER_NUMBERS);
         <InputSwitch v-model="pieceOnlyPushLowerNumbers" />
       </div>
     </div>
+    <pre>{{ ruleSet }}</pre>
   </div>
 </template>
 
