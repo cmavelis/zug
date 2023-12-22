@@ -4,7 +4,10 @@ import InputSwitch from 'primevue/inputswitch';
 import InputMask from 'primevue/inputmask';
 import SelectButton from 'primevue/selectbutton';
 import Slider from 'primevue/slider';
+import { useField } from 'vee-validate';
 import { computed, ref } from 'vue';
+import { LobbyClient } from 'boardgame.io/client';
+
 import {
   OUT_OF_BOUNDS_MODES,
   PRIORITY_MODES,
@@ -14,8 +17,27 @@ import {
   type ZugConfig,
 } from '@/game/zugzwang/config';
 import { getServerURL } from '@/utils';
-import { LobbyClient } from 'boardgame.io/client';
 import { useMatch } from '@/composables/useMatch';
+
+// input: "1,2,3,4"
+const convertMaskedInputToArray = (masked: string) => {
+  return masked.split(',').map(Number);
+};
+const validateStartingPriorities = (value: string | undefined) => {
+  if (value === undefined || value === '') {
+    return true;
+  }
+  const arrayValue = convertMaskedInputToArray(value);
+  if (arrayValue.some((v) => !v)) {
+    return 'Must be 4 non-zero integers';
+  }
+  return true;
+};
+
+const { value: startPiecePriorities } = useField(
+  'startPiecePriorities',
+  validateStartingPriorities,
+);
 
 const unlisted = ref(false);
 
@@ -26,14 +48,8 @@ const obRule = ref(OUT_OF_BOUNDS_MODES.turnEnd);
 const obOptions = Object.values(OUT_OF_BOUNDS_MODES);
 
 const maxPiecePriority = ref(PIECE_PRIORITIES_LIST.slice(-1)[0]);
-const startPiecePriorities = ref();
 const piecePriorityDuplicates = ref(PIECE_PRIORITY_DUPLICATES);
 const pieceOnlyPushLowerNumbers = ref(PUSH_ONLY_LOWER_NUMBERS);
-
-// input: "1,2,3,4"
-const convertMaskedInputToArray = (masked: string) => {
-  return masked.split(',').map(Number);
-};
 
 const ruleSet = computed<ZugConfig>(() => {
   return {
@@ -115,11 +131,14 @@ const createMatch = async () => {
       </div>
       <div class="config-item">
         <span>Piece priorities, start of game:</span>
-        <InputMask
-          v-model="startPiecePriorities"
-          mask="9,9,9,9"
-          placeholder="2,3,4,5"
-        />
+        <div>
+          <InputMask
+            v-model="startPiecePriorities"
+            mask="9,9,9,9"
+            placeholder="2,3,4,5"
+          />
+          <p>Must be 4 non-zero integers</p>
+        </div>
       </div>
       <p>(Coming soon)</p>
       <div class="config-item">
