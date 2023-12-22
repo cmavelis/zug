@@ -44,20 +44,18 @@ export const generatePiecePriority = ({
     }
     allowedPriorities = priorityArray;
   }
-  let priority = 0;
-  if (G.config.priority === 'piece') {
-    const usedPriorities = G.pieces
-      .filter((p) => p.owner === pieceToCreate.owner)
-      .map((p) => p.priority);
-    const availablePriorities = allowedPriorities.filter(
-      (n) => !usedPriorities.includes(n),
-    );
-    if (availablePriorities.length === 0) {
-      console.error('No priorities available to assign piece, assigning 99');
-      availablePriorities.push(99);
-    }
-    priority = randomFromArray(availablePriorities);
+
+  const usedPriorities = G.pieces
+    .filter((p) => p.owner === pieceToCreate.owner)
+    .map((p) => p.priority);
+  const availablePriorities = allowedPriorities.filter(
+    (n) => !usedPriorities.includes(n),
+  );
+  if (availablePriorities.length === 0) {
+    console.error('No priorities available to assign piece, assigning 99');
+    availablePriorities.push(99);
   }
+  const priority = randomFromArray(availablePriorities);
 
   return priority;
 };
@@ -101,10 +99,12 @@ export const createPiece = ({
   }
 
   const pieceId = availableIds[0];
-  let priority =
-    forcedPriority ??
-    generatePiecePriority({ G, pieceToCreate, priorityArray });
-  if (priority === 0) {
+  let priority = 0;
+  if (G.config.priority === 'piece') {
+    priority =
+      forcedPriority ??
+      generatePiecePriority({ G, pieceToCreate, priorityArray });
+  } else if (G.config.priority === 'actionChoice') {
     priority = pieceId;
   }
 
