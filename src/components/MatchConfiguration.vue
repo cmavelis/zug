@@ -40,10 +40,10 @@ const ruleSet = computed<ZugConfig>(() => {
     priority: priorityRule.value,
     outOfBounds: obRule.value,
     piecePriorityOptions: [1, 2, 3, 4, 5, 6], // TODO make range
-    piecePriorityDuplicates: piecePriorityDuplicates.value,
     startingPiecePriorities: startPiecePriorities.value
       ? convertMaskedInputToArray(startPiecePriorities.value)
       : [2, 3, 4, 5],
+    piecePriorityDuplicates: piecePriorityDuplicates.value,
   };
 });
 
@@ -100,7 +100,6 @@ const createMatch = async () => {
           :allow-empty="false"
         />
       </div>
-      <p>(The following aren't implemented yet)</p>
       <div class="config-item">
         <span>Piece priority range</span>
         <span>1-{{ maxPiecePriority }}</span>
@@ -120,13 +119,14 @@ const createMatch = async () => {
           placeholder="2,3,4,5"
         />
       </div>
+      <p>(Coming soon)</p>
       <div class="config-item">
         <span>Piece priority: allow duplicates</span>
-        <InputSwitch v-model="piecePriorityDuplicates" />
+        <InputSwitch disabled v-model="piecePriorityDuplicates" />
       </div>
       <div class="config-item">
         <span>Piece priority: can only push lower numbers</span>
-        <InputSwitch v-model="pieceOnlyPushLowerNumbers" />
+        <InputSwitch disabled v-model="pieceOnlyPushLowerNumbers" />
       </div>
     </div>
     <pre>{{ ruleSet }}</pre>
