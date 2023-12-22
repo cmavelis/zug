@@ -6,22 +6,19 @@ import {
 import type { Piece } from '@/game/pieces';
 import type { AttackOrder, PlaceOrder, PushStraightOrder } from '@/game/orders';
 import { cloneDeep } from 'lodash';
+import { makeTestPiece } from '@/game/test-utils';
 
-const testPiece: Piece = {
+const testPiece: Piece = makeTestPiece({
   id: 0,
   position: { x: 2, y: 1 },
   owner: 1,
-  isDefending: false,
-  priority: 0,
-};
+});
 
-const testPiece2: Piece = {
+const testPiece2: Piece = makeTestPiece({
   id: 1,
   position: { x: 2, y: 1 },
   owner: 0,
-  isDefending: false,
-  priority: 0,
-};
+});
 
 const testAttack1: AttackOrder = {
   sourcePieceId: 0,
