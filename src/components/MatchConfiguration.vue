@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import Button from 'primevue/button';
 import InputSwitch from 'primevue/inputswitch';
+import InputMask from 'primevue/inputmask';
 import SelectButton from 'primevue/selectbutton';
 import Slider from 'primevue/slider';
 import { computed, ref } from 'vue';
@@ -25,8 +26,14 @@ const obRule = ref(OUT_OF_BOUNDS_MODES.turnEnd);
 const obOptions = Object.values(OUT_OF_BOUNDS_MODES);
 
 const maxPiecePriority = ref(PIECE_PRIORITIES_LIST.slice(-1)[0]);
+const startPiecePriorities = ref();
 const piecePriorityDuplicates = ref(PIECE_PRIORITY_DUPLICATES);
 const pieceOnlyPushLowerNumbers = ref(PUSH_ONLY_LOWER_NUMBERS);
+
+// input: "1,2,3,4"
+const convertMaskedInputToArray = (masked: string) => {
+  return masked.split(',').map(Number);
+};
 
 const ruleSet = computed<ZugConfig>(() => {
   return {
@@ -34,6 +41,9 @@ const ruleSet = computed<ZugConfig>(() => {
     outOfBounds: obRule.value,
     piecePriorityOptions: [1, 2, 3, 4, 5, 6], // TODO make range
     piecePriorityDuplicates: piecePriorityDuplicates.value,
+    startingPiecePriorities: startPiecePriorities.value
+      ? convertMaskedInputToArray(startPiecePriorities.value)
+      : [2, 3, 4, 5],
   };
 });
 
@@ -103,6 +113,14 @@ const createMatch = async () => {
         />
       </div>
       <div class="config-item">
+        <span>Piece priorities, start of game:</span>
+        <InputMask
+          v-model="startPiecePriorities"
+          mask="9,9,9,9"
+          placeholder="2,3,4,5"
+        />
+      </div>
+      <div class="config-item">
         <span>Piece priority: allow duplicates</span>
         <InputSwitch v-model="piecePriorityDuplicates" />
       </div>
@@ -111,6 +129,7 @@ const createMatch = async () => {
         <InputSwitch v-model="pieceOnlyPushLowerNumbers" />
       </div>
     </div>
+    <pre>{{ ruleSet }}</pre>
   </div>
 </template>
 
