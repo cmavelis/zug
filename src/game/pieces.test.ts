@@ -24,7 +24,7 @@ test('generate priorities, default', () => {
   expect([1, 2, 3, 4, 5, 6]).toContain(newPriority);
 });
 
-test('generate priorities, default', () => {
+test('generate priorities, default, one option', () => {
   const G = makeTestGame({
     pieces: pieces1to5priority,
   });

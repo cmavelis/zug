@@ -18,6 +18,7 @@ export interface Piece {
 
 export type PieceToCreate = Optional<Piece, 'id' | 'isDefending' | 'priority'>;
 
+// priorityArray will override the game config
 export const generatePiecePriority = ({
   G,
   pieceToCreate,
