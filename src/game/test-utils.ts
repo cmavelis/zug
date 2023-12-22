@@ -6,7 +6,7 @@ export const makeTestGame = (partialG?: Partial<GameState>) => {
   const G: GameState = {
     config: {
       ...DEFAULT_ZUG_CONFIG,
-      board: { x: 3, y: 3 },
+      board: { x: 4, y: 4 },
     },
     cells: [],
     pieces: [],
