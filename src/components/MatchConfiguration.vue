@@ -18,6 +18,7 @@ import {
 } from '@/game/zugzwang/config';
 import { getServerURL } from '@/utils';
 import { useMatch } from '@/composables/useMatch';
+import type { GameSetupData } from '@/game/Game';
 
 // input: "1,2,3,4"
 const convertMaskedInputToArray = (masked: string) => {
@@ -71,9 +72,10 @@ const lobbyClient = new LobbyClient({ server });
 const { navigateToMatch } = useMatch(lobbyClient);
 const createMatch = async () => {
   try {
+    const setupData: GameSetupData = { config: ruleSet.value };
     const createdMatch = await lobbyClient.createMatch('zug', {
       numPlayers: 2,
-      setupData: ruleSet.value,
+      setupData,
       unlisted: unlisted.value,
     });
     if (createdMatch) {
