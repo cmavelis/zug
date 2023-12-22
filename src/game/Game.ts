@@ -89,7 +89,7 @@ export const SimulChess: Game<GObject> = {
         createPiece({
           G: initialGame,
           pieceToCreate: { owner: 0, position: { x, y: 0 } },
-          priorityArray: [2, 3, 4, 5],
+          priorityArray: [2, 3, 4, 5], // TODO: get from setupData
         }),
       );
 

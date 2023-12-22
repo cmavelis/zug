@@ -4,7 +4,6 @@ import {
   coordinatesToArray,
   reportError,
 } from '@/game/common';
-import { PIECE_PRIORITIES_LIST } from '@/game/zugzwang/config';
 
 type Optional<T, K extends keyof T> = Omit<T, K> & Partial<Pick<T, K>>;
 
@@ -49,12 +48,13 @@ export const createPiece = ({
 
   const pieceId = availableIds[0];
 
+  const { piecePriorityOptions } = G.config;
   // Setting priority
-  let allowedPriorities = PIECE_PRIORITIES_LIST;
+  let allowedPriorities = piecePriorityOptions;
 
   if (priorityArray) {
     const priorityDifference = priorityArray.filter(
-      (x) => !PIECE_PRIORITIES_LIST.includes(x),
+      (x) => !piecePriorityOptions.includes(x),
     );
     if (priorityDifference.length > 0) {
       console.warn(
