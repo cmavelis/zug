@@ -5,11 +5,7 @@ import type { Order, Orders } from '@/game/orders';
 import { orderResolver } from '@/game/orders';
 import type { Coordinates } from '@/game/common';
 import { isValidOrder } from '@/game/zugzwang/validators';
-import type {
-  OutOfBoundsMode,
-  PriorityMode,
-  ZugConfig as CommonGameConfig,
-} from '@/game/zugzwang/config';
+import type { ZugConfig as CommonGameConfig } from '@/game/zugzwang/config';
 import { stripSecrets } from '@/game/common';
 import { DEFAULT_ZUG_CONFIG } from '@/game/zugzwang/config';
 
