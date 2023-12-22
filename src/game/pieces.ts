@@ -62,14 +62,23 @@ export const generatePiecePriority = ({
   return priority;
 };
 
+/**
+ * Create piece based on game conditions and configuration
+ * @param G
+ * @param pieceToCreate
+ * @param priorityArray
+ * @param forcedPriority used to override all other options and set priority to a number
+ */
 export const createPiece = ({
   G,
   pieceToCreate,
   priorityArray,
+  forcedPriority,
 }: {
   G: GameState;
   pieceToCreate: PieceToCreate;
   priorityArray?: number[];
+  forcedPriority?: number;
 }) => {
   const cellIndex = coordinatesToArray(pieceToCreate.position, G.config.board);
   if (G.cells[cellIndex]) {
@@ -92,7 +101,9 @@ export const createPiece = ({
   }
 
   const pieceId = availableIds[0];
-  let priority = generatePiecePriority({ G, pieceToCreate, priorityArray });
+  let priority =
+    forcedPriority ??
+    generatePiecePriority({ G, pieceToCreate, priorityArray });
   if (priority === 0) {
     priority = pieceId;
   }

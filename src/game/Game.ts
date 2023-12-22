@@ -1,5 +1,7 @@
 import type { Game } from 'boardgame.io';
 import { INVALID_MOVE } from 'boardgame.io/core';
+import { shuffle } from 'lodash';
+
 import { createPiece, type Piece } from '@/game/pieces';
 import type { Order, Orders } from '@/game/orders';
 import { orderResolver } from '@/game/orders';
@@ -85,19 +87,23 @@ export const SimulChess: Game<GObject> = {
         pieceToCreate: { owner: 1, position: { x: 3, y: 3 } },
       });
     } else {
-      [0, 1, 2, 3].forEach((x) =>
+      const { startingPiecePriorities } = setupData.config;
+      const p1PiecePriorities = shuffle(startingPiecePriorities);
+      const p2PiecePriorities = shuffle(startingPiecePriorities);
+
+      [0, 1, 2, 3].forEach((x, i) =>
         createPiece({
           G: initialGame,
           pieceToCreate: { owner: 0, position: { x, y: 0 } },
-          priorityArray: setupData.config.startingPiecePriorities,
+          forcedPriority: p1PiecePriorities[i],
         }),
       );
 
-      [0, 1, 2, 3].forEach((x) =>
+      [0, 1, 2, 3].forEach((x, i) =>
         createPiece({
           G: initialGame,
           pieceToCreate: { owner: 1, position: { x, y: 3 } },
-          priorityArray: setupData.config.startingPiecePriorities,
+          forcedPriority: p2PiecePriorities[i],
         }),
       );
     }
