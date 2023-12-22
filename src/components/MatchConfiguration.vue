@@ -152,6 +152,7 @@ const createMatch = async () => {
         <InputSwitch disabled v-model="pieceOnlyPushLowerNumbers" />
       </div>
     </div>
+    <!-- //TODO: remove-->
     <pre>{{ ruleSet }}</pre>
   </div>
 </template>
