@@ -17,6 +17,11 @@ export interface Piece {
 
 export type PieceToCreate = Optional<Piece, 'id' | 'isDefending' | 'priority'>;
 
+export const randomFromArray = <T>(choiceArray: Array<T>): T => {
+  const randomIndex = Math.floor(Math.random() * choiceArray.length);
+  return choiceArray[randomIndex];
+};
+
 export const generatePiecePriority = ({
   G,
   pieceToCreate,
@@ -54,8 +59,7 @@ export const generatePiecePriority = ({
       console.error('No priorities available to assign piece, assigning 99');
       availablePriorities.push(99);
     }
-    const randomIndex = Math.floor(Math.random() * availablePriorities.length);
-    priority = availablePriorities[randomIndex];
+    priority = randomFromArray(availablePriorities);
   }
 
   return priority;
