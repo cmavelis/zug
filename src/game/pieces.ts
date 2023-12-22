@@ -17,6 +17,50 @@ export interface Piece {
 
 export type PieceToCreate = Optional<Piece, 'id' | 'isDefending' | 'priority'>;
 
+export const generatePiecePriority = ({
+  G,
+  pieceToCreate,
+  priorityArray,
+}: {
+  G: GameState;
+  pieceToCreate: PieceToCreate;
+  priorityArray?: number[];
+}) => {
+  const { piecePriorityOptions } = G.config;
+  // Setting priority
+  let allowedPriorities = piecePriorityOptions;
+
+  if (priorityArray) {
+    const priorityDifference = priorityArray.filter(
+      (x) => !piecePriorityOptions.includes(x),
+    );
+    if (priorityDifference.length > 0) {
+      console.warn(
+        'Priority range has the following numbers outside the configured :',
+        priorityDifference,
+      );
+    }
+    allowedPriorities = priorityArray;
+  }
+  let priority = 0;
+  if (G.config.priority === 'piece') {
+    const usedPriorities = G.pieces
+      .filter((p) => p.owner === pieceToCreate.owner)
+      .map((p) => p.priority);
+    const availablePriorities = allowedPriorities.filter(
+      (n) => !usedPriorities.includes(n),
+    );
+    if (availablePriorities.length === 0) {
+      console.error('No priorities available to assign piece, assigning 99');
+      availablePriorities.push(99);
+    }
+    const randomIndex = Math.floor(Math.random() * availablePriorities.length);
+    priority = availablePriorities[randomIndex];
+  }
+
+  return priority;
+};
+
 export const createPiece = ({
   G,
   pieceToCreate,
@@ -47,37 +91,9 @@ export const createPiece = ({
   }
 
   const pieceId = availableIds[0];
-
-  const { piecePriorityOptions } = G.config;
-  // Setting priority
-  let allowedPriorities = piecePriorityOptions;
-
-  if (priorityArray) {
-    const priorityDifference = priorityArray.filter(
-      (x) => !piecePriorityOptions.includes(x),
-    );
-    if (priorityDifference.length > 0) {
-      console.warn(
-        'Priority range has the following numbers outside the configured :',
-        priorityDifference,
-      );
-    }
-    allowedPriorities = priorityArray;
-  }
-  let priority = pieceId;
-  if (G.config.priority === 'piece') {
-    const usedPriorities = G.pieces
-      .filter((p) => p.owner === pieceToCreate.owner)
-      .map((p) => p.priority);
-    const availablePriorities = allowedPriorities.filter(
-      (n) => !usedPriorities.includes(n),
-    );
-    if (availablePriorities.length === 0) {
-      console.error('No priorities available to assign piece, assigning 99');
-      availablePriorities.push(99);
-    }
-    const randomIndex = Math.floor(Math.random() * availablePriorities.length);
-    priority = availablePriorities[randomIndex];
+  let priority = generatePiecePriority({ G, pieceToCreate, priorityArray });
+  if (priority === 0) {
+    priority = pieceId;
   }
 
   G.cells[cellIndex] = pieceId;
