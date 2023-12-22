@@ -39,7 +39,9 @@ const ruleSet = computed<ZugConfig>(() => {
   return {
     priority: priorityRule.value,
     outOfBounds: obRule.value,
-    piecePriorityOptions: [1, 2, 3, 4, 5, 6], // TODO make range
+    piecePriorityOptions: Array(maxPiecePriority.value)
+      .fill(1)
+      .map((v, i) => i + 1),
     startingPiecePriorities: startPiecePriorities.value
       ? convertMaskedInputToArray(startPiecePriorities.value)
       : [2, 3, 4, 5],
