@@ -2,6 +2,7 @@ import type { GameState } from '@/game/Game';
 import {
   type Coordinates,
   coordinatesToArray,
+  randomFromArray,
   reportError,
 } from '@/game/common';
 
@@ -16,11 +17,6 @@ export interface Piece {
 }
 
 export type PieceToCreate = Optional<Piece, 'id' | 'isDefending' | 'priority'>;
-
-export const randomFromArray = <T>(choiceArray: Array<T>): T => {
-  const randomIndex = Math.floor(Math.random() * choiceArray.length);
-  return choiceArray[randomIndex];
-};
 
 export const generatePiecePriority = ({
   G,
