@@ -45,19 +45,20 @@ export const generatePiecePriority = ({
     allowedPriorities = priorityArray;
   }
 
-  const usedPriorities = G.pieces
-    .filter((p) => p.owner === pieceToCreate.owner)
-    .map((p) => p.priority);
-  const availablePriorities = allowedPriorities.filter(
-    (n) => !usedPriorities.includes(n),
-  );
-  if (availablePriorities.length === 0) {
-    console.error('No priorities available to assign piece, assigning 99');
-    availablePriorities.push(99);
+  let availablePriorities = allowedPriorities;
+  if (!G.config.piecePriorityDuplicates) {
+    const usedPriorities = G.pieces
+      .filter((p) => p.owner === pieceToCreate.owner)
+      .map((p) => p.priority);
+    availablePriorities = allowedPriorities.filter(
+      (n) => !usedPriorities.includes(n),
+    );
+    if (availablePriorities.length === 0) {
+      console.error('No priorities available to assign piece, assigning 99');
+      availablePriorities.push(99);
+    }
   }
-  const priority = randomFromArray(availablePriorities);
-
-  return priority;
+  return randomFromArray(availablePriorities);
 };
 
 /**
