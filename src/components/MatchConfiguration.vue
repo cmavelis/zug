@@ -63,6 +63,7 @@ const ruleSet = computed<ZugConfig>(() => {
       ? convertMaskedInputToArray(startPiecePriorities.value)
       : [2, 3, 4, 5],
     piecePriorityDuplicates: piecePriorityDuplicates.value,
+    piecePushRestrictions: pieceOnlyPushLowerNumbers.value,
   };
 });
 
@@ -149,14 +150,12 @@ const createMatch = async () => {
         <span>Piece priority: allow duplicates</span>
         <InputSwitch v-model="piecePriorityDuplicates" />
       </div>
-      <p>(Coming soon)</p>
+      <h4>(Experimental)</h4>
       <div class="config-item">
         <span>Piece priority: can only push lower numbers</span>
-        <InputSwitch disabled v-model="pieceOnlyPushLowerNumbers" />
+        <InputSwitch v-model="pieceOnlyPushLowerNumbers" />
       </div>
     </div>
-    <!-- //TODO: remove-->
-    <pre>{{ ruleSet }}</pre>
   </div>
 </template>
 

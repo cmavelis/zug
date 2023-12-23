@@ -379,8 +379,20 @@ export function orderResolver({ G }: { G: GObject }) {
       console.log('piece ', order.sourcePieceId, ' no longer exists');
       return [];
     }
-
-    // todo validate
+    // only push lower or equal priorities
+    if (G.config.piecePushRestrictions) {
+      const newPosition = addDisplacement(
+        pushingPiece.position,
+        order.toTarget,
+      );
+      const targetPiece = pieces.find((p) => isEqual(p.position, newPosition));
+      if (!targetPiece) {
+        return [];
+      }
+      if (targetPiece.priority > pushingPiece.priority) {
+        return [];
+      }
+    }
 
     // apply effects
     const pushesArray = getPushes(pushingPiece, order.toTarget);
