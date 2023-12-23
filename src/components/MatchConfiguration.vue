@@ -139,14 +139,17 @@ const createMatch = async () => {
             mask="9,9,9,9"
             placeholder="2,3,4,5"
           />
-          <p>Must be 4 non-zero integers</p>
+          <p>
+            Must be 4 non-zero integers.<br />
+            Defaults to 2,3,4,5 if left empty
+          </p>
         </div>
       </div>
-      <p>(Coming soon)</p>
       <div class="config-item">
         <span>Piece priority: allow duplicates</span>
-        <InputSwitch disabled v-model="piecePriorityDuplicates" />
+        <InputSwitch v-model="piecePriorityDuplicates" />
       </div>
+      <p>(Coming soon)</p>
       <div class="config-item">
         <span>Piece priority: can only push lower numbers</span>
         <InputSwitch disabled v-model="pieceOnlyPushLowerNumbers" />
