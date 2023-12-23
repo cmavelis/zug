@@ -55,3 +55,16 @@ test('generate priorities, none available', () => {
   // 99 is error
   expect(newPriority).toEqual(99);
 });
+
+test('generate priorities, allow duplicates', () => {
+  const GNone = makeTestGame({
+    config: { ...defaultG.config, piecePriorityDuplicates: true },
+    pieces: [1, 2, 3, 4, 5, 6].map((v) => makeTestPiece({ priority: v })),
+  });
+  const newPriority = generatePiecePriority({
+    G: GNone,
+    pieceToCreate,
+  });
+  // 99 is error
+  expect(newPriority).not.toEqual(99);
+});
