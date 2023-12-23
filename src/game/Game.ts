@@ -1,18 +1,18 @@
 import type { Game } from 'boardgame.io';
 import { INVALID_MOVE } from 'boardgame.io/core';
+import { shuffle } from 'lodash';
+
 import { createPiece, type Piece } from '@/game/pieces';
 import type { Order, Orders } from '@/game/orders';
 import { orderResolver } from '@/game/orders';
 import type { Coordinates } from '@/game/common';
 import { isValidOrder } from '@/game/zugzwang/validators';
-import type {
-  OutOfBoundsMode,
-  PriorityMode,
-  ZugConfig as CommonGameConfig,
-} from '@/game/zugzwang/config';
+import type { ZugConfig as CommonGameConfig } from '@/game/zugzwang/config';
 import { stripSecrets } from '@/game/common';
+import { DEFAULT_ZUG_CONFIG } from '@/game/zugzwang/config';
 
-export interface GameSetupData extends Partial<CommonGameConfig> {
+export interface GameSetupData {
+  config: Partial<CommonGameConfig>;
   empty?: boolean;
 }
 
@@ -55,8 +55,8 @@ export const SimulChess: Game<GObject> = {
     const initialGame = {
       config: {
         board,
-        outOfBounds: setupData?.outOfBounds || ('immediate' as OutOfBoundsMode),
-        priority: setupData?.priority || ('piece' as PriorityMode),
+        ...DEFAULT_ZUG_CONFIG,
+        ...setupData.config,
       },
       cells: Array(board.x * board.y).fill(null),
       pieces: [],
@@ -87,19 +87,23 @@ export const SimulChess: Game<GObject> = {
         pieceToCreate: { owner: 1, position: { x: 3, y: 3 } },
       });
     } else {
-      [0, 1, 2, 3].forEach((x) =>
+      const { startingPiecePriorities } = setupData.config;
+      const p1PiecePriorities = shuffle(startingPiecePriorities);
+      const p2PiecePriorities = shuffle(startingPiecePriorities);
+
+      [0, 1, 2, 3].forEach((x, i) =>
         createPiece({
           G: initialGame,
           pieceToCreate: { owner: 0, position: { x, y: 0 } },
-          priorityArray: [2, 3, 4, 5],
+          forcedPriority: p1PiecePriorities[i],
         }),
       );
 
-      [0, 1, 2, 3].forEach((x) =>
+      [0, 1, 2, 3].forEach((x, i) =>
         createPiece({
           G: initialGame,
           pieceToCreate: { owner: 1, position: { x, y: 3 } },
-          priorityArray: [2, 3, 4, 5],
+          forcedPriority: p2PiecePriorities[i],
         }),
       );
     }

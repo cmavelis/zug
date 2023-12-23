@@ -5,7 +5,7 @@ import {
   isOppositeVector,
   stripSecrets,
 } from '@/game/common';
-import type { GameState } from '@/game/Game';
+import { makeTestGame } from '@/game/test-utils';
 
 test('0,0 coords, 3,4 shape', () => {
   expect(coordinatesToArray({ x: 0, y: 0 }, { x: 3, y: 4 })).toEqual(0);
@@ -64,35 +64,20 @@ test('orthogonal diagonal vectors', () => {
   expect(isOppositeVector({ x: 1, y: 1 }, { x: -1, y: 1 })).toBe(false);
 });
 
-const setupGame = (partialG?: Partial<GameState>) => {
-  const G: GameState = {
-    config: {
-      board: { x: 3, y: 3 },
-      outOfBounds: 'immediate',
-      priority: 'piece',
-    },
-    cells: [],
-    pieces: [],
-    orders: { 0: [], 1: [] },
-    score: {},
-  };
-  return { ...G, ...partialG };
-};
-
 test('strip secrets, p 1', () => {
-  const G = setupGame();
+  const G = makeTestGame();
   const stripped = stripSecrets(G, '0');
   expect(stripped.orders).toEqual({ 0: [] });
 });
 
 test('strip secrets, p 2', () => {
-  const G = setupGame();
+  const G = makeTestGame();
   const stripped = stripSecrets(G, '1');
   expect(stripped.orders).toEqual({ 1: [] });
 });
 
 test('strip secrets, spectator', () => {
-  const G = setupGame();
+  const G = makeTestGame();
   const stripped = stripSecrets(G, null);
   expect(stripped.orders).toEqual({ 0: [], 1: [] });
 });

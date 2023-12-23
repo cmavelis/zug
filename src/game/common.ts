@@ -71,3 +71,8 @@ export const stripSecrets = (
   }
   return { ...G, orders };
 };
+
+export const randomFromArray = <T>(choiceArray: Array<T>): T => {
+  const randomIndex = Math.floor(Math.random() * choiceArray.length);
+  return choiceArray[randomIndex];
+};

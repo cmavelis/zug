@@ -1,9 +1,13 @@
 <script setup lang="ts">
 import Button from 'primevue/button';
 import InputSwitch from 'primevue/inputswitch';
+import InputMask from 'primevue/inputmask';
 import SelectButton from 'primevue/selectbutton';
 import Slider from 'primevue/slider';
+import { useField } from 'vee-validate';
 import { computed, ref } from 'vue';
+import { LobbyClient } from 'boardgame.io/client';
+
 import {
   OUT_OF_BOUNDS_MODES,
   PRIORITY_MODES,
@@ -13,8 +17,28 @@ import {
   type ZugConfig,
 } from '@/game/zugzwang/config';
 import { getServerURL } from '@/utils';
-import { LobbyClient } from 'boardgame.io/client';
 import { useMatch } from '@/composables/useMatch';
+import type { GameSetupData } from '@/game/Game';
+
+// input: "1,2,3,4"
+const convertMaskedInputToArray = (masked: string) => {
+  return masked.split(',').map(Number);
+};
+const validateStartingPriorities = (value: string | undefined) => {
+  if (value === undefined || value === '') {
+    return true;
+  }
+  const arrayValue = convertMaskedInputToArray(value);
+  if (arrayValue.some((v) => !v)) {
+    return 'Must be 4 non-zero integers';
+  }
+  return true;
+};
+
+const { value: startPiecePriorities } = useField(
+  'startPiecePriorities',
+  validateStartingPriorities,
+);
 
 const unlisted = ref(false);
 
@@ -25,13 +49,21 @@ const obRule = ref(OUT_OF_BOUNDS_MODES.turnEnd);
 const obOptions = Object.values(OUT_OF_BOUNDS_MODES);
 
 const maxPiecePriority = ref(PIECE_PRIORITIES_LIST.slice(-1)[0]);
-const piecePriorityOverlap = ref(PIECE_PRIORITY_DUPLICATES);
+const piecePriorityDuplicates = ref(PIECE_PRIORITY_DUPLICATES);
 const pieceOnlyPushLowerNumbers = ref(PUSH_ONLY_LOWER_NUMBERS);
 
 const ruleSet = computed<ZugConfig>(() => {
   return {
     priority: priorityRule.value,
     outOfBounds: obRule.value,
+    piecePriorityOptions: Array(maxPiecePriority.value)
+      .fill(1)
+      .map((v, i) => i + 1),
+    startingPiecePriorities: startPiecePriorities.value
+      ? convertMaskedInputToArray(startPiecePriorities.value)
+      : [2, 3, 4, 5],
+    piecePriorityDuplicates: piecePriorityDuplicates.value,
+    piecePushRestrictions: pieceOnlyPushLowerNumbers.value,
   };
 });
 
@@ -41,9 +73,10 @@ const lobbyClient = new LobbyClient({ server });
 const { navigateToMatch } = useMatch(lobbyClient);
 const createMatch = async () => {
   try {
+    const setupData: GameSetupData = { config: ruleSet.value };
     const createdMatch = await lobbyClient.createMatch('zug', {
       numPlayers: 2,
-      setupData: ruleSet.value,
+      setupData,
       unlisted: unlisted.value,
     });
     if (createdMatch) {
@@ -88,7 +121,6 @@ const createMatch = async () => {
           :allow-empty="false"
         />
       </div>
-      <p>(The following aren't implemented yet)</p>
       <div class="config-item">
         <span>Piece priority range</span>
         <span>1-{{ maxPiecePriority }}</span>
@@ -101,9 +133,24 @@ const createMatch = async () => {
         />
       </div>
       <div class="config-item">
-        <span>Piece priority: allow duplicates</span>
-        <InputSwitch v-model="piecePriorityOverlap" />
+        <span>Piece priorities, start of game:</span>
+        <div>
+          <InputMask
+            v-model="startPiecePriorities"
+            mask="9,9,9,9"
+            placeholder="2,3,4,5"
+          />
+          <p>
+            Must be 4 non-zero integers.<br />
+            Defaults to 2,3,4,5 if left empty
+          </p>
+        </div>
       </div>
+      <div class="config-item">
+        <span>Piece priority: allow duplicates</span>
+        <InputSwitch v-model="piecePriorityDuplicates" />
+      </div>
+      <h4>(Experimental)</h4>
       <div class="config-item">
         <span>Piece priority: can only push lower numbers</span>
         <InputSwitch v-model="pieceOnlyPushLowerNumbers" />

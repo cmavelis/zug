@@ -11,6 +11,7 @@ import { store } from '@/store';
 import { getServerURL } from '@/utils';
 import { useMatch } from '@/composables/useMatch';
 import type { EnhancedMatch } from '../../server/types';
+import { DEFAULT_ZUG_CONFIG } from '@/game/zugzwang/config';
 
 const matches: Ref<EnhancedMatch[]> = ref([]);
 const server = getServerURL();
@@ -25,7 +26,9 @@ lobbyClient
   .catch(console.error);
 
 const router = useRouter();
-const createMatch = async (setupData: GameSetupData = {}) => {
+const createMatch = async (
+  setupData: GameSetupData = { config: DEFAULT_ZUG_CONFIG },
+) => {
   const createdMatch = await lobbyClient.createMatch('zug', {
     numPlayers: 2,
     setupData,
@@ -82,7 +85,7 @@ watch(matches, () => {
     <h1>Matches Lobby</h1>
     <h2>Create a match</h2>
     <span class="p-buttonset">
-      <Button @click="createMatch({ priority: 'piece' })">Standard</Button>
+      <Button @click="createMatch()">Standard</Button>
       <Button severity="secondary"
         ><RouterLink to="match-configure" class="black-font"
           >Custom</RouterLink
@@ -99,7 +102,7 @@ watch(matches, () => {
         :match="match"
         :highlight="!match.gameover"
         :handle-match-join="
-          () => requestJoinMatch(match.matchID, {}, navigateToMatch)
+          () => requestJoinMatch(match.matchID, undefined, navigateToMatch)
         "
         :handle-match-navigate="() => navigateToMatch(match.matchID)"
       />
