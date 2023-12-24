@@ -130,25 +130,8 @@ export function orderResolver({ G }: { G: GObject }) {
     sortedOrders1 = PIECE_PRIORITIES_LIST.map(() => null);
     sortedOrders2 = PIECE_PRIORITIES_LIST.map(() => null);
 
-    const arrangeOrders = (targetArray: (Order | null)[]) => (order: Order) => {
-      const piece = getPiece(G, order.sourcePieceId);
-      // "place" e.g.
-      if (!piece) {
-        targetArray.push(order);
-        return;
-      }
-      const { priority } = piece;
-      if (targetArray[priority - 1]) {
-        console.error(
-          `Order already exists for player with piece priority ${priority}`,
-        );
-        return;
-      }
-      targetArray[priority - 1] = order;
-    };
-
-    orders[0].forEach(arrangeOrders(sortedOrders1));
-    orders[1].forEach(arrangeOrders(sortedOrders2));
+    orders[0].forEach(arrangeOrders(G, sortedOrders1));
+    orders[1].forEach(arrangeOrders(G, sortedOrders2));
   }
 
   const numberOrders = Math.max(sortedOrders1.length, sortedOrders2.length);
@@ -619,3 +602,21 @@ function isPositionOnBoard(G: GameState, position: Coordinates): boolean {
   }
   return !(position.y < 0 || position.y >= G.config.board.y);
 }
+
+export const arrangeOrders =
+  (G: GameState, targetArray: (Order | null)[]) => (order: Order) => {
+    const piece = getPiece(G, order.sourcePieceId);
+    // "place" e.g.
+    if (!piece) {
+      targetArray.push(order);
+      return;
+    }
+    const { priority } = piece;
+    if (targetArray[priority - 1]) {
+      console.error(
+        `Order already exists for player with piece priority ${priority}`,
+      );
+      return;
+    }
+    targetArray[priority - 1] = order;
+  };
