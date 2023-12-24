@@ -367,7 +367,7 @@ getNotificationSound(store.zugUsername === 'Ben').then((notificationSound) => {
         +
       </button>
       <button @click="setHistoryStep(gameLastTurn.length)">>|</button>
-
+      <hr class="history-spacer" />
       <BoardDisplay
         :state="{ G: gameLastTurn[historyTurnStep - 1] }"
         :orderNumber="historyTurnStep"
@@ -396,6 +396,11 @@ main {
 
 .score {
   white-space: nowrap;
+}
+
+.history-spacer {
+  border: none;
+  height: 3rem;
 }
 
 .info-message {
