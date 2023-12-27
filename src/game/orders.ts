@@ -647,18 +647,18 @@ export function createOrderArrayCompareFn(
     }
 
     // compare piece priorities
-    if (pieceA.priority > pieceB.priority) {
+    if (pieceA.priority < pieceB.priority) {
       return -1;
     }
-    if (pieceA.priority < pieceB.priority) {
+    if (pieceA.priority > pieceB.priority) {
       return 1;
     }
 
     // if equal, then compare:
-    if (orderA.priority > orderB.priority) {
+    if (orderA.priority < orderB.priority) {
       return -1;
     }
-    if (orderA.priority < orderB.priority) {
+    if (orderA.priority > orderB.priority) {
       return 1;
     }
 
@@ -669,6 +669,7 @@ export function createOrderArrayCompareFn(
 type OrderArray = (Order | null)[];
 type OrderPairArray = OrderArray[];
 
+//TODO: work on this
 export function arrangeOrderPairs(
   G: GameState,
   orderArray0: OrderArray,
