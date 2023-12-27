@@ -669,29 +669,78 @@ export function createOrderArrayCompareFn(
 type OrderArray = (Order | null)[];
 type OrderPairArray = OrderArray[];
 
-//TODO: work on this
 export function arrangeOrderPairs(
   G: GameState,
   orderArray0: OrderArray,
   orderArray1: OrderArray,
 ): OrderPairArray {
-  // first sort
-  // then iterate and piece together
+  // first, sort the arrays by priority for easy iteration
   const orderArray0Sorted = orderArray0
     .slice()
     .sort(createOrderArrayCompareFn(G));
-  const piece = getPiece(G, order.sourcePieceId);
-  // "place" e.g.
-  if (!piece) {
-    targetArray.push(order);
-    return;
+  const orderArray1Sorted = orderArray1
+    .slice()
+    .sort(createOrderArrayCompareFn(G));
+
+  const orderPairs: OrderPairArray = [];
+
+  let iterating = true;
+  let array0index = 0;
+  let array1index = 0;
+
+  // pair up exact priority matches for resolver to run through
+  while (iterating) {
+    const order0 = orderArray0Sorted[array0index];
+    let piece0;
+    if (order0) {
+      piece0 = getPiece(G, order0.sourcePieceId);
+    }
+    const order1 = orderArray1Sorted[array1index];
+    let piece1;
+    if (order1) {
+      piece1 = getPiece(G, order1.sourcePieceId);
+    }
+
+    let addOrder0 = false;
+    let addOrder1 = false;
+    const nextPair: OrderArray = [null, null];
+
+    // if no order for one list, can skip piece comparison
+    if (!(order0 && order1)) {
+      addOrder0 = !!order0;
+      addOrder1 = !!order1;
+    } else if (piece0 && piece1) {
+      if (piece0.priority < piece1.priority) {
+        addOrder0 = true;
+      } else if (piece0.priority > piece1.priority) {
+        addOrder1 = true;
+      } else if (piece0.priority === piece1.priority) {
+        // pieces tied, compare order intrinsic priority
+        if (order0.priority < order1.priority) {
+          addOrder0 = true;
+        } else if (order0.priority > order1.priority) {
+          addOrder1 = true;
+        }
+      }
+    } else {
+      console.error(
+        'Piece missing while comparing orders. This should not happen',
+      );
+    }
+
+    if (addOrder0) {
+      nextPair[0] = order0;
+      array0index++;
+    }
+    if (addOrder1) {
+      nextPair[1] = order1;
+      array1index++;
+    }
+    orderPairs.push(nextPair);
+    if (!(addOrder0 || addOrder1)) {
+      iterating = false;
+    }
   }
-  const { priority } = piece;
-  if (targetArray[priority - 1]) {
-    console.error(
-      `Order already exists for player with piece priority ${priority}`,
-    );
-    return;
-  }
-  targetArray[priority - 1] = order;
+
+  return orderPairs;
 }
