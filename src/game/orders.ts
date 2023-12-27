@@ -626,7 +626,7 @@ export function createOrderArrayCompareFn(
     const pieceB = getPiece(G, orderB.sourcePieceId);
 
     if (!pieceA || !pieceB) {
-      // TODO: any consideration other than type safety here?
+      // any consideration other than type safety here?
       return 0;
     }
 
