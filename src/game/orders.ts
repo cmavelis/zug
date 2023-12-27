@@ -1,4 +1,4 @@
-import { cloneDeep, countBy, forOwn, isEqual, remove } from 'lodash';
+import { cloneDeep, countBy, forOwn, isEqual, remove, zip } from 'lodash';
 import type { Coordinates } from '@/game/common';
 import {
   addDisplacement,
@@ -118,35 +118,19 @@ export function orderResolver({ G }: { G: GObject }) {
   const { cells, orders, pieces, score } = G;
 
   const turnHistory = [];
-  let sortedOrders1: (Order | null)[] = orders[0];
-  let sortedOrders2: (Order | null)[] = orders[1];
   let orderPairs: (Order | null)[][] = [];
 
   // "piece" variant sorts orders by piece ID instead of as submitted
-
-  // create list with right # slots
-  // iterate through orders, slotting in the right spot (error if occupied)
-  // tack on "other" orders at the end (place, etc)
   if (G.config.priority === 'piece') {
-    sortedOrders1 = PIECE_PRIORITIES_LIST.map(() => null);
-    sortedOrders2 = PIECE_PRIORITIES_LIST.map(() => null);
-
-    orders[0].forEach(arrangeOrders(G, sortedOrders1));
-    orders[1].forEach(arrangeOrders(G, sortedOrders2));
+    orderPairs = arrangeOrderPairs(G, orders[0], orders[1]);
+  } else {
+    // @ts-expect-error order potentially undefined
+    orderPairs = zip(orders[0], orders[1]);
   }
 
-  // todo wip
-  // don't use sortedOrders, just directly pass orderPairs
-  if (G.config.priority === 'piece-new') {
-    orderPairs = arrangeOrderPairs();
-  }
-
-  const numberOrders = Math.max(sortedOrders1.length, sortedOrders2.length);
-  // const numberOrders = orderPairs.length
+  const numberOrders = orderPairs.length;
   for (let i = 0; i < numberOrders; i++) {
-    // TODO: grab pair here for ordersToResolve
-    const ordersToResolve = [sortedOrders1[i], sortedOrders2[i]];
-    // const ordersToResolve = orderPairs[i]
+    const ordersToResolve = orderPairs[i];
 
     // for history
     const ordersUsed = {
