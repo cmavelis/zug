@@ -16,7 +16,7 @@ import {
 import { logProxy } from '@/utils';
 import type { Piece, PieceToCreate } from '@/game/pieces';
 import { createPiece } from '@/game/pieces';
-import { PIECE_PRIORITIES_LIST, MOVES_CAN_PUSH } from '@/game/zugzwang/config';
+import { MOVES_CAN_PUSH } from '@/game/zugzwang/config';
 
 // orders are stored with displacement from piece to target
 export interface OrderBase {
