@@ -118,7 +118,7 @@ export function orderResolver({ G }: { G: GObject }) {
   const { cells, orders, pieces, score } = G;
 
   const turnHistory = [];
-  let orderPairs: (Order | null)[][] = [];
+  let orderPairs: (Order | null)[][];
 
   // "piece" variant sorts orders by piece ID instead of as submitted
   if (G.config.priority === 'piece') {
