@@ -720,6 +720,9 @@ export function arrangeOrderPairs(
           addOrder0 = true;
         } else if (order0.priority > order1.priority) {
           addOrder1 = true;
+        } else if (order0.priority === order1.priority) {
+          addOrder0 = true;
+          addOrder1 = true;
         }
       }
     } else {
@@ -736,9 +739,10 @@ export function arrangeOrderPairs(
       nextPair[1] = order1;
       array1index++;
     }
-    orderPairs.push(nextPair);
     if (!(addOrder0 || addOrder1)) {
       iterating = false;
+    } else {
+      orderPairs.push(nextPair);
     }
   }
 
