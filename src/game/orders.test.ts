@@ -24,3 +24,15 @@ test('arrange actions, basic', () => {
     null,
   ]);
 });
+
+test('arrange actions, basic (new method)', () => {
+  const sortedOrderPairs = orders.forEach(arrangeOrders(G, sortedOrders));
+  expect(sortedOrders).toEqual([
+    piecePriority1Order,
+    null,
+    piecePriority3Order,
+    null,
+    null,
+    null,
+  ]);
+});

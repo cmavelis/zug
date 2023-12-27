@@ -120,6 +120,7 @@ export function orderResolver({ G }: { G: GObject }) {
   const turnHistory = [];
   let sortedOrders1: (Order | null)[] = orders[0];
   let sortedOrders2: (Order | null)[] = orders[1];
+  let orderPairs: (Order | null)[][] = [];
 
   // "piece" variant sorts orders by piece ID instead of as submitted
 
@@ -134,9 +135,18 @@ export function orderResolver({ G }: { G: GObject }) {
     orders[1].forEach(arrangeOrders(G, sortedOrders2));
   }
 
+  // todo wip
+  // don't use sortedOrders, just directly pass orderPairs
+  if (G.config.priority === 'piece-new') {
+    orderPairs = arrangeOrderPairs();
+  }
+
   const numberOrders = Math.max(sortedOrders1.length, sortedOrders2.length);
+  // const numberOrders = orderPairs.length
   for (let i = 0; i < numberOrders; i++) {
+    // TODO: grab pair here for ordersToResolve
     const ordersToResolve = [sortedOrders1[i], sortedOrders2[i]];
+    // const ordersToResolve = orderPairs[i]
 
     // for history
     const ordersUsed = {
@@ -620,3 +630,67 @@ export const arrangeOrders =
     }
     targetArray[priority - 1] = order;
   };
+
+export function createOrderArrayCompareFn(
+  G: GameState,
+): (orderA: Order | null, orderB: Order | null) => number {
+  return (orderA, orderB) => {
+    if (orderA === null || orderB === null) {
+      return 0;
+    }
+    const pieceA = getPiece(G, orderA.sourcePieceId);
+    const pieceB = getPiece(G, orderB.sourcePieceId);
+
+    if (!pieceA || !pieceB) {
+      // TODO: any consideration other than type safety here?
+      return 0;
+    }
+
+    // compare piece priorities
+    if (pieceA.priority > pieceB.priority) {
+      return -1;
+    }
+    if (pieceA.priority < pieceB.priority) {
+      return 1;
+    }
+
+    // if equal, then compare:
+    if (orderA.priority > orderB.priority) {
+      return -1;
+    }
+    if (orderA.priority < orderB.priority) {
+      return 1;
+    }
+
+    return 0;
+  };
+}
+
+type OrderArray = (Order | null)[];
+type OrderPairArray = OrderArray[];
+
+export function arrangeOrderPairs(
+  G: GameState,
+  orderArray0: OrderArray,
+  orderArray1: OrderArray,
+): OrderPairArray {
+  // first sort
+  // then iterate and piece together
+  const orderArray0Sorted = orderArray0
+    .slice()
+    .sort(createOrderArrayCompareFn(G));
+  const piece = getPiece(G, order.sourcePieceId);
+  // "place" e.g.
+  if (!piece) {
+    targetArray.push(order);
+    return;
+  }
+  const { priority } = piece;
+  if (targetArray[priority - 1]) {
+    console.error(
+      `Order already exists for player with piece priority ${priority}`,
+    );
+    return;
+  }
+  targetArray[priority - 1] = order;
+}
