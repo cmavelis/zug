@@ -625,9 +625,12 @@ export function createOrderArrayCompareFn(
     const pieceA = getPiece(G, orderA.sourcePieceId);
     const pieceB = getPiece(G, orderB.sourcePieceId);
 
-    if (!pieceA || !pieceB) {
-      // any consideration other than type safety here?
-      return 0;
+    // 'place' action has no piece associated
+    if (!pieceA) {
+      return 1;
+    }
+    if (!pieceB) {
+      return -1;
     }
 
     // compare piece priorities
@@ -693,26 +696,23 @@ export function arrangeOrderPairs(
     if (!(order0 && order1)) {
       addOrder0 = !!order0;
       addOrder1 = !!order1;
-    } else if (piece0 && piece1) {
+    } else if (piece0 && piece1 && piece0.priority !== piece1.priority) {
+      // pieces, unequal priority
       if (piece0.priority < piece1.priority) {
         addOrder0 = true;
       } else if (piece0.priority > piece1.priority) {
         addOrder1 = true;
-      } else if (piece0.priority === piece1.priority) {
-        // pieces tied, compare order intrinsic priority
-        if (order0.priority < order1.priority) {
-          addOrder0 = true;
-        } else if (order0.priority > order1.priority) {
-          addOrder1 = true;
-        } else if (order0.priority === order1.priority) {
-          addOrder0 = true;
-          addOrder1 = true;
-        }
       }
     } else {
-      console.error(
-        'Piece missing while comparing orders. This should not happen',
-      );
+      // piece priority tied, or place action taken; compare order intrinsic priority
+      if (order0.priority < order1.priority) {
+        addOrder0 = true;
+      } else if (order0.priority > order1.priority) {
+        addOrder1 = true;
+      } else if (order0.priority === order1.priority) {
+        addOrder0 = true;
+        addOrder1 = true;
+      }
     }
 
     if (addOrder0) {

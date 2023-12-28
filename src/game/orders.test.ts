@@ -13,6 +13,10 @@ const piecePriority1 = makeTestPiece({ id: 1, priority: 1 });
 const piecePriority3Order = makeTestOrder({ sourcePieceId: 0 });
 const piecePriority1Order = makeTestOrder({ sourcePieceId: 1 });
 const piece1OrderPriority4 = makeTestOrder({ sourcePieceId: 1, priority: 4 });
+const piecePlaceOrder = makeTestOrder({
+  type: 'place',
+  sourcePieceId: -1,
+});
 
 const G = makeTestGame({ pieces: [piecePriority3, piecePriority1] });
 const orders = [piecePriority3Order, piecePriority1Order];
@@ -55,5 +59,20 @@ test('arrange order pairs, basic (new method)', () => {
     [piecePriority1Order, piecePriority1Order],
     [null, piece1OrderPriority4],
     [piecePriority3Order, null],
+  ]);
+});
+
+test('arrange order pairs, with place actions', () => {
+  const sortedOrderPairs = arrangeOrderPairs(
+    G,
+    [piecePlaceOrder, piecePlaceOrder].concat(orders),
+    [piecePlaceOrder].concat(ordersP2),
+  );
+  expect(sortedOrderPairs).toEqual([
+    [piecePriority1Order, piecePriority1Order],
+    [null, piece1OrderPriority4],
+    [piecePriority3Order, null],
+    [piecePlaceOrder, piecePlaceOrder],
+    [piecePlaceOrder, null],
   ]);
 });
