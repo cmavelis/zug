@@ -1,4 +1,4 @@
-import { cloneDeep, countBy, forOwn, isEqual, remove } from 'lodash';
+import { cloneDeep, countBy, forOwn, isEqual, remove, zip } from 'lodash';
 import type { Coordinates } from '@/game/common';
 import {
   addDisplacement,
@@ -16,7 +16,7 @@ import {
 import { logProxy } from '@/utils';
 import type { Piece, PieceToCreate } from '@/game/pieces';
 import { createPiece } from '@/game/pieces';
-import { PIECE_PRIORITIES_LIST, MOVES_CAN_PUSH } from '@/game/zugzwang/config';
+import { MOVES_CAN_PUSH } from '@/game/zugzwang/config';
 
 // orders are stored with displacement from piece to target
 export interface OrderBase {
@@ -118,42 +118,19 @@ export function orderResolver({ G }: { G: GObject }) {
   const { cells, orders, pieces, score } = G;
 
   const turnHistory = [];
-  let sortedOrders1: (Order | null)[] = orders[0];
-  let sortedOrders2: (Order | null)[] = orders[1];
+  let orderPairs: (Order | null)[][];
 
   // "piece" variant sorts orders by piece ID instead of as submitted
-
-  // create list with right # slots
-  // iterate through orders, slotting in the right spot (error if occupied)
-  // tack on "other" orders at the end (place, etc)
   if (G.config.priority === 'piece') {
-    sortedOrders1 = PIECE_PRIORITIES_LIST.map(() => null);
-    sortedOrders2 = PIECE_PRIORITIES_LIST.map(() => null);
-
-    const arrangeOrders = (targetArray: (Order | null)[]) => (order: Order) => {
-      const piece = getPiece(G, order.sourcePieceId);
-      // "place" e.g.
-      if (!piece) {
-        targetArray.push(order);
-        return;
-      }
-      const { priority } = piece;
-      if (targetArray[priority - 1]) {
-        console.error(
-          `Order already exists for player with piece priority ${priority}`,
-        );
-        return;
-      }
-      targetArray[priority - 1] = order;
-    };
-
-    orders[0].forEach(arrangeOrders(sortedOrders1));
-    orders[1].forEach(arrangeOrders(sortedOrders2));
+    orderPairs = arrangeOrderPairs(G, orders[0], orders[1]);
+  } else {
+    // @ts-expect-error order potentially undefined
+    orderPairs = zip(orders[0], orders[1]);
   }
 
-  const numberOrders = Math.max(sortedOrders1.length, sortedOrders2.length);
+  const numberOrders = orderPairs.length;
   for (let i = 0; i < numberOrders; i++) {
-    const ordersToResolve = [sortedOrders1[i], sortedOrders2[i]];
+    const ordersToResolve = orderPairs[i];
 
     // for history
     const ordersUsed = {
@@ -618,4 +595,140 @@ function isPositionOnBoard(G: GameState, position: Coordinates): boolean {
     return false;
   }
   return !(position.y < 0 || position.y >= G.config.board.y);
+}
+
+export const arrangeOrders =
+  (G: GameState, targetArray: (Order | null)[]) => (order: Order) => {
+    const piece = getPiece(G, order.sourcePieceId);
+    // "place" e.g.
+    if (!piece) {
+      targetArray.push(order);
+      return;
+    }
+    const { priority } = piece;
+    if (targetArray[priority - 1]) {
+      console.error(
+        `Order already exists for player with piece priority ${priority}`,
+      );
+      return;
+    }
+    targetArray[priority - 1] = order;
+  };
+
+export function createOrderArrayCompareFn(
+  G: GameState,
+): (orderA: Order | null, orderB: Order | null) => number {
+  return (orderA, orderB) => {
+    if (orderA === null || orderB === null) {
+      return 0;
+    }
+    const pieceA = getPiece(G, orderA.sourcePieceId);
+    const pieceB = getPiece(G, orderB.sourcePieceId);
+
+    // 'place' action has no piece associated
+    if (!pieceA) {
+      return 1;
+    }
+    if (!pieceB) {
+      return -1;
+    }
+
+    // compare piece priorities
+    if (pieceA.priority < pieceB.priority) {
+      return -1;
+    }
+    if (pieceA.priority > pieceB.priority) {
+      return 1;
+    }
+
+    // if equal, then compare:
+    if (orderA.priority < orderB.priority) {
+      return -1;
+    }
+    if (orderA.priority > orderB.priority) {
+      return 1;
+    }
+
+    return 0;
+  };
+}
+
+type OrderArray = (Order | null)[];
+type OrderPairArray = OrderArray[];
+
+export function arrangeOrderPairs(
+  G: GameState,
+  orderArray0: OrderArray,
+  orderArray1: OrderArray,
+): OrderPairArray {
+  // first, sort the arrays by priority for easy iteration
+  const orderArray0Sorted = orderArray0
+    .slice()
+    .sort(createOrderArrayCompareFn(G));
+  const orderArray1Sorted = orderArray1
+    .slice()
+    .sort(createOrderArrayCompareFn(G));
+
+  const orderPairs: OrderPairArray = [];
+
+  let iterating = true;
+  let array0index = 0;
+  let array1index = 0;
+
+  // pair up exact priority matches for resolver to run through
+  while (iterating) {
+    const order0 = orderArray0Sorted[array0index];
+    let piece0;
+    if (order0) {
+      piece0 = getPiece(G, order0.sourcePieceId);
+    }
+    const order1 = orderArray1Sorted[array1index];
+    let piece1;
+    if (order1) {
+      piece1 = getPiece(G, order1.sourcePieceId);
+    }
+
+    let addOrder0 = false;
+    let addOrder1 = false;
+    const nextPair: OrderArray = [null, null];
+
+    // if no order for one list, can skip piece comparison
+    if (!(order0 && order1)) {
+      addOrder0 = !!order0;
+      addOrder1 = !!order1;
+    } else if (piece0 && piece1 && piece0.priority !== piece1.priority) {
+      // pieces, unequal priority
+      if (piece0.priority < piece1.priority) {
+        addOrder0 = true;
+      } else if (piece0.priority > piece1.priority) {
+        addOrder1 = true;
+      }
+    } else {
+      // piece priority tied, or place action taken; compare order intrinsic priority
+      if (order0.priority < order1.priority) {
+        addOrder0 = true;
+      } else if (order0.priority > order1.priority) {
+        addOrder1 = true;
+      } else if (order0.priority === order1.priority) {
+        addOrder0 = true;
+        addOrder1 = true;
+      }
+    }
+
+    if (addOrder0) {
+      nextPair[0] = order0;
+      array0index++;
+    }
+    if (addOrder1) {
+      nextPair[1] = order1;
+      array1index++;
+    }
+    if (!(addOrder0 || addOrder1)) {
+      iterating = false;
+    } else {
+      orderPairs.push(nextPair);
+    }
+  }
+
+  return orderPairs;
 }
