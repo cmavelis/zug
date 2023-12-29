@@ -488,6 +488,11 @@ export function orderResolver({ G }: { G: GObject }) {
   if (G.config.outOfBounds === 'turnEnd') {
     outOfBoundsPieces.push(...findOutOfBoundsPieces(G));
   }
+  // could just delete all active games with this config
+  // @ts-expect-error  for backwards compatability, turn-end is supported too
+  if (G.config.outOfBounds === 'turn-end') {
+    outOfBoundsPieces.push(...findOutOfBoundsPieces(G));
+  }
   removePieces(G, outOfBoundsPieces);
 
   // add OB events to history
