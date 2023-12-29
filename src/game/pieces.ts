@@ -5,6 +5,7 @@ import {
   randomFromArray,
   reportError,
 } from '@/game/common';
+import { DEFAULT_ZUG_CONFIG } from '@/game/zugzwang/config';
 
 type Optional<T, K extends keyof T> = Omit<T, K> & Partial<Pick<T, K>>;
 
@@ -30,7 +31,8 @@ export const generatePiecePriority = ({
 }) => {
   const { piecePriorityOptions } = G.config;
   // Setting priority
-  let allowedPriorities = piecePriorityOptions;
+  let allowedPriorities =
+    piecePriorityOptions || DEFAULT_ZUG_CONFIG.piecePriorityOptions;
 
   if (priorityArray) {
     const priorityDifference = priorityArray.filter(
