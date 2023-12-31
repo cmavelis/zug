@@ -192,7 +192,11 @@ function incrementHistoryStep() {
   }
 }
 function decrementHistoryStep() {
-  historyTurnStep.value--;
+  if (historyTurnStep.value > 1) historyTurnStep.value--;
+  else if (historyTurnStep.value === 1 && historyTurn.value > 1) {
+    historyTurn.value--;
+    historyTurnStep.value = gameState.G.history[historyTurn.value - 1].length;
+  }
 }
 function setHistoryStep(value: number) {
   historyTurnStep.value = value;
@@ -394,7 +398,6 @@ getNotificationSound(store.zugUsername === 'Ben').then((notificationSound) => {
           />
           <ButtonStepper
             icon="pi pi-caret-left"
-            :disabled="historyTurnStep <= 1"
             @click="decrementHistoryStep()"
           />
         </span>
