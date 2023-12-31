@@ -354,47 +354,54 @@ getNotificationSound(store.zugUsername === 'Ben').then((notificationSound) => {
     />
     <div v-if="gameLastTurn">
       <p>HISTORY</p>
-      <span class="p-buttonset nowrap">
-        <ButtonStepper icon="pi pi-step-backward" @click="historyTurn = 1" />
-        <ButtonStepper
-          icon="pi pi-caret-left"
-          @click="decrementHistoryTurn()"
-          :disabled="historyTurn <= 1"
-        />
-      </span>
-      <span id="history-order-number-display">{{ historyTurn }}</span>
-      <span class="p-buttonset nowrap">
-        <ButtonStepper
-          icon="pi pi-caret-right"
-          @click="incrementHistoryTurn()"
-          :disabled="historyTurn >= gameState.G.history.length"
-        />
-        <ButtonStepper
-          icon="pi pi-step-forward"
-          @click="setHistoryLastTurn()"
-        />
-      </span>
+      <div class="history-stepper-row">
+        <span class="p-buttonset nowrap">
+          <ButtonStepper icon="pi pi-step-backward" @click="historyTurn = 1" />
+          <ButtonStepper
+            icon="pi pi-caret-left"
+            @click="decrementHistoryTurn()"
+            :disabled="historyTurn <= 1"
+          />
+        </span>
+        <span class="history-order-number-display">{{ historyTurn }}</span>
+        <span class="p-buttonset nowrap">
+          <ButtonStepper
+            icon="pi pi-caret-right"
+            @click="incrementHistoryTurn()"
+            :disabled="historyTurn >= gameState.G.history.length"
+          />
+          <ButtonStepper
+            icon="pi pi-step-forward"
+            @click="setHistoryLastTurn()"
+          />
+        </span>
+      </div>
       <div>TURN {{ historyTurn }} STEP {{ historyTurnStep }}</div>
-      <span class="p-buttonset nowrap">
-        <ButtonStepper icon="pi pi-step-backward" @click="setHistoryStep(1)" />
-        <ButtonStepper
-          icon="pi pi-caret-left"
-          :disabled="historyTurnStep <= 1"
-          @click="decrementHistoryStep()"
-        />
-      </span>
-      <span id="history-order-number-display">{{ historyTurnStep }}</span>
-      <span class="p-buttonset nowrap">
-        <ButtonStepper
-          icon="pi pi-caret-right"
-          :disabled="historyTurnStep >= gameLastTurn.length"
-          @click="incrementHistoryStep()"
-        />
-        <ButtonStepper
-          icon="pi pi-step-forward"
-          @click="setHistoryStep(gameLastTurn.length)"
-        />
-      </span>
+      <div class="history-stepper-row">
+        <span class="p-buttonset nowrap">
+          <ButtonStepper
+            icon="pi pi-step-backward"
+            @click="setHistoryStep(1)"
+          />
+          <ButtonStepper
+            icon="pi pi-caret-left"
+            :disabled="historyTurnStep <= 1"
+            @click="decrementHistoryStep()"
+          />
+        </span>
+        <span class="history-order-number-display">{{ historyTurnStep }}</span>
+        <span class="p-buttonset nowrap">
+          <ButtonStepper
+            icon="pi pi-caret-right"
+            :disabled="historyTurnStep >= gameLastTurn.length"
+            @click="incrementHistoryStep()"
+          />
+          <ButtonStepper
+            icon="pi pi-step-forward"
+            @click="setHistoryStep(gameLastTurn.length)"
+          />
+        </span>
+      </div>
       <hr class="history-spacer" />
       <BoardDisplay
         :state="{ G: gameLastTurn[historyTurnStep - 1] }"
@@ -446,9 +453,16 @@ main {
   color: coral;
 }
 
-#history-order-number-display {
+.history-stepper-row {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.history-order-number-display {
   display: inline-block;
   width: 2rem;
+  font-size: 1.2rem;
 }
 
 .checked {
@@ -465,12 +479,6 @@ main {
   font-size: 2rem;
   font-weight: bold;
   color: var(--color-theme-green);
-}
-
-.stepper-button {
-  font-size: 1.2rem;
-  width: 3rem;
-  height: 3rem;
 }
 
 .match-settings {
