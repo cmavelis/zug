@@ -353,35 +353,50 @@ getNotificationSound(store.zugUsername === 'Ben').then((notificationSound) => {
     />
     <div v-if="gameLastTurn">
       <p>HISTORY</p>
-      <button @click="historyTurn = 1">
+      <button class="stepper-button" @click="historyTurn = 1">
         {{ '|<' }}
       </button>
-      <button :disabled="historyTurn <= 1" @click="decrementHistoryTurn()">
+      <button
+        class="stepper-button"
+        :disabled="historyTurn <= 1"
+        @click="decrementHistoryTurn()"
+      >
         -
       </button>
       <span id="history-order-number-display">{{ historyTurn }}</span>
       <button
+        class="stepper-button"
         :disabled="historyTurn >= gameState.G.history.length"
         @click="incrementHistoryTurn()"
       >
         +
       </button>
-      <button @click="setHistoryLastTurn()">>|</button>
+      <button class="stepper-button" @click="setHistoryLastTurn()">>|</button>
       <div>TURN {{ historyTurn }} STEP {{ historyTurnStep }}</div>
-      <button @click="setHistoryStep(1)">
+      <button class="stepper-button" @click="setHistoryStep(1)">
         {{ '|<' }}
       </button>
-      <button :disabled="historyTurnStep <= 1" @click="decrementHistoryStep()">
+      <button
+        class="stepper-button"
+        :disabled="historyTurnStep <= 1"
+        @click="decrementHistoryStep()"
+      >
         -
       </button>
       <span id="history-order-number-display">{{ historyTurnStep }}</span>
       <button
+        class="stepper-button"
         :disabled="historyTurnStep >= gameLastTurn.length"
         @click="incrementHistoryStep()"
       >
         +
       </button>
-      <button @click="setHistoryStep(gameLastTurn.length)">>|</button>
+      <button
+        class="stepper-button"
+        @click="setHistoryStep(gameLastTurn.length)"
+      >
+        >|
+      </button>
       <hr class="history-spacer" />
       <BoardDisplay
         :state="{ G: gameLastTurn[historyTurnStep - 1] }"
@@ -452,6 +467,11 @@ main {
   font-size: 2rem;
   font-weight: bold;
   color: var(--color-theme-green);
+}
+
+.stepper-button {
+  width: 2rem;
+  height: 2rem;
 }
 
 .match-settings {
