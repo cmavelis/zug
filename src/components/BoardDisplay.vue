@@ -55,7 +55,9 @@ const svgSideLength = BOARD_PIXEL_SIZE * 4;
       </div>
     </div>
     <div v-if="props.orderNumber">
-      <p>ACTIONS: turn step {{ props.orderNumber }}</p>
+      <p>Turn step: {{ props.orderNumber }}</p>
+      <p>score: {{ props.state.G.score[0] }} - {{ props.state.G.score[1] }}</p>
+      <p>ACTIONS</p>
       <template
         v-for="event in props.state.G.events"
         :key="event.sourcePieceId"
