@@ -35,6 +35,7 @@ import LoginComponent from '@/components/LoginComponent.vue';
 import { useMatch } from '@/composables/useMatch';
 import { LobbyClient } from 'boardgame.io/client';
 import { getServerURL } from '@/utils';
+import ButtonStepper from '@/components/ButtonStepper.vue';
 
 const windowHasFocus = useWindowFocus();
 const toast = useToast();
@@ -353,25 +354,26 @@ getNotificationSound(store.zugUsername === 'Ben').then((notificationSound) => {
     />
     <div v-if="gameLastTurn">
       <p>HISTORY</p>
-      <button class="stepper-button" @click="historyTurn = 1">
-        {{ '|<' }}
-      </button>
-      <button
-        class="stepper-button"
-        :disabled="historyTurn <= 1"
-        @click="decrementHistoryTurn()"
-      >
-        -
-      </button>
+      <span class="p-buttonset nowrap">
+        <ButtonStepper icon="pi pi-step-backward" @click="historyTurn = 1" />
+        <ButtonStepper
+          icon="pi pi-caret-left"
+          @click="decrementHistoryTurn()"
+          :disabled="historyTurn <= 1"
+        />
+      </span>
       <span id="history-order-number-display">{{ historyTurn }}</span>
-      <button
-        class="stepper-button"
-        :disabled="historyTurn >= gameState.G.history.length"
-        @click="incrementHistoryTurn()"
-      >
-        +
-      </button>
-      <button class="stepper-button" @click="setHistoryLastTurn()">>|</button>
+      <span class="p-buttonset nowrap">
+        <ButtonStepper
+          icon="pi pi-caret-right"
+          @click="incrementHistoryTurn()"
+          :disabled="historyTurn >= gameState.G.history.length"
+        />
+        <ButtonStepper
+          icon="pi pi-step-forward"
+          @click="setHistoryLastTurn()"
+        />
+      </span>
       <div>TURN {{ historyTurn }} STEP {{ historyTurnStep }}</div>
       <button class="stepper-button" @click="setHistoryStep(1)">
         {{ '|<' }}
