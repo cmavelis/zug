@@ -375,30 +375,26 @@ getNotificationSound(store.zugUsername === 'Ben').then((notificationSound) => {
         />
       </span>
       <div>TURN {{ historyTurn }} STEP {{ historyTurnStep }}</div>
-      <button class="stepper-button" @click="setHistoryStep(1)">
-        {{ '|<' }}
-      </button>
-      <button
-        class="stepper-button"
-        :disabled="historyTurnStep <= 1"
-        @click="decrementHistoryStep()"
-      >
-        -
-      </button>
+      <span class="p-buttonset nowrap">
+        <ButtonStepper icon="pi pi-step-backward" @click="setHistoryStep(1)" />
+        <ButtonStepper
+          icon="pi pi-caret-left"
+          :disabled="historyTurnStep <= 1"
+          @click="decrementHistoryStep()"
+        />
+      </span>
       <span id="history-order-number-display">{{ historyTurnStep }}</span>
-      <button
-        class="stepper-button"
-        :disabled="historyTurnStep >= gameLastTurn.length"
-        @click="incrementHistoryStep()"
-      >
-        +
-      </button>
-      <button
-        class="stepper-button"
-        @click="setHistoryStep(gameLastTurn.length)"
-      >
-        >|
-      </button>
+      <span class="p-buttonset nowrap">
+        <ButtonStepper
+          icon="pi pi-caret-right"
+          :disabled="historyTurnStep >= gameLastTurn.length"
+          @click="incrementHistoryStep()"
+        />
+        <ButtonStepper
+          icon="pi pi-step-forward"
+          @click="setHistoryStep(gameLastTurn.length)"
+        />
+      </span>
       <hr class="history-spacer" />
       <BoardDisplay
         :state="{ G: gameLastTurn[historyTurnStep - 1] }"
