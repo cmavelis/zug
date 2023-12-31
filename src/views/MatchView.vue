@@ -180,7 +180,16 @@ const gameLastTurn = computed(() => {
 });
 const historyTurnStep = ref(1);
 function incrementHistoryStep() {
-  historyTurnStep.value++;
+  if (gameLastTurn.value && historyTurnStep.value < gameLastTurn.value.length)
+    historyTurnStep.value++;
+  else if (
+    gameLastTurn.value &&
+    historyTurnStep.value >= gameLastTurn.value.length &&
+    historyTurn.value < gameState.G.history.length
+  ) {
+    historyTurn.value++;
+    historyTurnStep.value = 1;
+  }
 }
 function decrementHistoryStep() {
   historyTurnStep.value--;
@@ -393,7 +402,6 @@ getNotificationSound(store.zugUsername === 'Ben').then((notificationSound) => {
         <span class="p-buttonset nowrap">
           <ButtonStepper
             icon="pi pi-caret-right"
-            :disabled="historyTurnStep >= gameLastTurn.length"
             @click="incrementHistoryStep()"
           />
           <ButtonStepper
