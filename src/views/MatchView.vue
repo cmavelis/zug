@@ -470,8 +470,9 @@ main {
 }
 
 .stepper-button {
-  width: 2rem;
-  height: 2rem;
+  font-size: 1.2rem;
+  width: 3rem;
+  height: 3rem;
 }
 
 .match-settings {
