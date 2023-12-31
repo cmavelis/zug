@@ -309,7 +309,13 @@ getNotificationSound(store.zugUsername === 'Ben').then((notificationSound) => {
     </div>
     <div class="player-info">
       <span />
-      <span :class="{ checked: playerID === 0 }">
+      <span
+        :class="{
+          checked: playerID === 0,
+          status: true,
+          online: matchData[0]?.isConnected,
+        }"
+      >
         {{ matchData ? matchData[0].name : 'player 1' }}</span
       >
       <span class="score">
@@ -317,7 +323,12 @@ getNotificationSound(store.zugUsername === 'Ben').then((notificationSound) => {
           gameState.G.score ? gameState.G.score[1] : '?'
         }})
       </span>
-      <span :class="{ checked: playerID === 1 }"
+      <span
+        :class="{
+          checked: playerID === 1,
+          status: true,
+          online: matchData[1]?.isConnected,
+        }"
         >{{ matchData ? matchData[1].name : 'player 2' }}
       </span>
       <MatchInvite :matchID="matchID" />
@@ -396,6 +407,17 @@ main {
   justify-content: center;
   align-items: center;
   gap: 0.2rem;
+}
+
+.status::before {
+  content: '\25CF';
+  color: grey;
+  right: 4px;
+  position: relative;
+}
+
+.online::before {
+  color: var(--color-theme-green);
 }
 
 .score {
