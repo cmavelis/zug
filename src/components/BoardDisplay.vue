@@ -5,7 +5,6 @@ import BoardPiece from '@/components/BoardPiece.vue';
 import type { GameState } from '@/game/Game';
 
 import OrderDisplay from '@/components/OrderOverlay.vue';
-import { logProxy } from '@/utils';
 import { BOARD_PIXEL_SIZE } from '@/constants';
 
 interface BoardProps {
@@ -13,7 +12,6 @@ interface BoardProps {
   orderNumber?: number;
 }
 const props = defineProps<BoardProps>();
-logProxy(props);
 const svgSideLength = BOARD_PIXEL_SIZE * 4;
 </script>
 
