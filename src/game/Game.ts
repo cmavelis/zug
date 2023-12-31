@@ -28,9 +28,11 @@ export interface GameState {
 }
 
 export interface GameEvent {
-  type: 'score';
+  type: 'score' | 'destroy';
   sourcePieceId: number;
 }
+
+export type GameStateHistory = Omit<GameState, 'config'>;
 
 export type GObject = {
   history: Omit<GameState, 'config'>[][];
