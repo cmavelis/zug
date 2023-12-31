@@ -195,7 +195,11 @@ export const SimulChess: Game<GObject> = {
         );
     },
     onEnd: ({ G }) => {
-      return orderResolver({ G });
+      try {
+        return orderResolver({ G });
+      } catch (e) {
+        console.error(e);
+      }
     },
   },
 
