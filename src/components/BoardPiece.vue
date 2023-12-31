@@ -55,5 +55,6 @@ const pieceColor = props.owner === 0 ? '#729bf1' : '#62d368';
   align-items: center;
   justify-content: center;
   color: black;
+  cursor: pointer;
 }
 </style>
