@@ -119,6 +119,10 @@ watch(playerID, () => {
   );
 });
 
+onUnmounted(() => {
+  matchClientOne.client.stop();
+});
+
 const gameState: ReactiveGameState = reactive({
   G: {} as GObject,
   ctx: {} as Ctx,
