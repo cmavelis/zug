@@ -313,7 +313,7 @@ getNotificationSound(store.zugUsername === 'Ben').then((notificationSound) => {
         :class="{
           checked: playerID === 0,
           status: true,
-          online: matchData[0]?.isConnected,
+          online: matchData && matchData[0]?.isConnected,
         }"
       >
         {{ matchData ? matchData[0].name : 'player 1' }}</span
@@ -327,7 +327,7 @@ getNotificationSound(store.zugUsername === 'Ben').then((notificationSound) => {
         :class="{
           checked: playerID === 1,
           status: true,
-          online: matchData[1]?.isConnected,
+          online: matchData && matchData[1]?.isConnected,
         }"
         >{{ matchData ? matchData[1].name : 'player 2' }}
       </span>
