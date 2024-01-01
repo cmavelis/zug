@@ -10,6 +10,7 @@ import { BOARD_PIXEL_SIZE } from '@/constants';
 interface Props {
   pieces: Piece[];
   order: Order | GameEvent;
+  svgOffset: number;
 }
 
 const props = defineProps<Props>();
@@ -74,16 +75,16 @@ const lineColor = computed(() => {
   <g class="order">
     <line
       v-if="points !== null"
-      :x1="points.x1"
-      :y1="points.y1"
-      :x2="points.x2"
-      :y2="points.y2"
+      :x1="points.x1 + svgOffset"
+      :y1="points.y1 + svgOffset"
+      :x2="points.x2 + svgOffset"
+      :y2="points.y2 + svgOffset"
       :stroke="lineColor"
     ></line>
     <circle
       v-if="points !== null"
-      :cx="points.x1"
-      :cy="points.y1"
+      :cx="points.x1 + svgOffset"
+      :cy="points.y1 + svgOffset"
       r="10"
       :fill="lineColor"
     ></circle>
