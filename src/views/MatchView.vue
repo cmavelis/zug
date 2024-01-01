@@ -35,6 +35,7 @@ import LoginComponent from '@/components/LoginComponent.vue';
 import { useMatch } from '@/composables/useMatch';
 import { LobbyClient } from 'boardgame.io/client';
 import { getServerURL } from '@/utils';
+import ButtonStepper from '@/components/ButtonStepper.vue';
 
 const windowHasFocus = useWindowFocus();
 const toast = useToast();
@@ -179,10 +180,23 @@ const gameLastTurn = computed(() => {
 });
 const historyTurnStep = ref(1);
 function incrementHistoryStep() {
-  historyTurnStep.value++;
+  if (gameLastTurn.value && historyTurnStep.value < gameLastTurn.value.length)
+    historyTurnStep.value++;
+  else if (
+    gameLastTurn.value &&
+    historyTurnStep.value >= gameLastTurn.value.length &&
+    historyTurn.value < gameState.G.history.length
+  ) {
+    historyTurn.value++;
+    historyTurnStep.value = 1;
+  }
 }
 function decrementHistoryStep() {
-  historyTurnStep.value--;
+  if (historyTurnStep.value > 1) historyTurnStep.value--;
+  else if (historyTurnStep.value === 1 && historyTurn.value > 1) {
+    historyTurn.value--;
+    historyTurnStep.value = gameState.G.history[historyTurn.value - 1].length;
+  }
 }
 function setHistoryStep(value: number) {
   historyTurnStep.value = value;
@@ -353,50 +367,52 @@ getNotificationSound(store.zugUsername === 'Ben').then((notificationSound) => {
     />
     <div v-if="gameLastTurn">
       <p>HISTORY</p>
-      <button class="stepper-button" @click="historyTurn = 1">
-        {{ '|<' }}
-      </button>
-      <button
-        class="stepper-button"
-        :disabled="historyTurn <= 1"
-        @click="decrementHistoryTurn()"
-      >
-        -
-      </button>
-      <span id="history-order-number-display">{{ historyTurn }}</span>
-      <button
-        class="stepper-button"
-        :disabled="historyTurn >= gameState.G.history.length"
-        @click="incrementHistoryTurn()"
-      >
-        +
-      </button>
-      <button class="stepper-button" @click="setHistoryLastTurn()">>|</button>
+      <div class="history-stepper-row">
+        <span class="p-buttonset nowrap">
+          <ButtonStepper icon="pi pi-step-backward" @click="historyTurn = 1" />
+          <ButtonStepper
+            icon="pi pi-caret-left"
+            @click="decrementHistoryTurn()"
+            :disabled="historyTurn <= 1"
+          />
+        </span>
+        <span class="history-order-number-display">{{ historyTurn }}</span>
+        <span class="p-buttonset nowrap">
+          <ButtonStepper
+            icon="pi pi-caret-right"
+            @click="incrementHistoryTurn()"
+            :disabled="historyTurn >= gameState.G.history.length"
+          />
+          <ButtonStepper
+            icon="pi pi-step-forward"
+            @click="setHistoryLastTurn()"
+          />
+        </span>
+      </div>
       <div>TURN {{ historyTurn }} STEP {{ historyTurnStep }}</div>
-      <button class="stepper-button" @click="setHistoryStep(1)">
-        {{ '|<' }}
-      </button>
-      <button
-        class="stepper-button"
-        :disabled="historyTurnStep <= 1"
-        @click="decrementHistoryStep()"
-      >
-        -
-      </button>
-      <span id="history-order-number-display">{{ historyTurnStep }}</span>
-      <button
-        class="stepper-button"
-        :disabled="historyTurnStep >= gameLastTurn.length"
-        @click="incrementHistoryStep()"
-      >
-        +
-      </button>
-      <button
-        class="stepper-button"
-        @click="setHistoryStep(gameLastTurn.length)"
-      >
-        >|
-      </button>
+      <div class="history-stepper-row">
+        <span class="p-buttonset nowrap">
+          <ButtonStepper
+            icon="pi pi-step-backward"
+            @click="setHistoryStep(1)"
+          />
+          <ButtonStepper
+            icon="pi pi-caret-left"
+            @click="decrementHistoryStep()"
+          />
+        </span>
+        <span class="history-order-number-display">{{ historyTurnStep }}</span>
+        <span class="p-buttonset nowrap">
+          <ButtonStepper
+            icon="pi pi-caret-right"
+            @click="incrementHistoryStep()"
+          />
+          <ButtonStepper
+            icon="pi pi-step-forward"
+            @click="setHistoryStep(gameLastTurn.length)"
+          />
+        </span>
+      </div>
       <hr class="history-spacer" />
       <BoardDisplay
         :state="{ G: gameLastTurn[historyTurnStep - 1] }"
@@ -448,9 +464,16 @@ main {
   color: coral;
 }
 
-#history-order-number-display {
+.history-stepper-row {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.history-order-number-display {
   display: inline-block;
   width: 2rem;
+  font-size: 1.2rem;
 }
 
 .checked {
@@ -467,12 +490,6 @@ main {
   font-size: 2rem;
   font-weight: bold;
   color: var(--color-theme-green);
-}
-
-.stepper-button {
-  font-size: 1.2rem;
-  width: 3rem;
-  height: 3rem;
 }
 
 .match-settings {

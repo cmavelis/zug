@@ -7,7 +7,12 @@ import {
   getPiece,
   reportError,
 } from '@/game/common';
-import type { GameState, GObject } from '@/game/Game';
+import type {
+  GameEvent,
+  GameState,
+  GameStateHistory,
+  GObject,
+} from '@/game/Game';
 import {
   isValidMoveDiagonal,
   isValidMoveStraight,
@@ -117,7 +122,7 @@ function movePieces(G: GameState, moveArray: Move[]) {
 export function orderResolver({ G }: { G: GObject }) {
   const { cells, orders, pieces, score } = G;
 
-  const turnHistory = [];
+  let turnHistory: GameStateHistory[] = [];
   let orderPairs: (Order | null)[][];
 
   // "piece" variant sorts orders by piece ID instead of as submitted
@@ -269,6 +274,17 @@ export function orderResolver({ G }: { G: GObject }) {
         pieceIDsToRemove.push(...findOutOfBoundsPieces(G));
       }
       pieceIDsToRemove.push(...findOverlappingPieces(G));
+      if (pieceIDsToRemove.length > 0) {
+        const eventsToAdd: GameEvent[] = pieceIDsToRemove.flatMap((id) =>
+          typeof id === 'number'
+            ? {
+                type: 'destroy',
+                sourcePieceId: id,
+              }
+            : [],
+        );
+        turnHistory = addEventsToHistory(G, turnHistory, eventsToAdd);
+      }
       removePieces(G, pieceIDsToRemove);
     } else {
       // sequential move resolution, already sorted by priority
@@ -295,6 +311,17 @@ export function orderResolver({ G }: { G: GObject }) {
           pieceIDsToRemove.push(...findOutOfBoundsPieces(G));
         }
         pieceIDsToRemove.push(...findOverlappingPieces(G));
+        if (pieceIDsToRemove.length > 0) {
+          const eventsToAdd: GameEvent[] = pieceIDsToRemove.flatMap((id) =>
+            typeof id === 'number'
+              ? {
+                  type: 'destroy',
+                  sourcePieceId: id,
+                }
+              : [],
+          );
+          turnHistory = addEventsToHistory(G, turnHistory, eventsToAdd);
+        }
         removePieces(G, pieceIDsToRemove);
       });
     }
@@ -469,8 +496,6 @@ export function orderResolver({ G }: { G: GObject }) {
     return false;
   }
 
-  G.history.push(turnHistory);
-
   // clear orders out for next turn
   orders[0] = [];
   orders[1] = [];
@@ -488,21 +513,17 @@ export function orderResolver({ G }: { G: GObject }) {
   if (G.config.outOfBounds === 'turnEnd') {
     outOfBoundsPieces.push(...findOutOfBoundsPieces(G));
   }
-  removePieces(G, outOfBoundsPieces);
-
-  // add OB events to history
-  turnHistory.push(
-    cloneDeep({
-      cells,
-      orders: [],
-      pieces,
-      score,
-      events: outOfBoundsPieces.map((id) => ({
+  if (outOfBoundsPieces.length > 0) {
+    turnHistory = addEventsToHistory(
+      G,
+      turnHistory,
+      outOfBoundsPieces.map((id) => ({
         type: 'destroy',
         sourcePieceId: id,
       })),
-    }),
-  );
+    );
+    removePieces(G, outOfBoundsPieces);
+  }
 
   // score & remove pieces in the goal
   const toRemove: number[] = [];
@@ -516,20 +537,19 @@ export function orderResolver({ G }: { G: GObject }) {
     }
   });
 
-  // add score events to history
-  turnHistory.push(
-    cloneDeep({
-      cells,
-      orders: [],
-      pieces,
-      score,
-      events: toRemove.map((id) => ({
+  if (toRemove.length > 0) {
+    // add score events to history
+    turnHistory = addEventsToHistory(
+      G,
+      turnHistory,
+      toRemove.map((id) => ({
         type: 'score',
         sourcePieceId: id,
       })),
-    }),
-  );
-  removePieces(G, toRemove);
+    );
+    removePieces(G, toRemove);
+  }
+  G.history.push(turnHistory);
 
   return G;
 }
@@ -732,3 +752,26 @@ export function arrangeOrderPairs(
 
   return orderPairs;
 }
+
+const addEventsToHistory = (
+  G: GameState,
+  historyArray: GameStateHistory[],
+  events: GameEvent[],
+) => {
+  if (events.length === 0) {
+    console.error('Events array length 0');
+    console.trace();
+    return historyArray;
+  }
+  const newHistoryArray = historyArray.slice();
+  newHistoryArray.push(
+    cloneDeep({
+      cells: G.cells,
+      orders: [] as Orders[],
+      pieces: G.pieces,
+      score: G.score,
+      events,
+    }),
+  );
+  return newHistoryArray;
+};

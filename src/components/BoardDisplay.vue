@@ -5,7 +5,6 @@ import BoardPiece from '@/components/BoardPiece.vue';
 import type { GameState } from '@/game/Game';
 
 import OrderDisplay from '@/components/OrderOverlay.vue';
-import { logProxy } from '@/utils';
 import { BOARD_PIXEL_SIZE } from '@/constants';
 
 interface BoardProps {
@@ -13,8 +12,8 @@ interface BoardProps {
   orderNumber?: number;
 }
 const props = defineProps<BoardProps>();
-logProxy(props);
-const svgSideLength = BOARD_PIXEL_SIZE * 4;
+const svgSideLength = BOARD_PIXEL_SIZE * 6;
+const svgOriginOffset = BOARD_PIXEL_SIZE;
 </script>
 
 <template>
@@ -31,31 +30,39 @@ const svgSideLength = BOARD_PIXEL_SIZE * 4;
           :key="piece.id"
           v-bind="piece"
         />
-        <svg :width="svgSideLength" :height="svgSideLength">
-          <OrderDisplay
-            v-for="order in props.state.G.orders[0]"
-            :key="order.toString()"
-            :order="order"
-            :pieces="props.state.G.pieces"
-          />
-          <OrderDisplay
-            v-for="order in props.state.G.orders[1]"
-            :key="order.toString()"
-            :order="order"
-            :pieces="props.state.G.pieces"
-          />
-          <!--          different from BoardComponent-->
-          <OrderDisplay
-            v-for="event in props.state.G.events"
-            :key="event.toString()"
-            :order="event"
-            :pieces="props.state.G.pieces"
-          />
-        </svg>
+
+        <div class="svg-anchor">
+          <svg :width="svgSideLength" :height="svgSideLength">
+            <OrderDisplay
+              v-for="order in props.state.G.orders[0]"
+              :key="order.toString()"
+              :order="order"
+              :pieces="props.state.G.pieces"
+              :svgOffset="svgOriginOffset"
+            />
+            <OrderDisplay
+              v-for="order in props.state.G.orders[1]"
+              :key="order.toString()"
+              :order="order"
+              :pieces="props.state.G.pieces"
+              :svgOffset="svgOriginOffset"
+            />
+            <!--          different from BoardComponent-->
+            <OrderDisplay
+              v-for="event in props.state.G.events"
+              :key="event.toString()"
+              :order="event"
+              :pieces="props.state.G.pieces"
+              :svgOffset="svgOriginOffset"
+            />
+          </svg>
+        </div>
       </div>
     </div>
     <div v-if="props.orderNumber">
-      <p>ACTIONS: turn step {{ props.orderNumber }}</p>
+      <p>Turn step: {{ props.orderNumber }}</p>
+      <p>score: {{ props.state.G.score[0] }} - {{ props.state.G.score[1] }}</p>
+      <p>ACTIONS</p>
       <template
         v-for="event in props.state.G.events"
         :key="event.sourcePieceId"
@@ -112,8 +119,16 @@ section {
   padding: 1rem;
 }
 
-svg {
+.svg-anchor {
   position: absolute;
+  height: 0;
+  width: 0;
+}
+
+svg {
+  position: relative;
   z-index: 2;
+  top: calc(-1 * var(--square-size));
+  left: calc(-1 * var(--square-size));
 }
 </style>

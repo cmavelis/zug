@@ -10,9 +10,12 @@ import { BOARD_PIXEL_SIZE } from '@/constants';
 interface Props {
   pieces: Piece[];
   order: Order | GameEvent;
+  svgOffset?: number;
 }
 
-const props = defineProps<Props>();
+const props = withDefaults(defineProps<Props>(), {
+  svgOffset: 0,
+});
 const sideLength = BOARD_PIXEL_SIZE;
 
 const coordsToPixels = (coordinates: Coordinates, squareLength: number) => {
@@ -51,7 +54,7 @@ const points = computed(() => {
 });
 
 const lineColor = computed(() => {
-  if (props.order.type === 'attack') {
+  if (props.order.type === 'attack' || props.order.type === 'destroy') {
     return 'red';
   }
   if (
@@ -74,16 +77,16 @@ const lineColor = computed(() => {
   <g class="order">
     <line
       v-if="points !== null"
-      :x1="points.x1"
-      :y1="points.y1"
-      :x2="points.x2"
-      :y2="points.y2"
+      :x1="points.x1 + svgOffset"
+      :y1="points.y1 + svgOffset"
+      :x2="points.x2 + svgOffset"
+      :y2="points.y2 + svgOffset"
       :stroke="lineColor"
     ></line>
     <circle
       v-if="points !== null"
-      :cx="points.x1"
-      :cy="points.y1"
+      :cx="points.x1 + svgOffset"
+      :cy="points.y1 + svgOffset"
       r="10"
       :fill="lineColor"
     ></circle>
