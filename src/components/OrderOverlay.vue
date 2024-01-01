@@ -10,10 +10,12 @@ import { BOARD_PIXEL_SIZE } from '@/constants';
 interface Props {
   pieces: Piece[];
   order: Order | GameEvent;
-  svgOffset: number;
+  svgOffset?: number;
 }
 
-const props = defineProps<Props>();
+const props = withDefaults(defineProps<Props>(), {
+  svgOffset: 0,
+});
 const sideLength = BOARD_PIXEL_SIZE;
 
 const coordsToPixels = (coordinates: Coordinates, squareLength: number) => {
