@@ -51,7 +51,7 @@ const points = computed(() => {
 });
 
 const lineColor = computed(() => {
-  if (props.order.type === 'attack') {
+  if (props.order.type === 'attack' || props.order.type === 'destroy') {
     return 'red';
   }
   if (
