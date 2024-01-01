@@ -496,8 +496,6 @@ export function orderResolver({ G }: { G: GObject }) {
     return false;
   }
 
-  G.history.push(turnHistory);
-
   // clear orders out for next turn
   orders[0] = [];
   orders[1] = [];
@@ -515,21 +513,17 @@ export function orderResolver({ G }: { G: GObject }) {
   if (G.config.outOfBounds === 'turnEnd') {
     outOfBoundsPieces.push(...findOutOfBoundsPieces(G));
   }
-  removePieces(G, outOfBoundsPieces);
-
-  // add OB events to history
-  turnHistory.push(
-    cloneDeep({
-      cells,
-      orders: [],
-      pieces,
-      score,
-      events: outOfBoundsPieces.map((id) => ({
+  if (outOfBoundsPieces.length > 0) {
+    turnHistory = addEventsToHistory(
+      G,
+      turnHistory,
+      outOfBoundsPieces.map((id) => ({
         type: 'destroy',
         sourcePieceId: id,
       })),
-    }),
-  );
+    );
+    removePieces(G, outOfBoundsPieces);
+  }
 
   // score & remove pieces in the goal
   const toRemove: number[] = [];
@@ -543,20 +537,19 @@ export function orderResolver({ G }: { G: GObject }) {
     }
   });
 
-  // add score events to history
-  turnHistory.push(
-    cloneDeep({
-      cells,
-      orders: [],
-      pieces,
-      score,
-      events: toRemove.map((id) => ({
+  if (toRemove.length > 0) {
+    // add score events to history
+    turnHistory = addEventsToHistory(
+      G,
+      turnHistory,
+      toRemove.map((id) => ({
         type: 'score',
         sourcePieceId: id,
       })),
-    }),
-  );
-  removePieces(G, toRemove);
+    );
+    removePieces(G, toRemove);
+  }
+  G.history.push(turnHistory);
 
   return G;
 }
