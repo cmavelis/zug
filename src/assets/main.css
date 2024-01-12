@@ -1,6 +1,7 @@
 @import './base.css';
 
 :root {
+  --link-hover-color: hsla(283, 100%, 75%, 0.2);
   /* also set programmatically */
   --square-size: 56px;
 }
@@ -29,7 +30,7 @@ p > a {
 
 @media (hover: hover) {
   p > a:hover {
-    background-color: hsla(160, 100%, 37%, 0.2);
+    background-color: var(--link-hover-color);
   }
 }
 

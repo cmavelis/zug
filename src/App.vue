@@ -80,7 +80,7 @@ a {
 
 @media (hover: hover) {
   a:hover:not(:first-child) {
-    background-color: hsla(160, 100%, 37%, 0.2);
+    background-color: var(--link-hover-color);
   }
 }
 </style>
