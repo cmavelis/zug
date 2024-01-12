@@ -1864,13 +1864,13 @@
     flex: 1;
   }
   .p-button.p-button-secondary, .p-buttonset.p-button-secondary > .p-button, .p-splitbutton.p-button-secondary > .p-button {
-    color: #94a3b8;
+    color: #cbd5e1;
     background: #542073;
     border: 1px solid #542073;
   }
   .p-button.p-button-secondary:not(:disabled):hover, .p-buttonset.p-button-secondary > .p-button:not(:disabled):hover, .p-splitbutton.p-button-secondary > .p-button:not(:disabled):hover {
     background: #cbd5e1;
-    color: #94a3b8;
+    color: #cbd5e1;
     border-color: #cbd5e1;
   }
   .p-button.p-button-secondary:not(:disabled):focus, .p-buttonset.p-button-secondary > .p-button:not(:disabled):focus, .p-splitbutton.p-button-secondary > .p-button:not(:disabled):focus {
@@ -1878,7 +1878,7 @@
   }
   .p-button.p-button-secondary:not(:disabled):active, .p-buttonset.p-button-secondary > .p-button:not(:disabled):active, .p-splitbutton.p-button-secondary > .p-button:not(:disabled):active {
     background: #e2e8f0;
-    color: #94a3b8;
+    color: #cbd5e1;
     border-color: #e2e8f0;
   }
   .p-button.p-button-secondary.p-button-outlined, .p-buttonset.p-button-secondary > .p-button.p-button-outlined, .p-splitbutton.p-button-secondary > .p-button.p-button-outlined {
@@ -5382,7 +5382,7 @@
   }
   .p-badge.p-badge-secondary {
     background-color: #542073;
-    color: #94a3b8;
+    color: #cbd5e1;
   }
   .p-badge.p-badge-success {
     background-color: #4ade80;
