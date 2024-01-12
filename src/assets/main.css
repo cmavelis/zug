@@ -23,7 +23,7 @@ a {
 }
 
 p > a {
-  color: var(--color-theme-green);
+  color: var(--color-theme-primary);
   transition: 0.4s;
 }
 

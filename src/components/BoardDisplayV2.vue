@@ -166,7 +166,7 @@ svg {
 }
 
 :deep(.p-speeddial-action:hover) {
-  background-color: var(--color-theme-green);
+  background-color: var(--color-theme-primary);
   color: white;
 }
 

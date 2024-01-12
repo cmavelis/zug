@@ -41,8 +41,7 @@
 
   --color-heading: var(--vt-c-text-dark-1);
   --color-text: var(--vt-c-text-dark-2);
-  /* TODO: rename, heh */
-  --color-theme-green: var(--coral)
+  --color-theme-primary: var(--coral)
 }
 
 html {

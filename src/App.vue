@@ -49,7 +49,7 @@ header {
 }
 
 .logo:hover {
-  background-color: var(--color-theme-green);
+  background-color: var(--color-theme-primary);
 }
 
 nav {
@@ -74,7 +74,7 @@ nav *:first-child {
 }
 
 a {
-  color: var(--color-theme-green);
+  color: var(--color-theme-primary);
   transition: 0.4s;
 }
 
