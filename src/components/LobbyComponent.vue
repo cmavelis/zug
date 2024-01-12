@@ -48,6 +48,12 @@ const navigateToMatch = (matchID: string) => {
   });
 };
 
+const handleCustomClick = () => {
+  router.push({
+    name: 'match-configure',
+  });
+};
+
 const usersMatches = computed(() => {
   return matches.value
     .filter((m) =>
@@ -85,10 +91,12 @@ watch(matches, () => {
     <h1>Matches Lobby</h1>
     <h2>Create a match</h2>
     <span class="p-buttonset">
-      <Button @click="createMatch()">Standard</Button>
-      <Button severity="secondary"
-        ><RouterLink to="match-configure">Custom</RouterLink></Button
-      >
+      <Button @click="createMatch()" label="Standard"></Button>
+      <Button
+        @click="handleCustomClick"
+        severity="secondary"
+        label="Custom"
+      ></Button>
     </span>
     <h2>Matches</h2>
     <span>{{ joinStatus }}</span>
