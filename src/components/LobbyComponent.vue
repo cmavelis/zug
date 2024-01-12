@@ -87,9 +87,7 @@ watch(matches, () => {
     <span class="p-buttonset">
       <Button @click="createMatch()">Standard</Button>
       <Button severity="secondary"
-        ><RouterLink to="match-configure" class="black-font"
-          >Custom</RouterLink
-        ></Button
+        ><RouterLink to="match-configure">Custom</RouterLink></Button
       >
     </span>
     <h2>Matches</h2>
@@ -151,14 +149,5 @@ watch(matches, () => {
 }
 button {
   width: fit-content;
-}
-
-.black-font {
-  color: black;
-}
-
-.button-big {
-  font-size: 1.5rem;
-  margin: 0.5rem;
 }
 </style>

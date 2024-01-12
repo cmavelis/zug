@@ -7,7 +7,6 @@ import router from './router';
 import './assets/main.css';
 // TODO: theme missing styles for:
 //  site nav links,
-//  secondary buttons
 import './assets/theme/theme.css';
 import 'primeicons/primeicons.css';
 import './assets/icons/zug-icons.css';
