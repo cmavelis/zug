@@ -3,6 +3,7 @@ import { RouterLink, RouterView } from 'vue-router';
 import { store } from './store';
 import Toast from 'primevue/toast';
 import { BOARD_PIXEL_SIZE } from '@/constants';
+import Logo from '@/assets/logo.svg';
 
 const squareSize = BOARD_PIXEL_SIZE + 'px';
 const root = document.querySelector(':root');
@@ -15,14 +16,7 @@ root.style.setProperty('--square-size', squareSize);
   <header>
     <div class="wrapper">
       <nav>
-        <RouterLink to="/"
-          ><img
-            alt="zug logo"
-            class="logo"
-            src="@/assets/logo.svg"
-            width="36"
-            height="36"
-        /></RouterLink>
+        <RouterLink to="/"><Logo class="logo"></Logo></RouterLink>
         <RouterLink to="/how-to-play">How To Play</RouterLink>
         <RouterLink to="/about">About</RouterLink>
         <span>{{ store.zugUsername }}</span>
@@ -33,6 +27,19 @@ root.style.setProperty('--square-size', squareSize);
   <RouterView />
 </template>
 
+<style>
+.logo path {
+  transition-property: stroke, fill;
+  transition-duration: 0.5s;
+  stroke: black !important;
+  fill: var(--color-theme-primary) !important;
+}
+.logo:hover path {
+  stroke: #cbd5e1 !important;
+  fill: var(--tekhelet) !important;
+}
+</style>
+
 <style scoped>
 header {
   line-height: 1.5;
@@ -40,16 +47,18 @@ header {
 }
 
 .logo {
+  transition-property: background-color;
+  transition-duration: 0.5s;
   padding: 4px;
   border-radius: 4px;
   display: block;
-  background-color: white;
+  background-color: var(--color-theme-primary);
   width: 36px;
   height: 36px;
 }
 
 .logo:hover {
-  background-color: var(--color-theme-primary);
+  background-color: var(--tekhelet);
 }
 
 nav {
