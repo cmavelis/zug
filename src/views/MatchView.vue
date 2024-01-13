@@ -448,7 +448,7 @@ main {
 }
 
 .online::before {
-  color: var(--color-theme-green);
+  color: var(--color-theme-primary);
 }
 
 .score {
@@ -477,7 +477,7 @@ main {
 }
 
 .checked {
-  color: var(--color-theme-green);
+  color: var(--color-theme-primary);
   font-weight: bold;
 }
 
@@ -489,7 +489,7 @@ main {
 .game-over {
   font-size: 2rem;
   font-weight: bold;
-  color: var(--color-theme-green);
+  color: var(--color-theme-primary);
 }
 
 .match-settings {

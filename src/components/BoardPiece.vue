@@ -21,13 +21,18 @@ const styleObject = computed(() => {
     height: squareSize + 'px',
   };
 });
-
-const pieceColor = props.owner === 0 ? '#729bf1' : '#62d368';
 </script>
 
 <template>
   <div class="piece" :style="styleObject">
-    <div :class="{ pieceIcon: true, ...props.iconClass }">
+    <div
+      :class="{
+        pieceIcon: true,
+        pieceColor1: props.owner === 0,
+        pieceColor2: props.owner === 1,
+        ...props.iconClass,
+      }"
+    >
       {{ props.priority }}
     </div>
     <slot name="menu"></slot>
@@ -47,7 +52,6 @@ const pieceColor = props.owner === 0 ? '#729bf1' : '#62d368';
 }
 
 .pieceIcon {
-  background-color: v-bind(pieceColor);
   border-radius: 50%;
   height: 80%;
   width: 80%;
@@ -56,5 +60,13 @@ const pieceColor = props.owner === 0 ? '#729bf1' : '#62d368';
   justify-content: center;
   color: black;
   cursor: pointer;
+}
+
+.pieceColor1 {
+  background-color: var(--sandy-brown);
+}
+
+.pieceColor2 {
+  background-color: var(--vermilion);
 }
 </style>

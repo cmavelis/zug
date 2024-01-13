@@ -5,7 +5,7 @@ import App from './App.vue';
 import router from './router';
 
 import './assets/main.css';
-import 'primevue/resources/themes/lara-dark-green/theme.css';
+import './assets/theme/theme.css';
 import 'primeicons/primeicons.css';
 import './assets/icons/zug-icons.css';
 

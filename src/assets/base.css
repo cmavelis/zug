@@ -22,7 +22,17 @@
 }
 
 :root {
-  --color-background: var(--vt-c-black);
+  --vermilion: #ec4938ff;
+  --sandy-brown: #fea153ff;
+  --coral: #f28d67ff;
+  --tekhelet: #542073ff;
+  --dark-purple: #42223bff;
+  --licorice: #1B0E18
+}
+
+:root {
+  --color-background: var(--licorice);
+  --color-background-two: var(--dark-purple);
   --color-background-soft: var(--vt-c-black-soft);
   --color-background-mute: var(--vt-c-black-mute);
 
@@ -31,8 +41,7 @@
 
   --color-heading: var(--vt-c-text-dark-1);
   --color-text: var(--vt-c-text-dark-2);
-
-  --color-theme-green: hsla(160, 100%, 37%, 1)
+  --color-theme-primary: var(--coral)
 }
 
 html {
@@ -42,7 +51,8 @@ html {
 body {
   min-height: 100vh;
   color: var(--color-text);
-  background: var(--color-background);
+  background: var(--color-background-two);
+  background: linear-gradient(0deg, var(--color-background-two), var(--color-background)) fixed;
   transition: color 0.5s, background-color 0.5s;
   line-height: 1.6;
   font-family: Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu,
