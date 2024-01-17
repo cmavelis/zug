@@ -281,6 +281,9 @@ const gamePhase = computed(() => {
 
 const winner = computed(() => {
   if (gameState.ctx.gameover && matchData.value) {
+    if (gameState.ctx.gameover.winner === -1) {
+      return 'tie';
+    }
     return matchData.value[gameState.ctx.gameover?.winner].name;
   }
   return false;
@@ -356,6 +359,7 @@ getNotificationSound(store.zugUsername === 'Ben').then((notificationSound) => {
       <p v-else-if="opponentWaiting" class="info-message">
         Your opponent is waiting for you to finish...
       </p>
+      <p class="game-over" v-else-if="winner === 'tie'">It's a tie!</p>
       <p class="game-over" v-else-if="winner">{{ winner }} wins!</p>
     </div>
     <BoardComponent
