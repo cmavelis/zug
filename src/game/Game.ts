@@ -209,10 +209,18 @@ export const SimulChess: Game<GObject> = {
 
   endIf: ({ G }) => {
     const gameTo = 4;
-    if (G.score[0] >= gameTo) {
+    const p1Score = G.score[0];
+    const p2Score = G.score[1];
+    if (p1Score >= gameTo && p2Score >= gameTo) {
+      if (p1Score === p2Score) {
+        return { winner: -1 }; // TIE!
+      }
+      return { winner: p1Score > p2Score ? 0 : 1 };
+    }
+    if (p1Score >= gameTo) {
       return { winner: 0 };
     }
-    if (G.score[1] >= gameTo) {
+    if (p2Score >= gameTo) {
       return { winner: 1 };
     }
   },
