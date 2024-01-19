@@ -5,7 +5,6 @@ import InputSwitch from 'primevue/inputswitch';
 import InputMask from 'primevue/inputmask';
 import SelectButton from 'primevue/selectbutton';
 import Slider from 'primevue/slider';
-import ToggleButton from 'primevue/togglebutton';
 import { useField } from 'vee-validate';
 import { computed, ref } from 'vue';
 import { LobbyClient } from 'boardgame.io/client';
@@ -224,6 +223,7 @@ const createMatch = async () => {
 }
 </style>
 <style>
+// is used in InputNumber
 .push-restriction-inputs {
   width: 2.5rem;
   height: 2.5rem;
