@@ -5,6 +5,7 @@ import { BOARD_PIXEL_SIZE } from '@/constants';
 
 interface BoardPiece extends Piece {
   iconClass?: { [key: string]: boolean };
+  hints?: any[];
 }
 
 const props = defineProps<BoardPiece>();
@@ -24,7 +25,10 @@ const styleObject = computed(() => {
 </script>
 
 <template>
-  <div class="piece" :style="styleObject">
+  <div
+    :class="{ piece: true, 'push-hint': Boolean(hints?.notPushable) }"
+    :style="styleObject"
+  >
     <div
       :class="{
         pieceIcon: true,
@@ -60,6 +64,15 @@ const styleObject = computed(() => {
   justify-content: center;
   color: black;
   cursor: pointer;
+}
+
+.push-hint::after {
+  content: '🫸🚫';
+  color: black;
+  position: absolute;
+  bottom: -6px;
+  border-radius: 8px;
+  background-color: rgba(0, 0, 0, 0.6);
 }
 
 .pieceColor1 {

@@ -13,7 +13,7 @@ import {
   getDisplacement,
   getPiece,
 } from '@/game/common';
-import { createOrder } from '@/game/orders';
+import { canPushWithConfig, createOrder } from '@/game/orders';
 import {
   getValidSquaresForOrder,
   isValidOrder,
@@ -86,6 +86,33 @@ const validSquares: Ref<number[]> = computed(() => {
         orderType: selectedAction.value,
         origin: piece.position,
       }).map((coord) => coordinatesToArray(coord, props.state.G.config.board));
+  }
+  return [];
+});
+
+// hint at pieces that can't be pushed
+const targetingHints: Ref<any[]> = computed(() => {
+  if (props.state.G.config.piecePushRestrictions === null) {
+    return [];
+  }
+
+  if (
+    selectionPhase.value === SELECTION_PHASES.targeting &&
+    selectedAction.value?.startsWith('push') &&
+    selectedPiece.value !== undefined
+  ) {
+    const piece = getPiece(props.state.G, selectedPiece.value);
+    if (piece)
+      return props.state.G.pieces.map((p) => {
+        return {
+          pieceID: p.id,
+          notPushable: !canPushWithConfig(
+            props.state.G.config.piecePushRestrictions,
+            piece,
+            p,
+          ),
+        };
+      });
   }
   return [];
 });
@@ -364,6 +391,7 @@ onUnmounted(() => {
         :show-orders="props.showOrders"
         :emphasized-piece-ids="piecesWithoutActions"
         :action-menu-items="actionMenuPerPiece"
+        :targetingHints="targetingHints"
       />
       <div class="order-button-group">
         <input

@@ -24,6 +24,7 @@ interface BoardDisplayV2Props {
   selectedPieceId?: number;
   emphasizedPieceIds?: number[];
   actionMenuItems?: { [key: number]: MenuItem[] };
+  targetingHints?: { pieceID: number; notPushable: boolean }[];
 }
 
 const props = withDefaults(defineProps<BoardDisplayV2Props>(), {
@@ -67,6 +68,7 @@ const svgSideLength = BOARD_PIXEL_SIZE * 4;
       :iconClass="{
         'halo-shadow': Boolean(props.emphasizedPieceIds?.includes(piece.id)),
       }"
+      :hints="targetingHints?.find((p) => p.pieceID === piece.id)"
       v-bind="piece"
       @click.stop="(e) => handlePieceClick(piece.id, e)"
       @mouseover="handlePieceHover(piece.id)"
