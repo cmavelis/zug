@@ -2,13 +2,18 @@ import { test, expect } from 'vitest';
 import {
   arrangeOrderPairs,
   arrangeOrders,
+  canPushWithConfig,
   createOrderArrayCompareFn,
 } from '@/game/orders';
 import { makeTestGame, makeTestOrder, makeTestPiece } from '@/game/test-utils';
-import { PIECE_PRIORITIES_LIST } from '@/game/zugzwang/config';
+import {
+  PIECE_PRIORITIES_LIST,
+  type PushRestrictionsConfig,
+} from '@/game/zugzwang/config';
 
 const piecePriority3 = makeTestPiece({ id: 0, priority: 3 });
 const piecePriority1 = makeTestPiece({ id: 1, priority: 1 });
+const piecePriority5 = makeTestPiece({ priority: 5 });
 
 const piecePriority3Order = makeTestOrder({ sourcePieceId: 0 });
 const piecePriority1Order = makeTestOrder({ sourcePieceId: 1 });
@@ -76,3 +81,27 @@ test('arrange order pairs, with place actions', () => {
     [piecePlaceOrder, null],
   ]);
 });
+
+test.each([
+  [{ comparator: 'gt' }, 1, 1, false],
+  [{ comparator: 'gte' }, 1, 1, true],
+  [{ comparator: 'gt', add: 1 }, 1, 2, false],
+  [{ comparator: 'gt', add: 2 }, 1, 2, true],
+  [{ comparator: 'gt', multiply: 2 }, 1, 2, false],
+  [{ comparator: 'gt', multiply: 2 }, 2, 3, true],
+  [{ comparator: 'gt', multiply: 2, add: 1 }, 1, 3, false],
+  [{ comparator: 'gte', multiply: 2, add: 1 }, 1, 3, true],
+  [{ comparator: 'gt', multiply: 2, add: 1 }, 2, 4, true],
+])(
+  'canPushWithConfig(%s, %i, %i) -> %s',
+  // @ts-ignore
+  (a: PushRestrictionsConfig, b, c, expected) => {
+    expect(
+      canPushWithConfig(
+        a,
+        makeTestPiece({ priority: b }),
+        makeTestPiece({ priority: c }),
+      ),
+    ).toBe(expected);
+  },
+);
