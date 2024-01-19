@@ -13,7 +13,6 @@ import {
 
 const piecePriority3 = makeTestPiece({ id: 0, priority: 3 });
 const piecePriority1 = makeTestPiece({ id: 1, priority: 1 });
-const piecePriority5 = makeTestPiece({ priority: 5 });
 
 const piecePriority3Order = makeTestOrder({ sourcePieceId: 0 });
 const piecePriority1Order = makeTestOrder({ sourcePieceId: 1 });
