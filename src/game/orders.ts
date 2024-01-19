@@ -791,16 +791,7 @@ export const canPushWithConfig = (
   pushingPiece: Piece,
   targetPiece: Piece,
 ) => {
-  const { comparator, multiply, add } = pushConfig;
+  const { multiply, add } = pushConfig;
   const adjustedPriority = pushingPiece.priority * (multiply || 1) + (add || 0);
-  if (comparator === 'gte' && !(adjustedPriority >= targetPiece.priority)) {
-    return false;
-  }
-  // default to 'gt' behavior if none provided
-  else if (comparator === 'gt' && !(adjustedPriority > targetPiece.priority)) {
-    return false;
-  } else if (!comparator && !(adjustedPriority > targetPiece.priority)) {
-    return false;
-  }
-  return true;
+  return adjustedPriority > targetPiece.priority;
 };

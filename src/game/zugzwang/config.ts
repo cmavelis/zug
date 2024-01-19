@@ -17,7 +17,6 @@ export const DEFAULT_ZUG_CONFIG: ZugConfig = {
 };
 
 export interface PushRestrictionsConfig {
-  comparator: 'gt' | 'gte';
   multiply?: number;
   add?: number;
 }

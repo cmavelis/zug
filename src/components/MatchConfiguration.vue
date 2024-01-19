@@ -53,7 +53,6 @@ const obOptions = Object.values(OUT_OF_BOUNDS_MODES);
 const maxPiecePriority = ref(PIECE_PRIORITIES_LIST.slice(-1)[0]);
 const piecePriorityDuplicates = ref(PIECE_PRIORITY_DUPLICATES);
 const pieceOnlyPushLowerNumbers = ref(PUSH_ONLY_LOWER_NUMBERS);
-const pushRestrictionAllowEquals = ref(false);
 const pushRestrictionMultiply = ref(1);
 const pushRestrictionAdd = ref(0);
 
@@ -71,7 +70,6 @@ const ruleSet = computed<ZugConfig>(() => {
     piecePushRestrictions:
       pieceOnlyPushLowerNumbers.value === true
         ? {
-            comparator: pushRestrictionAllowEquals.value ? 'gte' : 'gt',
             add: pushRestrictionAdd.value,
             multiply: pushRestrictionMultiply.value,
           }
@@ -186,15 +184,7 @@ const createMatch = async () => {
               :min="0"
               :max="10"
             />
-
-            <ToggleButton
-              class="push-restriction-inputs"
-              v-model="pushRestrictionAllowEquals"
-              onLabel=">="
-              offLabel=">"
-            />
-
-            B
+            > B
           </p>
         </div>
       </div>

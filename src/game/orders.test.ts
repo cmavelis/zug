@@ -82,15 +82,13 @@ test('arrange order pairs, with place actions', () => {
 });
 
 test.each([
-  [{ comparator: 'gt' }, 1, 1, false],
-  [{ comparator: 'gte' }, 1, 1, true],
-  [{ comparator: 'gt', add: 1 }, 1, 2, false],
-  [{ comparator: 'gt', add: 2 }, 1, 2, true],
-  [{ comparator: 'gt', multiply: 2 }, 1, 2, false],
-  [{ comparator: 'gt', multiply: 2 }, 2, 3, true],
-  [{ comparator: 'gt', multiply: 2, add: 1 }, 1, 3, false],
-  [{ comparator: 'gte', multiply: 2, add: 1 }, 1, 3, true],
-  [{ comparator: 'gt', multiply: 2, add: 1 }, 2, 4, true],
+  [{}, 1, 1, false],
+  [{ add: 1 }, 1, 2, false],
+  [{ add: 2 }, 1, 2, true],
+  [{ multiply: 2 }, 1, 2, false],
+  [{ multiply: 2 }, 2, 3, true],
+  [{ multiply: 2, add: 1 }, 1, 3, false],
+  [{ multiply: 2, add: 1 }, 2, 4, true],
 ])(
   'canPushWithConfig(%s, %i, %i) -> %s',
   // @ts-ignore
