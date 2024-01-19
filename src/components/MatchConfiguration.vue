@@ -68,7 +68,14 @@ const ruleSet = computed<ZugConfig>(() => {
       ? convertMaskedInputToArray(startPiecePriorities.value)
       : [2, 3, 4, 5],
     piecePriorityDuplicates: piecePriorityDuplicates.value,
-    piecePushRestrictions: pieceOnlyPushLowerNumbers.value,
+    piecePushRestrictions:
+      pieceOnlyPushLowerNumbers.value === true
+        ? {
+            comparator: pushRestrictionAllowEquals.value ? 'gte' : 'gt',
+            add: pushRestrictionAdd.value,
+            multiply: pushRestrictionMultiply.value,
+          }
+        : null,
   };
 });
 
