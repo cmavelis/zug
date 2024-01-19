@@ -1,9 +1,11 @@
 <script setup lang="ts">
 import Button from 'primevue/button';
+import InputNumber from 'primevue/inputnumber';
 import InputSwitch from 'primevue/inputswitch';
 import InputMask from 'primevue/inputmask';
 import SelectButton from 'primevue/selectbutton';
 import Slider from 'primevue/slider';
+import ToggleButton from 'primevue/togglebutton';
 import { useField } from 'vee-validate';
 import { computed, ref } from 'vue';
 import { LobbyClient } from 'boardgame.io/client';
@@ -51,6 +53,9 @@ const obOptions = Object.values(OUT_OF_BOUNDS_MODES);
 const maxPiecePriority = ref(PIECE_PRIORITIES_LIST.slice(-1)[0]);
 const piecePriorityDuplicates = ref(PIECE_PRIORITY_DUPLICATES);
 const pieceOnlyPushLowerNumbers = ref(PUSH_ONLY_LOWER_NUMBERS);
+const pushRestrictionAllowEquals = ref(false);
+const pushRestrictionMultiply = ref(1);
+const pushRestrictionAdd = ref(0);
 
 const ruleSet = computed<ZugConfig>(() => {
   return {
@@ -152,8 +157,39 @@ const createMatch = async () => {
       </div>
       <h4>(Experimental)</h4>
       <div class="config-item">
-        <span>Piece priority: can only push lower numbers</span>
+        <span>Piece priority push restrictions:</span>
         <InputSwitch v-model="pieceOnlyPushLowerNumbers" />
+        <div class="push-restrict">
+          <p>
+            Fill in the equation to determine when piece with priority A can
+            push piece with priority B
+          </p>
+          <p>
+            (<InputNumber
+              input-class="push-restriction-inputs"
+              v-model="pushRestrictionMultiply"
+              :min="1"
+              :max="10"
+            />
+            * A) +
+            <InputNumber
+              input-class="push-restriction-inputs"
+              v-model="pushRestrictionAdd"
+              inputId="minmax"
+              :min="0"
+              :max="10"
+            />
+
+            <ToggleButton
+              class="push-restriction-inputs"
+              v-model="pushRestrictionAllowEquals"
+              onLabel=">="
+              offLabel=">"
+            />
+
+            B
+          </p>
+        </div>
       </div>
     </div>
   </div>
@@ -179,10 +215,21 @@ const createMatch = async () => {
   align-items: center;
   justify-content: space-between;
   gap: 4px;
+  column-gap: 12px;
 }
 
 .slider {
   width: 14rem;
   margin: 0 8px;
+}
+.push-restrict {
+  width: 18rem;
+}
+</style>
+<style>
+.push-restriction-inputs {
+  width: 2.5rem;
+  height: 2.5rem;
+  padding: 0.5rem;
 }
 </style>
