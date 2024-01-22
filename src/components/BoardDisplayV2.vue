@@ -7,7 +7,7 @@ import { BOARD_PIXEL_SIZE } from '@/constants';
 import type { Coordinates } from '@/game/common';
 import type { Piece } from '@/game/pieces';
 import type { Order } from '@/game/orders';
-import BoardPiece from './BoardPiece.vue';
+import BoardPiece, { type PieceHint } from './BoardPiece.vue';
 import OrderOverlay from './OrderOverlay.vue';
 
 interface BoardDisplayV2Props {
@@ -24,7 +24,7 @@ interface BoardDisplayV2Props {
   selectedPieceId?: number;
   emphasizedPieceIds?: number[];
   actionMenuItems?: { [key: number]: MenuItem[] };
-  targetingHints?: { pieceID: number; notPushable: boolean }[];
+  targetingHints?: PieceHint[];
 }
 
 const props = withDefaults(defineProps<BoardDisplayV2Props>(), {
@@ -68,7 +68,9 @@ const svgSideLength = BOARD_PIXEL_SIZE * 4;
       :iconClass="{
         'halo-shadow': Boolean(props.emphasizedPieceIds?.includes(piece.id)),
       }"
-      :hints="targetingHints?.find((p) => p.pieceID === piece.id)"
+      :hints="
+        targetingHints && targetingHints.filter((p) => p.pieceID === piece.id)
+      "
       v-bind="piece"
       @click.stop="(e) => handlePieceClick(piece.id, e)"
       @mouseover="handlePieceHover(piece.id)"

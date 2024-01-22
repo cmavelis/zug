@@ -92,7 +92,8 @@ const validSquares: Ref<number[]> = computed(() => {
 
 // hint at pieces that can't be pushed
 const targetingHints: Ref<any[]> = computed(() => {
-  if (props.state.G.config.piecePushRestrictions === null) {
+  const { piecePushRestrictions } = props.state.G.config;
+  if (piecePushRestrictions === null) {
     return [];
   }
 
@@ -106,11 +107,7 @@ const targetingHints: Ref<any[]> = computed(() => {
       return props.state.G.pieces.map((p) => {
         return {
           pieceID: p.id,
-          notPushable: !canPushWithConfig(
-            props.state.G.config.piecePushRestrictions,
-            piece,
-            p,
-          ),
+          notPushable: !canPushWithConfig(piecePushRestrictions, piece, p),
         };
       });
   }
