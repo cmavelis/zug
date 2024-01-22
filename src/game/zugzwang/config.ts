@@ -4,7 +4,7 @@ export interface ZugConfig {
   piecePriorityOptions: number[];
   piecePriorityDuplicates: boolean;
   startingPiecePriorities: number[];
-  piecePushRestrictions: boolean;
+  piecePushRestrictions: PushRestrictionsConfig | null;
 }
 
 export const DEFAULT_ZUG_CONFIG: ZugConfig = {
@@ -13,8 +13,13 @@ export const DEFAULT_ZUG_CONFIG: ZugConfig = {
   piecePriorityOptions: [1, 2, 3, 4, 5, 6],
   piecePriorityDuplicates: false,
   startingPiecePriorities: [2, 3, 4, 5],
-  piecePushRestrictions: false,
+  piecePushRestrictions: null,
 };
+
+export interface PushRestrictionsConfig {
+  multiply?: number;
+  add?: number;
+}
 
 /**
  * @deprecated

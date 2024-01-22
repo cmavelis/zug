@@ -2,10 +2,14 @@ import { test, expect } from 'vitest';
 import {
   arrangeOrderPairs,
   arrangeOrders,
+  canPushWithConfig,
   createOrderArrayCompareFn,
 } from '@/game/orders';
 import { makeTestGame, makeTestOrder, makeTestPiece } from '@/game/test-utils';
-import { PIECE_PRIORITIES_LIST } from '@/game/zugzwang/config';
+import {
+  PIECE_PRIORITIES_LIST,
+  type PushRestrictionsConfig,
+} from '@/game/zugzwang/config';
 
 const piecePriority3 = makeTestPiece({ id: 0, priority: 3 });
 const piecePriority1 = makeTestPiece({ id: 1, priority: 1 });
@@ -76,3 +80,25 @@ test('arrange order pairs, with place actions', () => {
     [piecePlaceOrder, null],
   ]);
 });
+
+test.each([
+  [{}, 1, 1, false],
+  [{ add: 1 }, 1, 2, false],
+  [{ add: 2 }, 1, 2, true],
+  [{ multiply: 2 }, 1, 2, false],
+  [{ multiply: 2 }, 2, 3, true],
+  [{ multiply: 2, add: 1 }, 1, 3, false],
+  [{ multiply: 2, add: 1 }, 2, 4, true],
+])(
+  'canPushWithConfig(%s, %i, %i) -> %s',
+  // @ts-ignore
+  (a: PushRestrictionsConfig, b, c, expected) => {
+    expect(
+      canPushWithConfig(
+        a,
+        makeTestPiece({ priority: b }),
+        makeTestPiece({ priority: c }),
+      ),
+    ).toBe(expected);
+  },
+);

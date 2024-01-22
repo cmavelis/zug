@@ -21,7 +21,10 @@ import {
 import { logProxy } from '@/utils';
 import type { Piece, PieceToCreate } from '@/game/pieces';
 import { createPiece } from '@/game/pieces';
-import { MOVES_CAN_PUSH } from '@/game/zugzwang/config';
+import {
+  MOVES_CAN_PUSH,
+  type PushRestrictionsConfig,
+} from '@/game/zugzwang/config';
 
 // orders are stored with displacement from piece to target
 export interface OrderBase {
@@ -383,7 +386,7 @@ export function orderResolver({ G }: { G: GObject }) {
       console.log('piece ', order.sourcePieceId, ' no longer exists');
       return [];
     }
-    // only push lower or equal priorities
+    // check restriction rules
     if (G.config.piecePushRestrictions) {
       const newPosition = addDisplacement(
         pushingPiece.position,
@@ -393,7 +396,14 @@ export function orderResolver({ G }: { G: GObject }) {
       if (!targetPiece) {
         return [];
       }
-      if (targetPiece.priority > pushingPiece.priority) {
+
+      if (
+        !canPushWithConfig(
+          G.config.piecePushRestrictions,
+          pushingPiece,
+          targetPiece,
+        )
+      ) {
         return [];
       }
     }
@@ -774,4 +784,14 @@ const addEventsToHistory = (
     }),
   );
   return newHistoryArray;
+};
+
+export const canPushWithConfig = (
+  pushConfig: PushRestrictionsConfig,
+  pushingPiece: Piece,
+  targetPiece: Piece,
+) => {
+  const { multiply, add } = pushConfig;
+  const adjustedPriority = pushingPiece.priority * (multiply || 1) + (add || 0);
+  return adjustedPriority > targetPiece.priority;
 };

@@ -5,11 +5,20 @@ import { BOARD_PIXEL_SIZE } from '@/constants';
 
 interface BoardPiece extends Piece {
   iconClass?: { [key: string]: boolean };
+  hints?: PieceHint[];
+}
+
+export interface PieceHint {
+  pieceID: number;
+  notPushable: boolean;
 }
 
 const props = defineProps<BoardPiece>();
 
 const squareSize = BOARD_PIXEL_SIZE;
+
+// only 1 right now: notPushable
+const firstHint = props.hints ? props.hints[0] : null;
 
 const styleObject = computed(() => {
   const translateX = `${props.position.x * squareSize}px`;
@@ -24,7 +33,10 @@ const styleObject = computed(() => {
 </script>
 
 <template>
-  <div class="piece" :style="styleObject">
+  <div
+    :class="{ piece: true, 'push-hint': firstHint && firstHint.notPushable }"
+    :style="styleObject"
+  >
     <div
       :class="{
         pieceIcon: true,
@@ -60,6 +72,15 @@ const styleObject = computed(() => {
   justify-content: center;
   color: black;
   cursor: pointer;
+}
+
+.push-hint::after {
+  content: '🫸🚫';
+  color: black;
+  position: absolute;
+  bottom: -6px;
+  border-radius: 8px;
+  background-color: rgba(0, 0, 0, 0.6);
 }
 
 .pieceColor1 {
