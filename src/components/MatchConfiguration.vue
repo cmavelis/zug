@@ -170,14 +170,14 @@ const createMatch = async () => {
           </p>
           <p>
             (<InputNumber
-              input-class="push-restriction-inputs"
+              input-class="push-restriction-input"
               v-model="pushRestrictionMultiply"
               :min="1"
               :max="10"
             />
             * A) +
             <InputNumber
-              input-class="push-restriction-inputs"
+              input-class="push-restriction-input"
               v-model="pushRestrictionAdd"
               inputId="minmax"
               :min="0"
@@ -222,9 +222,9 @@ const createMatch = async () => {
   width: 18rem;
 }
 </style>
+<!--push-restriction-input is used in InputNumber, scoping not working right-->
 <style>
-// is used in InputNumber
-.push-restriction-inputs {
+.push-restriction-input {
   width: 2.5rem;
   height: 2.5rem;
   padding: 0.5rem;
