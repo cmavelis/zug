@@ -18,7 +18,9 @@ const props = defineProps<BoardPiece>();
 const squareSize = BOARD_PIXEL_SIZE;
 
 // only 1 right now: notPushable
-const firstHint = props.hints ? props.hints[0] : null;
+const firstHint = computed(() => {
+  return props.hints ? props.hints[0] : null;
+});
 
 const styleObject = computed(() => {
   const translateX = `${props.position.x * squareSize}px`;
