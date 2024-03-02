@@ -20,7 +20,6 @@ const matches: Ref<EnhancedMatch[]> = ref([]);
 const showOldMatches = ref(false);
 const server = getServerURL();
 
-// todo: poll match list or show refresh button
 const saveMatchList = (matchList: LobbyAPI.MatchList) => {
   let matchData = matchList.matches as EnhancedMatch[];
   if (!showOldMatches.value) {
