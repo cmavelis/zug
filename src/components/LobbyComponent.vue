@@ -4,6 +4,7 @@ import type { Ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { LobbyClient } from 'boardgame.io/client';
 import Button from 'primevue/button';
+import { DateTime } from 'luxon';
 
 import LobbyMatch from '@/components/LobbyMatch.vue';
 import type { GameSetupData } from '@/game/Game';
@@ -12,18 +13,27 @@ import { getServerURL } from '@/utils';
 import { useMatch } from '@/composables/useMatch';
 import type { EnhancedMatch } from '../../server/types';
 import { DEFAULT_ZUG_CONFIG } from '@/game/zugzwang/config';
+import { LobbyAPI } from 'boardgame.io/dist/types/src/types';
 
 const matches: Ref<EnhancedMatch[]> = ref([]);
 const server = getServerURL();
 
 // todo: poll match list or show refresh button
+const saveMatchList = (matchList: LobbyAPI.MatchList, recent = true) => {
+  let matchData = matchList.matches as EnhancedMatch[];
+  if (recent) {
+    const now = DateTime.now();
+    matchData = matchData.filter((m) => {
+      const updatedAt = DateTime.fromMillis(m.updatedAt);
+      const diffInDays = now.diff(updatedAt, 'days');
+      return diffInDays.days < 14;
+    });
+  }
+
+  matches.value = matchData;
+};
 const lobbyClient = new LobbyClient({ server });
-lobbyClient
-  .listMatches('zug')
-  .then((matchList) => {
-    matches.value = matchList.matches as EnhancedMatch[];
-  })
-  .catch(console.error);
+lobbyClient.listMatches('zug').then(saveMatchList).catch(console.error);
 
 const router = useRouter();
 const createMatch = async (
