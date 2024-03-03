@@ -15,7 +15,7 @@
 
 @media (max-width: 500px) {
   #app {
-    padding: 1rem;
+    padding: 0;
   }
 }
 

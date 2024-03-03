@@ -122,7 +122,11 @@ watch(matches, () => {
       <h2>Matches</h2>
       <div class="center-align">
         <span>Show older matches</span>
-        <InputSwitch v-model="showOldMatches" :onclick="fetchMatches" />
+        <InputSwitch
+          v-model="showOldMatches"
+          :onclick="fetchMatches"
+          style="flex-shrink: 0"
+        />
       </div>
     </div>
     <span>{{ joinStatus }}</span>
