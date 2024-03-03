@@ -320,6 +320,7 @@ server.router.get(
 
     // this list already filtered for unlisted matches
     const matchList = ctx.body.matches as EnhancedMatch[];
+    // add additional data without changing the client library call
     for (const match of matchList) {
       const { state } = await db.fetch(match.matchID, {
         state: true,

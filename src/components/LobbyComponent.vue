@@ -4,6 +4,8 @@ import type { Ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { LobbyClient } from 'boardgame.io/client';
 import Button from 'primevue/button';
+import InputSwitch from 'primevue/inputswitch';
+import { DateTime } from 'luxon';
 
 import LobbyMatch from '@/components/LobbyMatch.vue';
 import type { GameSetupData } from '@/game/Game';
@@ -12,18 +14,30 @@ import { getServerURL } from '@/utils';
 import { useMatch } from '@/composables/useMatch';
 import type { EnhancedMatch } from '../../server/types';
 import { DEFAULT_ZUG_CONFIG } from '@/game/zugzwang/config';
+import { type LobbyAPI } from 'boardgame.io';
 
 const matches: Ref<EnhancedMatch[]> = ref([]);
+const showOldMatches = ref(false);
 const server = getServerURL();
 
-// todo: poll match list or show refresh button
+const saveMatchList = (matchList: LobbyAPI.MatchList) => {
+  let matchData = matchList.matches as EnhancedMatch[];
+  if (!showOldMatches.value) {
+    const now = DateTime.now();
+    matchData = matchData.filter((m) => {
+      const updatedAt = DateTime.fromMillis(m.updatedAt);
+      const diffInDays = now.diff(updatedAt, 'days');
+      return diffInDays.days < 7;
+    });
+  }
+
+  matches.value = matchData;
+};
 const lobbyClient = new LobbyClient({ server });
-lobbyClient
-  .listMatches('zug')
-  .then((matchList) => {
-    matches.value = matchList.matches as EnhancedMatch[];
-  })
-  .catch(console.error);
+const fetchMatches = () => {
+  lobbyClient.listMatches('zug').then(saveMatchList).catch(console.error);
+};
+fetchMatches();
 
 const router = useRouter();
 const createMatch = async (
@@ -98,7 +112,24 @@ watch(matches, () => {
         label="Custom"
       ></Button>
     </span>
-    <h2>Matches</h2>
+    <div class="matches-header">
+      <Button
+        size="small"
+        label="Refresh"
+        :onclick="fetchMatches"
+        style="justify-self: end"
+      />
+      <h2>Matches</h2>
+      <div class="center-align">
+        <span>Show all</span>
+        <InputSwitch
+          v-model="showOldMatches"
+          :onclick="fetchMatches"
+          style="flex-shrink: 0"
+          v-tooltip.top="'Matches older than 1 week are hidden by default'"
+        />
+      </div>
+    </div>
     <span>{{ joinStatus }}</span>
     <h3>Your matches</h3>
     <section class="matches-list">
@@ -145,6 +176,18 @@ watch(matches, () => {
   justify-content: center;
   flex-wrap: wrap;
   margin-bottom: 1rem;
+}
+
+.matches-header {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  align-items: center;
+}
+
+.center-align {
+  display: flex;
+  align-items: center;
+  gap: 4px;
 }
 
 .button-group {
