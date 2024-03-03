@@ -27,7 +27,7 @@ const saveMatchList = (matchList: LobbyAPI.MatchList) => {
     matchData = matchData.filter((m) => {
       const updatedAt = DateTime.fromMillis(m.updatedAt);
       const diffInDays = now.diff(updatedAt, 'days');
-      return diffInDays.days < 14;
+      return diffInDays.days < 7;
     });
   }
 
@@ -121,11 +121,12 @@ watch(matches, () => {
       />
       <h2>Matches</h2>
       <div class="center-align">
-        <span>Show older matches</span>
+        <span>Show all</span>
         <InputSwitch
           v-model="showOldMatches"
           :onclick="fetchMatches"
           style="flex-shrink: 0"
+          v-tooltip.top="'Matches older than 1 week are hidden by default'"
         />
       </div>
     </div>
