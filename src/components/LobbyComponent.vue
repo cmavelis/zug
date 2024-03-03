@@ -14,7 +14,7 @@ import { getServerURL } from '@/utils';
 import { useMatch } from '@/composables/useMatch';
 import type { EnhancedMatch } from '../../server/types';
 import { DEFAULT_ZUG_CONFIG } from '@/game/zugzwang/config';
-import { type LobbyAPI } from 'boardgame.io/dist/types/src/types';
+import { type LobbyAPI } from 'boardgame.io';
 
 const matches: Ref<EnhancedMatch[]> = ref([]);
 const showOldMatches = ref(false);
