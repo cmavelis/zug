@@ -20,11 +20,12 @@ import {
 } from '@/game/zugzwang/validators';
 import { logProxy } from '@/utils';
 import type { Piece, PieceToCreate } from '@/game/pieces';
-import { createPiece } from '@/game/pieces';
+import { createPiece, generatePiecePriority, getPieces } from '@/game/pieces';
 import {
   MOVES_CAN_PUSH,
   type PushRestrictionsConfig,
 } from '@/game/zugzwang/config';
+import { onBeforeUnmount } from 'vue';
 
 // orders are stored with displacement from piece to target
 export interface OrderBase {
@@ -333,6 +334,17 @@ export function orderResolver({ G }: { G: GObject }) {
     const cellsArraySize = G.config.board.x * G.config.board.y;
     if (G.cells.length > cellsArraySize) {
       G.cells.length = cellsArraySize;
+    }
+
+    // assigned priority placement
+    if (G.config.placePriorityAssignment?.beforeTurn) {
+      G.piecesToPlace = [];
+      for (const p of [0, 1]) {
+        const numberPieces = getPieces({ G, playerID: p as 0 | 1 }).length;
+        G.piecesToPlace[p] = Array(numberPieces).map(() =>
+          generatePiecePriority({ G, pieceToCreate: { owner: p as 0 | 1 } }),
+        );
+      }
     }
   }
 

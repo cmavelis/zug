@@ -26,7 +26,7 @@ export const generatePiecePriority = ({
   priorityArray,
 }: {
   G: GameState;
-  pieceToCreate: PieceToCreate;
+  pieceToCreate: Optional<PieceToCreate, 'position'>; // TODO: refactor to just Owner
   priorityArray?: number[];
 }) => {
   const { piecePriorityOptions } = G.config;
@@ -119,4 +119,14 @@ export const createPiece = ({
     id: pieceId,
   };
   G.pieces.push(pieceWithId);
+};
+
+export const getPieces = ({
+  G,
+  playerID,
+}: {
+  G: GameState;
+  playerID: 0 | 1;
+}) => {
+  return G.pieces.filter((p) => p.owner === playerID);
 };
