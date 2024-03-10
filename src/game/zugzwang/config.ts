@@ -11,7 +11,7 @@ export interface ZugConfig {
 }
 
 export const DEFAULT_ZUG_CONFIG: ZugConfig = {
-  outOfBounds: 'immediate',
+  outOfBounds: 'turnEnd',
   priority: 'piece',
   piecePriorityOptions: [1, 2, 3, 4, 5, 6],
   piecePriorityDuplicates: false,
