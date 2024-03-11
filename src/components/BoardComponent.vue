@@ -396,7 +396,29 @@ onUnmounted(() => {
           v-model.number="pieceToPlace"
           type="number"
         />
+        <div
+          v-if="
+            props.state.G.config.placePriorityAssignment?.beforeTurn &&
+            props.state.G.piecesToPlace
+          "
+        >
+          <label>place</label>
+          <Button
+            v-for="piecePriority in props.state.G.piecesToPlace[playerID]"
+            :key="piecePriority"
+            :label="String(piecePriority)"
+            size="small"
+            severity="secondary"
+            @click="
+              () => {
+                selectAction('place');
+                pieceToPlace = piecePriority;
+              }
+            "
+          />
+        </div>
         <Button
+          v-else
           label="place new piece"
           size="small"
           severity="secondary"

@@ -340,8 +340,14 @@ export function orderResolver({ G }: { G: GObject }) {
     if (G.config.placePriorityAssignment?.beforeTurn) {
       G.piecesToPlace = [];
       for (const p of [0, 1]) {
-        const numberPieces = getPieces({ G, playerID: p as 0 | 1 }).length;
-        G.piecesToPlace[p] = Array(numberPieces).map(() =>
+        const numberCurrentPieces = getPieces({
+          G,
+          playerID: p as 0 | 1,
+        }).length;
+        const maxPiecesPerPlayer = 4;
+        G.piecesToPlace[p] = Array(
+          maxPiecesPerPlayer - numberCurrentPieces,
+        ).map(() =>
           generatePiecePriority({ G, pieceToCreate: { owner: p as 0 | 1 } }),
         );
       }
