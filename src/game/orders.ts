@@ -25,7 +25,6 @@ import {
   MOVES_CAN_PUSH,
   type PushRestrictionsConfig,
 } from '@/game/zugzwang/config';
-import { onBeforeUnmount } from 'vue';
 
 // orders are stored with displacement from piece to target
 export interface OrderBase {
@@ -338,18 +337,18 @@ export function orderResolver({ G }: { G: GObject }) {
 
     // assigned priority placement
     if (G.config.placePriorityAssignment?.beforeTurn) {
-      G.piecesToPlace = [];
+      G.piecesToPlace = {};
       for (const p of [0, 1]) {
         const numberCurrentPieces = getPieces({
           G,
           playerID: p as 0 | 1,
         }).length;
         const maxPiecesPerPlayer = 4;
-        G.piecesToPlace[p] = Array(
-          maxPiecesPerPlayer - numberCurrentPieces,
-        ).map(() =>
-          generatePiecePriority({ G, pieceToCreate: { owner: p as 0 | 1 } }),
-        );
+        G.piecesToPlace[p] = Array(maxPiecesPerPlayer - numberCurrentPieces)
+          .fill(1)
+          .map(() =>
+            generatePiecePriority({ G, pieceToCreate: { owner: p as 0 | 1 } }),
+          );
       }
     }
   }
