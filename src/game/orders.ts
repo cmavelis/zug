@@ -334,23 +334,6 @@ export function orderResolver({ G }: { G: GObject }) {
     if (G.cells.length > cellsArraySize) {
       G.cells.length = cellsArraySize;
     }
-
-    // assigned priority placement
-    if (G.config.placePriorityAssignment?.beforeTurn) {
-      G.piecesToPlace = {};
-      for (const p of [0, 1]) {
-        const numberCurrentPieces = getPieces({
-          G,
-          playerID: p as 0 | 1,
-        }).length;
-        const maxPiecesPerPlayer = 4;
-        G.piecesToPlace[p] = Array(maxPiecesPerPlayer - numberCurrentPieces)
-          .fill(1)
-          .map(() =>
-            generatePiecePriority({ G, pieceToCreate: { owner: p as 0 | 1 } }),
-          );
-      }
-    }
   }
 
   // return array of "pushes" to be applied
@@ -563,6 +546,26 @@ export function orderResolver({ G }: { G: GObject }) {
       G.score[1] += 1;
     }
   });
+
+  // assigned priority placement
+  if (G.config.placePriorityAssignment?.beforeTurn) {
+    G.piecesToPlace = {};
+    for (const p of [0, 1]) {
+      const numberCurrentPieces = getPieces({
+        G,
+        playerID: p as 0 | 1,
+      }).length;
+      const maxPiecesPerPlayer = 4;
+      G.piecesToPlace[p] = Array(maxPiecesPerPlayer - numberCurrentPieces)
+        .fill(1)
+        .map(() =>
+          generatePiecePriority({ G, pieceToCreate: { owner: p as 0 | 1 } }),
+        );
+      console.log(
+        `Player ${p}, placing the following pieces: ${G.piecesToPlace[p]}`,
+      );
+    }
+  }
 
   if (toRemove.length > 0) {
     // add score events to history
