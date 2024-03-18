@@ -413,13 +413,11 @@ onUnmounted(() => {
             :key="piecePriority"
             :label="String(piecePriority)"
             :disabled="
-              flatOrders
-                .map((o) => {
-                  if ('newPiecePriority' in o) {
-                    return o.newPiecePriority;
-                  }
-                })
-                .includes(piecePriority)
+              flatOrders.some((o) => {
+                if ('newPiecePriority' in o) {
+                  return o.newPiecePriority === piecePriority;
+                }
+              })
             "
             size="small"
             severity="secondary"
