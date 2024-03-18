@@ -4,7 +4,7 @@ import type { Ref } from 'vue';
 import type { _ClientImpl } from 'boardgame.io/dist/types/src/client/client';
 import Button from 'primevue/button';
 
-import BoardDisplay from '@/components/BoardDisplayV2.vue';
+import { BoardDisplay } from '@/components/BoardDisplay';
 import type { GameState } from '@/game/Game';
 import type { Order, OrderTypes } from '@/game/orders';
 import {
