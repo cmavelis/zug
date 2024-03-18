@@ -15,6 +15,7 @@ import {
 } from '@/game/common';
 import { canPushWithConfig, createOrder } from '@/game/orders';
 import {
+  canAddPlaceOrder,
   getValidSquaresForOrder,
   isValidOrder,
   isValidPlaceOrder,
@@ -221,8 +222,12 @@ const targetClick = () => {
     if (!isValidPlaceOrder(order) && !store.isDebug) {
       return;
     }
+    // piece priority placement
     if (pieceToPlace.value > 0) {
       order.newPiecePriority = pieceToPlace.value;
+    }
+    if (!canAddPlaceOrder(order, props.state.G)) {
+      return;
     }
   }
 
@@ -407,6 +412,9 @@ onUnmounted(() => {
             v-for="piecePriority in props.state.G.piecesToPlace[playerID]"
             :key="piecePriority"
             :label="String(piecePriority)"
+            :disabled="
+              flatOrders.map((o) => o?.newPiecePriority).includes(piecePriority)
+            "
             size="small"
             severity="secondary"
             @click="
