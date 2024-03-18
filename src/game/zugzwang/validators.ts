@@ -150,8 +150,8 @@ export function canAddPlaceOrder(order: PlaceOrder, G: GameState): boolean {
     if (!piecesToPlace || !piecesToPlace[owner] || !piecesToPlace[owner].length)
       return false;
 
-    const piecesAlreadyBeingPlaced: number[] = G.orders[owner]
-      .filter((order) => order.type === 'place')
+    const piecesAlreadyBeingPlaced = G.orders[owner]
+      .filter((order): order is PlaceOrder => order.type === 'place')
       .map((order) => order.newPiecePriority);
     const piecesLeftToPlace: number[] = [];
     piecesToPlace[owner].forEach((p) => {
