@@ -41,7 +41,10 @@ const boardCells = Array(props.board.x * props.board.y);
 // cols, rows, used by css
 const cols = computed(() => props.board.x);
 const rows = computed(() => props.board.y);
+
 const svgSideLength = BOARD_PIXEL_SIZE * 4;
+const placeOrders = props.orders.filter((o) => o.type === 'place');
+const overlayOrders = props.orders.filter((o) => o.type !== 'place');
 </script>
 
 <template>
@@ -90,9 +93,10 @@ const svgSideLength = BOARD_PIXEL_SIZE * 4;
           }"
         /> </template
     ></BoardPiece>
+    <div class="place-overlay"><span>4</span><span>6</span></div>
     <svg v-if="props.showOrders" :width="svgSideLength" :height="svgSideLength">
       <OrderOverlay
-        v-for="order in props.orders"
+        v-for="order in overlayOrders"
         :key="order.toString()"
         :order="order"
         :pieces="props.pieces"
@@ -136,6 +140,10 @@ button {
 .highlightedCell {
   background-color: cyan;
   opacity: 0.3;
+}
+
+.place-overlay {
+  position: absolute;
 }
 
 section {
