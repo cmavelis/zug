@@ -6,9 +6,10 @@ import type { MenuItem } from 'primevue/menuitem';
 import { BOARD_PIXEL_SIZE } from '@/constants';
 import type { Coordinates } from '@/game/common';
 import type { Piece } from '@/game/pieces';
-import type { Order } from '@/game/orders';
+import type { Order, PlaceOrder } from '@/game/orders';
 import BoardPiece, { type PieceHint } from './BoardPiece.vue';
 import OrderOverlay from './OrderOverlay.vue';
+import PlaceOverlay from '@/components/BoardDisplay/PlaceOverlay.vue';
 
 interface BoardDisplayV2Props {
   board: Coordinates;
@@ -43,7 +44,9 @@ const cols = computed(() => props.board.x);
 const rows = computed(() => props.board.y);
 
 const svgSideLength = BOARD_PIXEL_SIZE * 4;
-const placeOrders = props.orders.filter((o) => o.type === 'place');
+const placeOrders = props.orders.filter(
+  (o) => o.type === 'place',
+) as PlaceOrder[];
 const overlayOrders = props.orders.filter((o) => o.type !== 'place');
 </script>
 
@@ -93,6 +96,7 @@ const overlayOrders = props.orders.filter((o) => o.type !== 'place');
           }"
         /> </template
     ></BoardPiece>
+    <PlaceOverlay :orders="placeOrders" />
     <div class="place-overlay"><span>4</span><span>6</span></div>
     <svg v-if="props.showOrders" :width="svgSideLength" :height="svgSideLength">
       <OrderOverlay
