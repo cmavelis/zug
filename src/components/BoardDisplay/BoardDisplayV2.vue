@@ -62,7 +62,9 @@ const placeOrders = computed(() => {
   return ordersGrouped;
 });
 
-const overlayOrders = props.orders.filter((o) => o.type !== 'place');
+const overlayOrders = computed(() =>
+  props.orders.filter((o) => o.type !== 'place'),
+);
 </script>
 
 <template>
@@ -125,7 +127,6 @@ const overlayOrders = props.orders.filter((o) => o.type !== 'place');
           }"
         /> </template
     ></BoardPiece>
-    <div class="place-overlay"><span>4</span><span>6</span></div>
     <svg v-if="props.showOrders" :width="svgSideLength" :height="svgSideLength">
       <OrderOverlay
         v-for="order in overlayOrders"
