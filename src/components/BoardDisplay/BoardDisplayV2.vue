@@ -178,20 +178,16 @@ button {
   opacity: 0.3;
 }
 
-.place-overlay {
-  position: absolute;
-}
-
 .place-order-group {
   position: relative;
 }
 
 .position-above {
-  top: -50px;
+  top: -40px;
 }
 
 .position-below {
-  bottom: -45px;
+  bottom: -37px;
 }
 
 section {
