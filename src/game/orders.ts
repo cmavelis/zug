@@ -558,9 +558,14 @@ export function orderResolver({ G }: { G: GObject }) {
       const maxPiecesPerPlayer = 4;
       G.piecesToPlace[p] = Array(maxPiecesPerPlayer - numberCurrentPieces)
         .fill(1)
-        .map(() =>
-          generatePiecePriority({ G, pieceToCreate: { owner: p as 0 | 1 } }),
-        );
+        .reduce((accumulator: number[]) => {
+          const nextPriority = generatePiecePriority({
+            G,
+            pieceToCreate: { owner: p as 0 | 1 },
+            excludePriorities: accumulator,
+          });
+          return accumulator.concat([nextPriority]);
+        }, []);
       console.log(
         `Player ${p}, placing the following pieces: ${G.piecesToPlace[p]}`,
       );

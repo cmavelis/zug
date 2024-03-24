@@ -24,12 +24,15 @@ export const generatePiecePriority = ({
   G,
   pieceToCreate,
   priorityArray,
+  excludePriorities,
 }: {
   G: GameState;
   pieceToCreate: Optional<PieceToCreate, 'position'>; // TODO: refactor to just Owner
   priorityArray?: number[];
+  excludePriorities?: number[];
 }) => {
   const { piecePriorityOptions } = G.config;
+  const { owner: playerID } = pieceToCreate;
   // Setting priority
   let allowedPriorities =
     piecePriorityOptions || DEFAULT_ZUG_CONFIG.piecePriorityOptions;
@@ -50,8 +53,12 @@ export const generatePiecePriority = ({
   let availablePriorities = allowedPriorities;
   if (!G.config.piecePriorityDuplicates) {
     const usedPriorities = G.pieces
-      .filter((p) => p.owner === pieceToCreate.owner)
+      .filter((p) => p.owner === playerID)
       .map((p) => p.priority);
+    if (excludePriorities) {
+      // technically shouldn't have this in the duplicates check block
+      usedPriorities.push(...excludePriorities);
+    }
     availablePriorities = allowedPriorities.filter(
       (n) => !usedPriorities.includes(n),
     );
