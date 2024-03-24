@@ -9,7 +9,6 @@ import type { Piece } from '@/game/pieces';
 import type { Order, PlaceOrder } from '@/game/orders';
 import BoardPiece, { type PieceHint } from './BoardPiece.vue';
 import OrderOverlay from './OrderOverlay.vue';
-import PlaceOverlay from '@/components/BoardDisplay/PlaceOverlay.vue';
 
 interface BoardDisplayV2Props {
   board: Coordinates;
@@ -44,9 +43,33 @@ const cols = computed(() => props.board.x);
 const rows = computed(() => props.board.y);
 
 const svgSideLength = BOARD_PIXEL_SIZE * 4;
-const placeOrders = props.orders.filter(
-  (o) => o.type === 'place',
-) as PlaceOrder[];
+const placeOrders = computed(() => {
+  console.log(props.orders);
+  const orders = props.orders.filter((o) => o.type === 'place') as PlaceOrder[];
+  // group by toTarget
+  const ordersGrouped: Record<string, number[]> = {};
+  for (const order of orders) {
+    const { toTarget, newPiecePriority } = order;
+    const toTargetString = JSON.stringify(toTarget); // use index representation instead of string
+    const values = ordersGrouped[toTargetString];
+    const newValue = [newPiecePriority ?? -1];
+    if (values?.length) {
+      ordersGrouped[toTargetString] = values.concat(newValue);
+    } else {
+      ordersGrouped[toTargetString] = newValue;
+    }
+  }
+  console.log('ordersGrouped', ordersGrouped);
+  return ordersGrouped;
+});
+
+/**
+ * for each group
+ *   use index to place anchor in board square
+ *   depending on player, position above top or below bottom
+ *   for each entry in group
+ *    show newPiecePriority or (+)
+ */
 const overlayOrders = props.orders.filter((o) => o.type !== 'place');
 </script>
 
@@ -62,7 +85,9 @@ const overlayOrders = props.orders.filter((o) => o.type !== 'place');
       }"
       @click="handleCellClick(index)"
       @mouseover="handleCellHover(index)"
-    />
+    >
+      <span>gg</span>
+    </div>
     <BoardPiece
       v-for="piece in props.pieces"
       :data-zug-piece-id="piece.id"
@@ -96,7 +121,6 @@ const overlayOrders = props.orders.filter((o) => o.type !== 'place');
           }"
         /> </template
     ></BoardPiece>
-    <PlaceOverlay :orders="placeOrders" />
     <div class="place-overlay"><span>4</span><span>6</span></div>
     <svg v-if="props.showOrders" :width="svgSideLength" :height="svgSideLength">
       <OrderOverlay
@@ -133,6 +157,9 @@ button {
 .board-square {
   border: 1px solid blanchedalmond;
   z-index: 2; /*want this above the order overlay for hover events */
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
 .hoveredCell {
