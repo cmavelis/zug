@@ -9,6 +9,7 @@ import type { Piece } from '@/game/pieces';
 import type { Order, PlaceOrder } from '@/game/orders';
 import BoardPiece, { type PieceHint } from './BoardPiece.vue';
 import OrderOverlay from './OrderOverlay.vue';
+import { coordinatesToArray } from '@/game/common';
 
 interface BoardDisplayV2Props {
   board: Coordinates;
@@ -44,19 +45,18 @@ const rows = computed(() => props.board.y);
 
 const svgSideLength = BOARD_PIXEL_SIZE * 4;
 const placeOrders = computed(() => {
-  console.log(props.orders);
   const orders = props.orders.filter((o) => o.type === 'place') as PlaceOrder[];
   // group by toTarget
   const ordersGrouped: Record<string, number[]> = {};
   for (const order of orders) {
     const { toTarget, newPiecePriority } = order;
-    const toTargetString = JSON.stringify(toTarget); // use index representation instead of string
-    const values = ordersGrouped[toTargetString];
+    const toTargetIndex = coordinatesToArray(toTarget, props.board);
+    const values = ordersGrouped[toTargetIndex];
     const newValue = [newPiecePriority ?? -1];
     if (values?.length) {
-      ordersGrouped[toTargetString] = values.concat(newValue);
+      ordersGrouped[toTargetIndex] = values.concat(newValue);
     } else {
-      ordersGrouped[toTargetString] = newValue;
+      ordersGrouped[toTargetIndex] = newValue;
     }
   }
   console.log('ordersGrouped', ordersGrouped);
@@ -86,7 +86,15 @@ const overlayOrders = props.orders.filter((o) => o.type !== 'place');
       @click="handleCellClick(index)"
       @mouseover="handleCellHover(index)"
     >
-      <span>gg</span>
+      <span
+        v-if="placeOrders[index]"
+        :class="{
+          'place-order-group': true,
+          'position-above': true,
+          'position-below': false,
+        }"
+        >{{ placeOrders[index] }}</span
+      >
     </div>
     <BoardPiece
       v-for="piece in props.pieces"
@@ -175,6 +183,18 @@ button {
 
 .place-overlay {
   position: absolute;
+}
+
+.place-order-group {
+  position: relative;
+}
+
+.position-above {
+  top: -50px;
+}
+
+.position-below {
+  bottom: 50px;
 }
 
 section {
