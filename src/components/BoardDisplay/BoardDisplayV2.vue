@@ -9,7 +9,7 @@ import type { Piece } from '@/game/pieces';
 import type { Order, PlaceOrder } from '@/game/orders';
 import BoardPiece, { type PieceHint } from './BoardPiece.vue';
 import OrderOverlay from './OrderOverlay.vue';
-import { coordinatesToArray } from '@/game/common';
+import { coordinatesToArray, doesIndexMatchCoordinate } from '@/game/common';
 
 interface BoardDisplayV2Props {
   board: Coordinates;
@@ -59,17 +59,9 @@ const placeOrders = computed(() => {
       ordersGrouped[toTargetIndex] = newValue;
     }
   }
-  console.log('ordersGrouped', ordersGrouped);
   return ordersGrouped;
 });
 
-/**
- * for each group
- *   use index to place anchor in board square
- *   depending on player, position above top or below bottom
- *   for each entry in group
- *    show newPiecePriority or (+)
- */
 const overlayOrders = props.orders.filter((o) => o.type !== 'place');
 </script>
 
@@ -90,8 +82,12 @@ const overlayOrders = props.orders.filter((o) => o.type !== 'place');
         v-if="placeOrders[index]"
         :class="{
           'place-order-group': true,
-          'position-above': true,
-          'position-below': false,
+          'position-above': doesIndexMatchCoordinate({ index, board, y: 0 }),
+          'position-below': doesIndexMatchCoordinate({
+            index,
+            board,
+            y: board.y - 1,
+          }),
         }"
         >{{ placeOrders[index] }}</span
       >
@@ -194,7 +190,7 @@ button {
 }
 
 .position-below {
-  bottom: 50px;
+  bottom: -45px;
 }
 
 section {

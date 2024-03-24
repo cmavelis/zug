@@ -1,5 +1,6 @@
 import type { GameState } from '@/game/Game';
 import type { Orders } from '@/game/orders';
+import { isNumber } from 'lodash';
 
 export interface Coordinates {
   x: number;
@@ -46,6 +47,29 @@ export const isOppositeVector = (
   vector2: Coordinates,
 ) => {
   return vector1.x === -vector2.x && vector1.y === -vector2.y;
+};
+
+export const doesIndexMatchCoordinate = ({
+  index,
+  board,
+  x,
+  y,
+}: {
+  index: number;
+  board: Coordinates;
+  x?: number;
+  y?: number;
+}) => {
+  const coordinates = arrayToCoordinates(index, board);
+  let matchX = true;
+  let matchY = true;
+  if (isNumber(x)) {
+    matchX = coordinates.x === x;
+  }
+  if (isNumber(y)) {
+    matchY = coordinates.y === y;
+  }
+  return matchX && matchY;
 };
 
 export function reportError(e: string) {
