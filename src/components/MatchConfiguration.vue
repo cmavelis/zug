@@ -54,7 +54,7 @@ const piecePriorityDuplicates = ref(PIECE_PRIORITY_DUPLICATES);
 const pieceOnlyPushLowerNumbers = ref(PUSH_ONLY_LOWER_NUMBERS);
 const pushRestrictionMultiply = ref(1);
 const pushRestrictionAdd = ref(0);
-const placeActionPriorities = ref(0);
+const placeActionPriorities = ref(false);
 
 const ruleSet = computed<ZugConfig>(() => {
   return {
