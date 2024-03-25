@@ -17,9 +17,6 @@ export const DEFAULT_ZUG_CONFIG: ZugConfig = {
   piecePriorityDuplicates: false,
   startingPiecePriorities: [2, 3, 4, 5],
   piecePushRestrictions: null,
-  // placePriorityAssignment: {
-  //   beforeTurn: true, // TODO: make false before merging
-  // },
 };
 
 export interface PushRestrictionsConfig {
