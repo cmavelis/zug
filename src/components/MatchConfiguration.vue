@@ -166,7 +166,10 @@ const createMatch = async () => {
       <h4>(Experimental)</h4>
       <div class="config-item">
         <span>Piece priority push restrictions:</span>
-        <InputSwitch v-model="pieceOnlyPushLowerNumbers" />
+        <InputSwitch
+          class="flex-no-shrink"
+          v-model="pieceOnlyPushLowerNumbers"
+        />
         <div class="push-restrict">
           <p>
             Fill in the equation to determine when piece with priority A can
@@ -227,7 +230,11 @@ const createMatch = async () => {
   margin: 0 8px;
 }
 .push-restrict {
-  width: 18rem;
+  width: 15rem;
+}
+
+.flex-no-shrink {
+  flex-shrink: 0;
 }
 </style>
 <!--push-restriction-input is used in InputNumber, scoping not working right-->
