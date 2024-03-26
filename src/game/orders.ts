@@ -547,6 +547,20 @@ export function orderResolver({ G }: { G: GObject }) {
     }
   });
 
+  if (toRemove.length > 0) {
+    // add score events to history
+    turnHistory = addEventsToHistory(
+      G,
+      turnHistory,
+      toRemove.map((id) => ({
+        type: 'score',
+        sourcePieceId: id,
+      })),
+    );
+    removePieces(G, toRemove);
+  }
+  G.history.push(turnHistory);
+
   // assigned priority placement
   if (G.config.placePriorityAssignment?.beforeTurn) {
     G.piecesToPlace = {};
@@ -571,20 +585,6 @@ export function orderResolver({ G }: { G: GObject }) {
       );
     }
   }
-
-  if (toRemove.length > 0) {
-    // add score events to history
-    turnHistory = addEventsToHistory(
-      G,
-      turnHistory,
-      toRemove.map((id) => ({
-        type: 'score',
-        sourcePieceId: id,
-      })),
-    );
-    removePieces(G, toRemove);
-  }
-  G.history.push(turnHistory);
 
   return G;
 }
