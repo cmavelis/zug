@@ -1,10 +1,10 @@
 <!-- This should be a re-usable piece combined bak into BoardComponent-->
 
 <script setup lang="ts">
-import BoardPiece from '@/components/BoardPiece.vue';
-import type { GameState } from '@/game/Game';
+import BoardPiece from './BoardPiece.vue';
+import OrderDisplay from './OrderOverlay.vue';
 
-import OrderDisplay from '@/components/OrderOverlay.vue';
+import type { GameState } from '@/game/Game';
 import { BOARD_PIXEL_SIZE } from '@/constants';
 
 interface BoardProps {

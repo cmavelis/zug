@@ -10,6 +10,7 @@ import type {
 } from '@/game/orders';
 import type { Coordinates } from '@/game/common';
 import { addDisplacement } from '@/game/common';
+import type { GameState } from '@/game/Game';
 
 export function isDiagonal(vector: Coordinates): boolean {
   const xChangesAllowed = [-1, 1];
@@ -134,6 +135,38 @@ export function isValidPlaceOrder(order: PlaceOrder): boolean {
   const yChangeAllowed = order.owner === 0 ? 0 : 3; // place is relative to 0, 0
   const yChange = order.toTarget.y;
   return yChange === yChangeAllowed;
+}
+
+export function canAddPlaceOrder(order: PlaceOrder, G: GameState): boolean {
+  if (!isValidPlaceOrder(order)) {
+    return false;
+  }
+  if (G.config.placePriorityAssignment) {
+    if (!order.newPiecePriority) {
+      return false;
+    }
+    const { owner } = order;
+    const { piecesToPlace } = G;
+    if (!piecesToPlace || !piecesToPlace[owner] || !piecesToPlace[owner].length)
+      return false;
+
+    const piecesAlreadyBeingPlaced = G.orders[owner]
+      .filter((order): order is PlaceOrder => order.type === 'place')
+      .map((order) => order.newPiecePriority);
+    const piecesLeftToPlace: number[] = [];
+    piecesToPlace[owner].forEach((p) => {
+      if (piecesAlreadyBeingPlaced.includes(p)) {
+        const toRemove = piecesAlreadyBeingPlaced.findIndex((i) => i === p);
+        piecesAlreadyBeingPlaced.splice(toRemove, 1);
+      } else {
+        piecesLeftToPlace.push(p);
+      }
+    });
+
+    return piecesLeftToPlace.includes(order.newPiecePriority);
+  } else {
+    return true;
+  }
 }
 
 // TODO does the origin solve the need for other order info?
