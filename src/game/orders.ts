@@ -731,13 +731,30 @@ export function arrangeOrderPairs(
   while (iterating) {
     const order0 = orderArray0Sorted[array0index];
     let piece0;
+    // priority comparison is piece priority, or newPiecePriority in the case of place actions
+    let priority0 = 99;
+    let priority1 = 99;
+
     if (order0) {
       piece0 = getPiece(G, order0.sourcePieceId);
+      if ('newPiecePriority' in order0 && order0.newPiecePriority) {
+        priority0 = order0.newPiecePriority;
+      }
     }
+    if (piece0 && piece0.priority > 0) {
+      priority0 = piece0.priority;
+    }
+
     const order1 = orderArray1Sorted[array1index];
     let piece1;
     if (order1) {
       piece1 = getPiece(G, order1.sourcePieceId);
+      if ('newPiecePriority' in order1 && order1.newPiecePriority) {
+        priority1 = order1.newPiecePriority;
+      }
+    }
+    if (piece1 && piece1.priority > 0) {
+      priority1 = piece1.priority;
     }
 
     let addOrder0 = false;
@@ -748,11 +765,11 @@ export function arrangeOrderPairs(
     if (!(order0 && order1)) {
       addOrder0 = !!order0;
       addOrder1 = !!order1;
-    } else if (piece0 && piece1 && piece0.priority !== piece1.priority) {
+    } else if (priority0 !== priority1) {
       // pieces, unequal priority
-      if (piece0.priority < piece1.priority) {
+      if (priority0 < priority1) {
         addOrder0 = true;
-      } else if (piece0.priority > piece1.priority) {
+      } else if (priority0 > priority1) {
         addOrder1 = true;
       }
     } else {

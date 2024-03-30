@@ -17,6 +17,21 @@ const piecePlaceOrder = makeTestOrder({
   type: 'place',
   sourcePieceId: -1,
 });
+const priority1PlaceOrder = makeTestOrder({
+  type: 'place',
+  sourcePieceId: -1,
+  newPiecePriority: 1,
+});
+const priority3PlaceOrder = makeTestOrder({
+  type: 'place',
+  sourcePieceId: -1,
+  newPiecePriority: 3,
+});
+const priority6PlaceOrder = makeTestOrder({
+  type: 'place',
+  sourcePieceId: -1,
+  newPiecePriority: 6,
+});
 
 const G = makeTestGame({ pieces: [piecePriority3, piecePriority1] });
 const orders = [piecePriority3Order, piecePriority1Order];
@@ -61,6 +76,24 @@ test('arrange order pairs, with place actions', () => {
     [piecePriority3Order, null],
     [piecePlaceOrder, piecePlaceOrder],
     [piecePlaceOrder, null],
+  ]);
+});
+
+test('arrange order pairs, with prioritized place actions', () => {
+  const sortedOrderPairs = arrangeOrderPairs(
+    G,
+    [priority6PlaceOrder, priority1PlaceOrder, priority3PlaceOrder].concat(
+      orders,
+    ),
+    [priority6PlaceOrder].concat(ordersP2),
+  );
+  expect(sortedOrderPairs).toEqual([
+    [piecePriority1Order, piecePriority1Order],
+    [null, piece1OrderPriority4],
+    [priority1PlaceOrder, null],
+    [piecePriority3Order, null],
+    [priority3PlaceOrder, null],
+    [priority6PlaceOrder, priority6PlaceOrder],
   ]);
 });
 
