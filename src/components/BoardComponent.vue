@@ -66,6 +66,13 @@ const piecesWithoutActions = computed(() => {
   flatOrders.value.forEach((o) => idSet.delete(o.sourcePieceId));
   return Array.from(idSet);
 });
+const piecesToPlaceSorted = computed(() => {
+  const piecesToPlace = props.state.G.piecesToPlace || { 0: [], 1: [] };
+  return {
+    0: [...piecesToPlace[0]].sort(),
+    1: [...piecesToPlace[1]].sort(),
+  };
+});
 
 const validSquares: Ref<number[]> = computed(() => {
   if (selectedAction.value === 'place') {
@@ -389,12 +396,9 @@ onUnmounted(() => {
         <template
           v-if="props.state.G.config.placePriorityAssignment?.beforeTurn"
         >
-          <div
-            v-if="props.state.G.piecesToPlace"
-            class="place-button-group place-p0"
-          >
+          <div class="place-button-group place-p0">
             <PlaceButton
-              v-for="piecePriority in props.state.G.piecesToPlace[0].toSorted()"
+              v-for="piecePriority in piecesToPlaceSorted[0]"
               :key="piecePriority"
               :piece-priority="piecePriority"
               :disabled="
@@ -414,12 +418,9 @@ onUnmounted(() => {
             />
           </div>
           <label>place</label>
-          <div
-            v-if="props.state.G.piecesToPlace"
-            class="place-button-group place-p1"
-          >
+          <div class="place-button-group place-p1">
             <PlaceButton
-              v-for="piecePriority in props.state.G.piecesToPlace[1].toSorted()"
+              v-for="piecePriority in piecesToPlaceSorted[1]"
               :key="piecePriority"
               :piece-priority="piecePriority"
               :disabled="
