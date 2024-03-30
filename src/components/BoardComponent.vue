@@ -394,7 +394,7 @@ onUnmounted(() => {
             class="place-button-group place-p0"
           >
             <PlaceButton
-              v-for="piecePriority in props.state.G.piecesToPlace[0]"
+              v-for="piecePriority in props.state.G.piecesToPlace[0].toSorted()"
               :key="piecePriority"
               :piece-priority="piecePriority"
               :disabled="
@@ -419,7 +419,7 @@ onUnmounted(() => {
             class="place-button-group place-p1"
           >
             <PlaceButton
-              v-for="piecePriority in props.state.G.piecesToPlace[1]"
+              v-for="piecePriority in props.state.G.piecesToPlace[1].toSorted()"
               :key="piecePriority"
               :piece-priority="piecePriority"
               :disabled="
