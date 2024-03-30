@@ -387,12 +387,12 @@ onUnmounted(() => {
           type="number"
         />
         <template
-          v-if="
-            props.state.G.config.placePriorityAssignment?.beforeTurn &&
-            props.state.G.piecesToPlace
-          "
+          v-if="props.state.G.config.placePriorityAssignment?.beforeTurn"
         >
-          <div class="place-button-group place-p0">
+          <div
+            v-if="props.state.G.piecesToPlace"
+            class="place-button-group place-p0"
+          >
             <PlaceButton
               v-for="piecePriority in props.state.G.piecesToPlace[0]"
               :key="piecePriority"
@@ -414,7 +414,10 @@ onUnmounted(() => {
             />
           </div>
           <label>place</label>
-          <div class="place-button-group place-p1">
+          <div
+            v-if="props.state.G.piecesToPlace"
+            class="place-button-group place-p1"
+          >
             <PlaceButton
               v-for="piecePriority in props.state.G.piecesToPlace[1]"
               :key="piecePriority"
