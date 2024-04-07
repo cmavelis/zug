@@ -298,7 +298,7 @@ const opponentWaiting = computed(() => {
 });
 
 // "your turn" sound
-getNotificationSound(store.zugUsername === 'Ben').then((notificationSound) => {
+getNotificationSound(store.zugUsername).then((notificationSound) => {
   const audio = new Audio(notificationSound);
   audio.volume = 0.75;
   watch(
