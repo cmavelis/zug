@@ -396,7 +396,7 @@ onUnmounted(() => {
         <template
           v-if="props.state.G.config.placePriorityAssignment?.beforeTurn"
         >
-          <div class="place-button-group place-p0">
+          <div class="place-button-group">
             <PlaceButton
               v-for="piecePriority in piecesToPlaceSorted[0]"
               :key="piecePriority"
@@ -409,6 +409,7 @@ onUnmounted(() => {
                   }
                 })
               "
+              class="player-one-piece"
               @click="
                 () => {
                   selectAction('place');
@@ -418,7 +419,7 @@ onUnmounted(() => {
             />
           </div>
           <label>place</label>
-          <div class="place-button-group place-p1">
+          <div class="place-button-group">
             <PlaceButton
               v-for="piecePriority in piecesToPlaceSorted[1]"
               :key="piecePriority"
@@ -431,6 +432,7 @@ onUnmounted(() => {
                   }
                 })
               "
+              class="player-two-piece"
               @click="
                 () => {
                   selectAction('place');
@@ -547,15 +549,6 @@ onUnmounted(() => {
   height: 100%;
   display: flex;
   flex-direction: column;
-}
-
-.place-p0 button {
-  background-color: var(--sandy-brown);
-  color: black;
-}
-.place-p1 button {
-  background-color: var(--vermilion);
-  color: black;
 }
 
 section {

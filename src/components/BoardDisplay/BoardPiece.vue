@@ -42,8 +42,8 @@ const styleObject = computed(() => {
     <div
       :class="{
         pieceIcon: true,
-        pieceColor1: props.owner === 0,
-        pieceColor2: props.owner === 1,
+        'player-one-piece': props.owner === 0,
+        'player-two-piece': props.owner === 1,
         ...props.iconClass,
       }"
     >
@@ -72,7 +72,6 @@ const styleObject = computed(() => {
   display: flex;
   align-items: center;
   justify-content: center;
-  color: black;
   cursor: pointer;
 }
 
@@ -83,13 +82,5 @@ const styleObject = computed(() => {
   bottom: -6px;
   border-radius: 8px;
   background-color: rgba(0, 0, 0, 0.6);
-}
-
-.pieceColor1 {
-  background-color: var(--sandy-brown);
-}
-
-.pieceColor2 {
-  background-color: var(--vermilion);
 }
 </style>
