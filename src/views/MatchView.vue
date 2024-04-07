@@ -438,10 +438,16 @@ main {
 
 .player-info {
   display: grid;
-  grid-template-columns: 1fr 100px auto 100px 1fr;
+  grid-template-columns: 1fr minmax(100px, 150px) auto minmax(100px, 150px) 1fr;
   justify-content: center;
   align-items: center;
   gap: 0.2rem;
+}
+
+.status {
+  text-overflow: ellipsis;
+  overflow: hidden;
+  padding-left: 8px;
 }
 
 .status::before {
