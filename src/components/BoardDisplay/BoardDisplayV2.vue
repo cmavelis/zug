@@ -111,7 +111,7 @@ const isBottomPlayer = (index: number) => {
           }"
         >
           <span>
-            {{ place }}
+            {{ place > 0 ? place : '' }}
           </span>
         </div>
       </div>
