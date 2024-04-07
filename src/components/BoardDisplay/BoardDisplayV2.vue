@@ -65,6 +65,18 @@ const placeOrders = computed(() => {
 const overlayOrders = computed(() =>
   props.orders.filter((o) => o.type !== 'place'),
 );
+
+const isTopPlayer = (index: number) => {
+  return doesIndexMatchCoordinate({ index, board: props.board, y: 0 });
+};
+
+const isBottomPlayer = (index: number) => {
+  return doesIndexMatchCoordinate({
+    index,
+    board: props.board,
+    y: props.board.y - 1,
+  });
+};
 </script>
 
 <template>
@@ -80,19 +92,29 @@ const overlayOrders = computed(() =>
       @click="handleCellClick(index)"
       @mouseover="handleCellHover(index)"
     >
-      <span
+      <div
         v-if="placeOrders[index]"
         :class="{
           'place-order-group': true,
-          'position-above': doesIndexMatchCoordinate({ index, board, y: 0 }),
-          'position-below': doesIndexMatchCoordinate({
-            index,
-            board,
-            y: board.y - 1,
-          }),
+          'position-above': isTopPlayer(index),
+          'position-below': isBottomPlayer(index),
         }"
-        >{{ placeOrders[index] }}</span
       >
+        <span>+</span>
+        <div
+          v-for="place in placeOrders[index]"
+          :key="place"
+          :class="{
+            'place-order-indicator': true,
+            'player-one-piece': isTopPlayer(index),
+            'player-two-piece': isBottomPlayer(index),
+          }"
+        >
+          <span>
+            {{ place }}
+          </span>
+        </div>
+      </div>
     </div>
     <BoardPiece
       v-for="piece in props.pieces"
@@ -180,6 +202,18 @@ button {
 
 .place-order-group {
   position: relative;
+  display: flex;
+  flex-direction: row;
+  align-items: end;
+}
+
+.place-order-indicator {
+  height: 18px;
+  width: 18px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .position-above {
