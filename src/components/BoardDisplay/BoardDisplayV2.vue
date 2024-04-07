@@ -204,7 +204,7 @@ button {
   position: relative;
   display: flex;
   flex-direction: row;
-  align-items: end;
+  align-items: center;
 }
 
 .place-order-indicator {
@@ -221,7 +221,7 @@ button {
 }
 
 .position-below {
-  bottom: -37px;
+  bottom: -40px;
 }
 
 section {
