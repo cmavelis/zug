@@ -1,9 +1,9 @@
 // import sound from '../assets/zug-zug.mp3';
 // import benSound from '../assets/zug-a-zug-ah.mp3';
 
-export const getNotificationSound = async (isBen: boolean) => {
+export const getNotificationSound = async (name?: string) => {
   let sound;
-  if (isBen) {
+  if (name && ['Ben', 'bendeforest'].includes(name)) {
     sound = await import('../assets/zug-a-zug-ah.mp3');
   } else {
     sound = await import('../assets/zug-zug.mp3');

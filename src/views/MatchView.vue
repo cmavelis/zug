@@ -19,7 +19,7 @@ import { useErrorHandler } from '@/composables/useErrorHandler';
 import axios from 'axios';
 
 import BoardComponent from '@/components/BoardComponent.vue';
-import BoardDisplay from '@/components/BoardDisplay.vue';
+import { BoardDisplay } from '@/components/BoardDisplay';
 import { useWindowFocus } from '@/composables/useWindowFocus';
 import { SimulChessClient } from '@/game/App';
 import type { GObject } from '@/game/Game';
@@ -298,7 +298,7 @@ const opponentWaiting = computed(() => {
 });
 
 // "your turn" sound
-getNotificationSound(store.zugUsername === 'Ben').then((notificationSound) => {
+getNotificationSound(store.zugUsername).then((notificationSound) => {
   const audio = new Audio(notificationSound);
   audio.volume = 0.75;
   watch(
@@ -438,10 +438,16 @@ main {
 
 .player-info {
   display: grid;
-  grid-template-columns: 1fr 100px auto 100px 1fr;
+  grid-template-columns: 1fr minmax(100px, 150px) auto minmax(100px, 150px) 1fr;
   justify-content: center;
   align-items: center;
   gap: 0.2rem;
+}
+
+.status {
+  text-overflow: ellipsis;
+  overflow: hidden;
+  padding-left: 8px;
 }
 
 .status::before {

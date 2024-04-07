@@ -4,7 +4,8 @@ import type { Ref } from 'vue';
 import type { _ClientImpl } from 'boardgame.io/dist/types/src/client/client';
 import Button from 'primevue/button';
 
-import BoardDisplay from '@/components/BoardDisplayV2.vue';
+import { BoardDisplayV2 as BoardDisplay } from '@/components/BoardDisplay';
+import PlaceButton from '@/components/BoardComponentPlaceButton.vue';
 import type { GameState } from '@/game/Game';
 import type { Order, OrderTypes } from '@/game/orders';
 import {
@@ -15,6 +16,7 @@ import {
 } from '@/game/common';
 import { canPushWithConfig, createOrder } from '@/game/orders';
 import {
+  canAddPlaceOrder,
   getValidSquaresForOrder,
   isValidOrder,
   isValidPlaceOrder,
@@ -63,6 +65,13 @@ const piecesWithoutActions = computed(() => {
   );
   flatOrders.value.forEach((o) => idSet.delete(o.sourcePieceId));
   return Array.from(idSet);
+});
+const piecesToPlaceSorted = computed(() => {
+  const piecesToPlace = props.state.G.piecesToPlace || { 0: [], 1: [] };
+  return {
+    0: [...piecesToPlace[0]].sort(),
+    1: [...piecesToPlace[1]].sort(),
+  };
 });
 
 const validSquares: Ref<number[]> = computed(() => {
@@ -221,8 +230,12 @@ const targetClick = () => {
     if (!isValidPlaceOrder(order) && !store.isDebug) {
       return;
     }
+    // piece priority placement
     if (pieceToPlace.value > 0) {
       order.newPiecePriority = pieceToPlace.value;
+    }
+    if (!canAddPlaceOrder(order, props.state.G)) {
+      return;
     }
   }
 
@@ -374,6 +387,73 @@ onUnmounted(() => {
 <template>
   <section class="layout">
     <div class="board-with-controls">
+      <div class="order-button-group">
+        <input
+          v-if="store.isDebug"
+          v-model.number="pieceToPlace"
+          type="number"
+        />
+        <template
+          v-if="props.state.G.config.placePriorityAssignment?.beforeTurn"
+        >
+          <div class="place-button-group">
+            <PlaceButton
+              v-for="piecePriority in piecesToPlaceSorted[0]"
+              :key="piecePriority"
+              :piece-priority="piecePriority"
+              :disabled="
+                props.playerID !== 0 ||
+                flatOrders.some((o) => {
+                  if ('newPiecePriority' in o) {
+                    return o.newPiecePriority === piecePriority;
+                  }
+                })
+              "
+              class="player-one-piece"
+              @click="
+                () => {
+                  selectAction('place');
+                  pieceToPlace = piecePriority;
+                }
+              "
+            />
+          </div>
+          <label>place</label>
+          <div class="place-button-group">
+            <PlaceButton
+              v-for="piecePriority in piecesToPlaceSorted[1]"
+              :key="piecePriority"
+              :piece-priority="piecePriority"
+              :disabled="
+                props.playerID !== 1 ||
+                flatOrders.some((o) => {
+                  if ('newPiecePriority' in o) {
+                    return o.newPiecePriority === piecePriority;
+                  }
+                })
+              "
+              class="player-two-piece"
+              @click="
+                () => {
+                  selectAction('place');
+                  pieceToPlace = piecePriority;
+                }
+              "
+            />
+          </div>
+        </template>
+        <Button
+          v-else
+          label="place new piece"
+          size="small"
+          severity="secondary"
+          :disabled="piecesToPlace === 0"
+          :badge="String(piecesToPlace)"
+          @click="selectAction('place')"
+          class="place-button-default"
+          :pt="{ badge: 'place-button-default-badge' }"
+        />
+      </div>
       <BoardDisplay
         :pieces="props.state.G.pieces"
         :orders="flatOrders"
@@ -390,21 +470,6 @@ onUnmounted(() => {
         :action-menu-items="actionMenuPerPiece"
         :targetingHints="targetingHints"
       />
-      <div class="order-button-group">
-        <input
-          v-if="store.isDebug"
-          v-model.number="pieceToPlace"
-          type="number"
-        />
-        <Button
-          label="place new piece"
-          size="small"
-          severity="secondary"
-          :disabled="piecesToPlace === 0"
-          :badge="String(piecesToPlace)"
-          @click="selectAction('place')"
-        />
-      </div>
     </div>
     <div class="actions-text" v-if="props.showOrders">
       <Button
@@ -420,26 +485,29 @@ onUnmounted(() => {
         :class="{ 'halo-shadow': canEndTurn }"
         label="end turn"
       />
-      <p>
-        piece:
-        {{
-          typeof selectedPiece === 'number'
-            ? String(selectedPiece)
-            : 'none selected'
-        }}
-      </p>
-      <p>action: {{ selectedAction || 'none selected' }}</p>
-      <p>ACTIONS</p>
-      <p v-if="endTurnMessage" class="info-message">{{ endTurnMessage }}</p>
-      <template
-        v-for="order in props.state.G.orders[props.playerID]"
-        :key="order.sourcePieceId"
-      >
+      <div v-if="store.isDebug">
         <p>
-          piece {{ order.sourcePieceId }}: {{ order.type }} with vector
-          {{ order.toTarget }}
+          piece:
+          {{
+            typeof selectedPiece === 'number'
+              ? String(selectedPiece)
+              : 'none selected'
+          }}
         </p>
-      </template>
+        <p>action: {{ selectedAction || 'none selected' }}</p>
+
+        <p>ACTIONS</p>
+        <p v-if="endTurnMessage" class="info-message">{{ endTurnMessage }}</p>
+        <template
+          v-for="order in props.state.G.orders[props.playerID]"
+          :key="order.sourcePieceId"
+        >
+          <p>
+            piece {{ order.sourcePieceId }}: {{ order.type }} with vector
+            {{ order.toTarget }}
+          </p>
+        </template>
+      </div>
     </div>
   </section>
 </template>
@@ -453,11 +521,12 @@ onUnmounted(() => {
 
 .board-with-controls {
   position: relative;
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-columns: 1fr min-content 1fr;
   justify-content: center;
   justify-self: end;
   gap: 8px;
+  margin: 18px 0;
 }
 
 @media (max-width: 500px) {
@@ -478,6 +547,25 @@ onUnmounted(() => {
   display: flex;
   gap: 4px;
   flex-direction: column;
+  justify-content: center;
+}
+
+.place-button-group {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.place-button-default {
+  display: flex;
+  flex-direction: column;
+  width: min-content;
+  padding: 8px;
+  gap: 4px;
+}
+
+:deep(.p-button .p-badge) {
+  margin: 0;
 }
 
 section {

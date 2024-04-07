@@ -1,15 +1,11 @@
 import { test, expect } from 'vitest';
 import {
   arrangeOrderPairs,
-  arrangeOrders,
   canPushWithConfig,
   createOrderArrayCompareFn,
 } from '@/game/orders';
 import { makeTestGame, makeTestOrder, makeTestPiece } from '@/game/test-utils';
-import {
-  PIECE_PRIORITIES_LIST,
-  type PushRestrictionsConfig,
-} from '@/game/zugzwang/config';
+import { type PushRestrictionsConfig } from '@/game/zugzwang/config';
 
 const piecePriority3 = makeTestPiece({ id: 0, priority: 3 });
 const piecePriority1 = makeTestPiece({ id: 1, priority: 1 });
@@ -21,23 +17,25 @@ const piecePlaceOrder = makeTestOrder({
   type: 'place',
   sourcePieceId: -1,
 });
+const priority1PlaceOrder = makeTestOrder({
+  type: 'place',
+  sourcePieceId: -1,
+  newPiecePriority: 1,
+});
+const priority3PlaceOrder = makeTestOrder({
+  type: 'place',
+  sourcePieceId: -1,
+  newPiecePriority: 3,
+});
+const priority6PlaceOrder = makeTestOrder({
+  type: 'place',
+  sourcePieceId: -1,
+  newPiecePriority: 6,
+});
 
 const G = makeTestGame({ pieces: [piecePriority3, piecePriority1] });
 const orders = [piecePriority3Order, piecePriority1Order];
 const ordersP2 = [piece1OrderPriority4, piecePriority1Order];
-
-test('arrange actions, basic', () => {
-  const sortedOrders = PIECE_PRIORITIES_LIST.map(() => null);
-  orders.forEach(arrangeOrders(G, sortedOrders));
-  expect(sortedOrders).toEqual([
-    piecePriority1Order,
-    null,
-    piecePriority3Order,
-    null,
-    null,
-    null,
-  ]);
-});
 
 test('sort orders, different piece priorities', () => {
   const unsortedOrders = [piecePriority3Order, piecePriority1Order];
@@ -78,6 +76,24 @@ test('arrange order pairs, with place actions', () => {
     [piecePriority3Order, null],
     [piecePlaceOrder, piecePlaceOrder],
     [piecePlaceOrder, null],
+  ]);
+});
+
+test('arrange order pairs, with prioritized place actions', () => {
+  const sortedOrderPairs = arrangeOrderPairs(
+    G,
+    [priority6PlaceOrder, priority1PlaceOrder, priority3PlaceOrder].concat(
+      orders,
+    ),
+    [priority6PlaceOrder].concat(ordersP2),
+  );
+  expect(sortedOrderPairs).toEqual([
+    [piecePriority1Order, piecePriority1Order],
+    [null, piece1OrderPriority4],
+    [priority1PlaceOrder, null],
+    [piecePriority3Order, null],
+    [priority3PlaceOrder, null],
+    [priority6PlaceOrder, priority6PlaceOrder],
   ]);
 });
 

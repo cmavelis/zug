@@ -6,9 +6,10 @@ import type { MenuItem } from 'primevue/menuitem';
 import { BOARD_PIXEL_SIZE } from '@/constants';
 import type { Coordinates } from '@/game/common';
 import type { Piece } from '@/game/pieces';
-import type { Order } from '@/game/orders';
+import type { Order, PlaceOrder } from '@/game/orders';
 import BoardPiece, { type PieceHint } from './BoardPiece.vue';
 import OrderOverlay from './OrderOverlay.vue';
+import { coordinatesToArray, doesIndexMatchCoordinate } from '@/game/common';
 
 interface BoardDisplayV2Props {
   board: Coordinates;
@@ -41,7 +42,41 @@ const boardCells = Array(props.board.x * props.board.y);
 // cols, rows, used by css
 const cols = computed(() => props.board.x);
 const rows = computed(() => props.board.y);
+
 const svgSideLength = BOARD_PIXEL_SIZE * 4;
+const placeOrders = computed(() => {
+  const orders = props.orders.filter((o) => o.type === 'place') as PlaceOrder[];
+  // group by toTarget
+  const ordersGrouped: Record<string, number[]> = {};
+  for (const order of orders) {
+    const { toTarget, newPiecePriority } = order;
+    const toTargetIndex = coordinatesToArray(toTarget, props.board);
+    const values = ordersGrouped[toTargetIndex];
+    const newValue = [newPiecePriority ?? -1];
+    if (values?.length) {
+      ordersGrouped[toTargetIndex] = values.concat(newValue);
+    } else {
+      ordersGrouped[toTargetIndex] = newValue;
+    }
+  }
+  return ordersGrouped;
+});
+
+const overlayOrders = computed(() =>
+  props.orders.filter((o) => o.type !== 'place'),
+);
+
+const isTopPlayer = (index: number) => {
+  return doesIndexMatchCoordinate({ index, board: props.board, y: 0 });
+};
+
+const isBottomPlayer = (index: number) => {
+  return doesIndexMatchCoordinate({
+    index,
+    board: props.board,
+    y: props.board.y - 1,
+  });
+};
 </script>
 
 <template>
@@ -56,7 +91,31 @@ const svgSideLength = BOARD_PIXEL_SIZE * 4;
       }"
       @click="handleCellClick(index)"
       @mouseover="handleCellHover(index)"
-    />
+    >
+      <div
+        v-if="placeOrders[index]"
+        :class="{
+          'place-order-group': true,
+          'position-above': isTopPlayer(index),
+          'position-below': isBottomPlayer(index),
+        }"
+      >
+        <span>+</span>
+        <div
+          v-for="place in placeOrders[index]"
+          :key="place"
+          :class="{
+            'place-order-indicator': true,
+            'player-one-piece': isTopPlayer(index),
+            'player-two-piece': isBottomPlayer(index),
+          }"
+        >
+          <span>
+            {{ place > 0 ? place : '' }}
+          </span>
+        </div>
+      </div>
+    </div>
     <BoardPiece
       v-for="piece in props.pieces"
       :data-zug-piece-id="piece.id"
@@ -92,7 +151,7 @@ const svgSideLength = BOARD_PIXEL_SIZE * 4;
     ></BoardPiece>
     <svg v-if="props.showOrders" :width="svgSideLength" :height="svgSideLength">
       <OrderOverlay
-        v-for="order in props.orders"
+        v-for="order in overlayOrders"
         :key="order.toString()"
         :order="order"
         :pieces="props.pieces"
@@ -125,6 +184,9 @@ button {
 .board-square {
   border: 1px solid blanchedalmond;
   z-index: 2; /*want this above the order overlay for hover events */
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
 .hoveredCell {
@@ -136,6 +198,30 @@ button {
 .highlightedCell {
   background-color: cyan;
   opacity: 0.3;
+}
+
+.place-order-group {
+  position: relative;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
+
+.place-order-indicator {
+  height: 18px;
+  width: 18px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.position-above {
+  top: -40px;
+}
+
+.position-below {
+  bottom: -40px;
 }
 
 section {

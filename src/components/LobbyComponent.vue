@@ -151,7 +151,9 @@ watch(matches, () => {
         :key="match.matchID"
         :match="match"
         :highlight="usersMatches.includes(match.matchID)"
-        :handle-match-join="() => requestJoinMatch(match.matchID)"
+        :handle-match-join="
+          () => requestJoinMatch(match.matchID, undefined, navigateToMatch)
+        "
         :handle-match-navigate="() => navigateToMatch(match.matchID)"
       />
     </section>
@@ -162,7 +164,9 @@ watch(matches, () => {
         :key="match.matchID"
         :match="match"
         :highlight="usersMatches.includes(match.matchID)"
-        :handle-match-join="() => requestJoinMatch(match.matchID)"
+        :handle-match-join="
+          () => requestJoinMatch(match.matchID, undefined, navigateToMatch)
+        "
         :handle-match-navigate="() => navigateToMatch(match.matchID)"
       />
     </section>

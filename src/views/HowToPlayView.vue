@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import BoardDisplay from '@/components/BoardDisplayV2.vue';
+import { BoardDisplayV2 as BoardDisplay } from '@/components/BoardDisplay';
 import type { ConfigOrderType } from '@/game/zugzwang/validators';
 import { getValidSquaresForOrder } from '@/game/zugzwang/validators';
 import { ORDER_PRIORITIES } from '@/game/orders';

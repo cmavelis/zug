@@ -23,6 +23,7 @@ export interface GameState {
   cells: Array<null | number>;
   orders: { [playerID: number]: Orders };
   pieces: Piece[];
+  piecesToPlace?: { [playerID: number]: number[] }; // optional key for back-compat
   score: { [playerID: number]: number };
   events?: GameEvent[];
 }
