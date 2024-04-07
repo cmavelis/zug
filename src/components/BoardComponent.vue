@@ -485,26 +485,29 @@ onUnmounted(() => {
         :class="{ 'halo-shadow': canEndTurn }"
         label="end turn"
       />
-      <p>
-        piece:
-        {{
-          typeof selectedPiece === 'number'
-            ? String(selectedPiece)
-            : 'none selected'
-        }}
-      </p>
-      <p>action: {{ selectedAction || 'none selected' }}</p>
-      <p>ACTIONS</p>
-      <p v-if="endTurnMessage" class="info-message">{{ endTurnMessage }}</p>
-      <template
-        v-for="order in props.state.G.orders[props.playerID]"
-        :key="order.sourcePieceId"
-      >
+      <div v-if="store.isDebug">
         <p>
-          piece {{ order.sourcePieceId }}: {{ order.type }} with vector
-          {{ order.toTarget }}
+          piece:
+          {{
+            typeof selectedPiece === 'number'
+              ? String(selectedPiece)
+              : 'none selected'
+          }}
         </p>
-      </template>
+        <p>action: {{ selectedAction || 'none selected' }}</p>
+
+        <p>ACTIONS</p>
+        <p v-if="endTurnMessage" class="info-message">{{ endTurnMessage }}</p>
+        <template
+          v-for="order in props.state.G.orders[props.playerID]"
+          :key="order.sourcePieceId"
+        >
+          <p>
+            piece {{ order.sourcePieceId }}: {{ order.type }} with vector
+            {{ order.toTarget }}
+          </p>
+        </template>
+      </div>
     </div>
   </section>
 </template>
@@ -518,8 +521,8 @@ onUnmounted(() => {
 
 .board-with-controls {
   position: relative;
-  display: flex;
-  flex-direction: row;
+  display: grid;
+  grid-template-columns: 1fr min-content 1fr;
   justify-content: center;
   justify-self: end;
   gap: 8px;
