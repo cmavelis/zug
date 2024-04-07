@@ -450,6 +450,8 @@ onUnmounted(() => {
           :disabled="piecesToPlace === 0"
           :badge="String(piecesToPlace)"
           @click="selectAction('place')"
+          class="place-button-default"
+          :pt="{ badge: 'place-button-default-badge' }"
         />
       </div>
       <BoardDisplay
@@ -549,6 +551,18 @@ onUnmounted(() => {
   height: 100%;
   display: flex;
   flex-direction: column;
+}
+
+.place-button-default {
+  display: flex;
+  flex-direction: column;
+  width: min-content;
+  padding: 8px;
+  gap: 4px;
+}
+
+:deep(.p-button .p-badge) {
+  margin: 0;
 }
 
 section {
