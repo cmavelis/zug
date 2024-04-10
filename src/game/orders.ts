@@ -832,5 +832,5 @@ export const canPushWithConfig = (
 ) => {
   const { multiply, add } = pushConfig;
   const adjustedPriority = pushingPiece.priority * (multiply || 1) + (add || 0);
-  return adjustedPriority > targetPiece.priority;
+  return adjustedPriority >= targetPiece.priority;
 };

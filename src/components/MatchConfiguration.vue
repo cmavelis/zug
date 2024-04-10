@@ -190,7 +190,7 @@ const createMatch = async () => {
               :min="0"
               :max="10"
             />
-            > B
+            ≥ B
           </p>
         </div>
       </div>
