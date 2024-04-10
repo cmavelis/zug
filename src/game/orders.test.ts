@@ -98,13 +98,13 @@ test('arrange order pairs, with prioritized place actions', () => {
 });
 
 test.each([
-  [{}, 1, 1, false],
-  [{ add: 1 }, 1, 2, false],
-  [{ add: 2 }, 1, 2, true],
-  [{ multiply: 2 }, 1, 2, false],
+  [{}, 1, 1, true],
+  [{ add: 1 }, 1, 3, false],
+  [{ add: 2 }, 1, 3, true],
+  [{ multiply: 2 }, 1, 3, false],
   [{ multiply: 2 }, 2, 3, true],
-  [{ multiply: 2, add: 1 }, 1, 3, false],
-  [{ multiply: 2, add: 1 }, 2, 4, true],
+  [{ multiply: 2, add: 1 }, 1, 4, false],
+  [{ multiply: 2, add: 1 }, 2, 5, true],
 ])(
   'canPushWithConfig(%s, %i, %i) -> %s',
   // @ts-ignore
