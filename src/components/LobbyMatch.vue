@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { store } from '@/store';
 import type { EnhancedMatch } from '../../server/types';
+import Button from 'primevue/button';
 
 interface LobbyMatchProps {
   match: EnhancedMatch;
@@ -19,7 +20,17 @@ const props = defineProps<LobbyMatchProps>();
       highlight: props.highlight,
     }"
   >
-    <div class="match-name">{{ props.match.matchID }}</div>
+    <div class="match-header">
+      <Button
+        icon="pi pi-eye"
+        outlined
+        size="small"
+        :pt="{ root: { class: 'match-spectate-button' } }"
+        @click="() => handleMatchNavigate()"
+      />
+      <div class="match-name">{{ props.match.matchID }}</div>
+    </div>
+
     <div>
       <div :key="player.name" v-for="(player, i) in props.match.players">
         ({{ props.match.score[i as 0 | 1] }})
@@ -45,6 +56,15 @@ const props = defineProps<LobbyMatchProps>();
 </template>
 
 <style scoped>
+.match-header {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+}
+.match-spectate-button {
+  width: unset;
+  padding: 0.4rem;
+}
 .match-name {
   justify-self: right;
 }
