@@ -73,6 +73,9 @@ const props = defineProps<LobbyMatchProps>();
   border-radius: 4px;
 }
 .highlight {
-  box-shadow: 0 0 5px var(--color-theme-primary);
+  box-shadow:
+    0 0 5px var(--color-theme-primary),
+    0 0 7px var(--tekhelet);
+  border: 1px solid var(--color-theme-primary);
 }
 </style>
