@@ -22,15 +22,6 @@ const server = getServerURL();
 
 const saveMatchList = (matchList: LobbyAPI.MatchList) => {
   let matchData = matchList.matches as EnhancedMatch[];
-  if (!showOldMatches.value) {
-    const now = DateTime.now();
-    matchData = matchData.filter((m) => {
-      const updatedAt = DateTime.fromMillis(m.updatedAt);
-      const diffInDays = now.diff(updatedAt, 'days');
-      return diffInDays.days < 7;
-    });
-  }
-
   matches.value = matchData;
 };
 const lobbyClient = new LobbyClient({ server });
@@ -100,7 +91,10 @@ watch(matches, () => {
   const newRemainingMatches: EnhancedMatch[] = [];
 
   matches.value.forEach((match) => {
-    if (match.players.some((p) => p.name && p.name === store.zugUsername)) {
+    if (
+      match.players.some((p) => p.name && p.name === store.zugUsername) &&
+      newYourMatches.length < 6
+    ) {
       newYourMatches.push(match);
     } else if (match.players.some((p) => !p.name)) {
       newOpenMatches.push(match);
@@ -135,13 +129,13 @@ watch(matches, () => {
       />
       <h2>Matches</h2>
       <div class="center-align">
-        <span>Show all</span>
-        <InputSwitch
-          v-model="showOldMatches"
-          :onclick="fetchMatches"
-          style="flex-shrink: 0"
-          v-tooltip.top="'Matches older than 1 week are hidden by default'"
-        />
+        <!--        <span>Show all</span>-->
+        <!--        <InputSwitch-->
+        <!--          v-model="showOldMatches"-->
+        <!--          :onclick="fetchMatches"-->
+        <!--          style="flex-shrink: 0"-->
+        <!--          v-tooltip.top="'Matches older than 1 week are hidden by default'"-->
+        <!--        />-->
       </div>
     </div>
     <span>{{ joinStatus }}</span>
