@@ -76,6 +76,20 @@ const usersMatches = computed(() => {
     .map((match) => match.matchID);
 });
 
+const shouldHighlight = (match: EnhancedMatch) => {
+  const { activePlayers, players, gameover } = match;
+
+  let yourTurn = null;
+  if (activePlayers) {
+    const playerIndex = Object.values(players).findIndex(
+      (player) => player.name === store.zugUsername,
+    );
+    yourTurn = activePlayers[playerIndex] === 'planning';
+  }
+
+  return yourTurn && !gameover;
+};
+
 const yourMatches: Ref<EnhancedMatch[]> = ref([]);
 const openMatches: Ref<EnhancedMatch[]> = ref([]);
 const remainingMatches: Ref<EnhancedMatch[]> = ref([]);
@@ -137,7 +151,7 @@ watch(matches, () => {
         v-for="match in yourMatches"
         :key="match.matchID"
         :match="match"
-        :highlight="!match.gameover"
+        :highlight="shouldHighlight(match)"
         :handle-match-join="
           () => requestJoinMatch(match.matchID, undefined, navigateToMatch)
         "
@@ -150,7 +164,6 @@ watch(matches, () => {
         v-for="match in openMatches"
         :key="match.matchID"
         :match="match"
-        :highlight="usersMatches.includes(match.matchID)"
         :handle-match-join="
           () => requestJoinMatch(match.matchID, undefined, navigateToMatch)
         "
@@ -163,7 +176,6 @@ watch(matches, () => {
         v-for="match in remainingMatches"
         :key="match.matchID"
         :match="match"
-        :highlight="usersMatches.includes(match.matchID)"
         :handle-match-join="
           () => requestJoinMatch(match.matchID, undefined, navigateToMatch)
         "
