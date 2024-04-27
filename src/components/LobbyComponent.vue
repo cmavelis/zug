@@ -22,6 +22,9 @@ const server = getServerURL();
 
 const saveMatchList = (matchList: LobbyAPI.MatchList) => {
   let matchData = matchList.matches as EnhancedMatch[];
+  matchData.sort((a, b) => {
+    return a.updatedAt - b.updatedAt;
+  });
   matches.value = matchData;
 };
 const lobbyClient = new LobbyClient({ server });
