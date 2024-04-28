@@ -73,7 +73,7 @@ const usersMatches = computed(() => {
 const shouldHighlight = (match: EnhancedMatch) => {
   const { activePlayers, players, gameover } = match;
 
-  let yourTurn = null;
+  let yourTurn;
   if (activePlayers) {
     const playerIndex = Object.values(players).findIndex(
       (player) => player.name === store.zugUsername,
