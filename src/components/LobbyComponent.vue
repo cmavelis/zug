@@ -142,7 +142,16 @@ watch(matches, () => {
       </div>
     </div>
     <span>{{ joinStatus }}</span>
-    <h3>Your matches</h3>
+    <divider
+      ><h3>Your matches</h3>
+      <Button
+        icon="pi pi-question"
+        severity="secondary"
+        v-tooltip.focus.top="
+          'Shows your 6 most recent games, highlighting ones where it\'s your turn'
+        "
+        :pt="{ root: { class: 'tight-button' } }"
+    /></divider>
     <section class="matches-list">
       <LobbyMatch
         v-for="match in yourMatches"
@@ -155,7 +164,7 @@ watch(matches, () => {
         :handle-match-navigate="() => navigateToMatch(match.matchID)"
       />
     </section>
-    <h3>Open matches</h3>
+    <divider><h3>Open matches</h3></divider>
     <section class="matches-list">
       <LobbyMatch
         v-for="match in openMatches"
@@ -167,7 +176,7 @@ watch(matches, () => {
         :handle-match-navigate="() => navigateToMatch(match.matchID)"
       />
     </section>
-    <h3>Other matches</h3>
+    <divider><h3>Other matches</h3></divider>
     <section class="matches-list">
       <LobbyMatch
         v-for="match in remainingMatches"
@@ -183,6 +192,27 @@ watch(matches, () => {
 </template>
 
 <style scoped>
+divider {
+  display: flex;
+  white-space: nowrap;
+  gap: 8px;
+  align-items: center;
+}
+
+divider:before {
+  display: block;
+  content: '';
+  width: 100%;
+  border-top: 1px solid var(--color-text);
+}
+
+divider:after {
+  display: block;
+  content: '';
+  width: 100%;
+  border-top: 1px solid var(--color-text);
+}
+
 .matches-list {
   display: flex;
   gap: 1rem;
@@ -211,7 +241,8 @@ watch(matches, () => {
   align-items: center;
   gap: 4px;
 }
-button {
-  width: fit-content;
+
+.tight-button {
+  padding: 0.4rem;
 }
 </style>
