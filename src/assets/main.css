@@ -1,4 +1,5 @@
 @import './base.css';
+@import './mobile-tooltip.css';
 
 :root {
   --link-hover-color: hsla(283, 100%, 75%, 0.2);

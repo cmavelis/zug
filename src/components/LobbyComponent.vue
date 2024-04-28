@@ -145,13 +145,16 @@ watch(matches, () => {
     <divider
       ><h3>Your matches</h3>
       <Button
+        data-tooltip="Shows your 6 most recent games, highlighting ones where it's your turn"
         icon="pi pi-question"
         severity="secondary"
-        v-tooltip.focus.top="
+        v-tooltip.top="
           'Shows your 6 most recent games, highlighting ones where it\'s your turn'
         "
         :pt="{ root: { class: 'tight-button' } }"
-    /></divider>
+        class="mobile-tooltip"
+      />
+    </divider>
     <section class="matches-list">
       <LobbyMatch
         v-for="match in yourMatches"
