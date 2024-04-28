@@ -146,6 +146,7 @@ watch(matches, () => {
       ><h3>Your matches</h3>
       <Button
         data-tooltip="Shows your 6 most recent games, highlighting ones where it's your turn"
+        tabindex="0"
         icon="pi pi-question"
         severity="secondary"
         v-tooltip.top="
