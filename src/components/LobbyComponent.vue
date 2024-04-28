@@ -142,7 +142,16 @@ watch(matches, () => {
       </div>
     </div>
     <span>{{ joinStatus }}</span>
-    <divider><h3>Your matches</h3></divider>
+    <divider
+      ><h3>Your matches</h3>
+      <Button
+        icon="pi pi-question"
+        severity="secondary"
+        v-tooltip.focus.top="
+          'Shows your 6 most recent games, highlighting ones where it\'s your turn'
+        "
+        :pt="{ root: { class: 'tight-button' } }"
+    /></divider>
     <section class="matches-list">
       <LobbyMatch
         v-for="match in yourMatches"
@@ -187,6 +196,7 @@ divider {
   display: flex;
   white-space: nowrap;
   gap: 8px;
+  align-items: center;
 }
 
 divider:before {
@@ -194,8 +204,6 @@ divider:before {
   content: '';
   width: 100%;
   border-top: 1px solid var(--color-text);
-  align-self: center;
-  flex-shrink: 1;
 }
 
 divider:after {
@@ -203,8 +211,6 @@ divider:after {
   content: '';
   width: 100%;
   border-top: 1px solid var(--color-text);
-  align-self: center;
-  flex-shrink: 1;
 }
 
 .matches-list {
@@ -235,7 +241,8 @@ divider:after {
   align-items: center;
   gap: 4px;
 }
-button {
-  width: fit-content;
+
+.tight-button {
+  padding: 0.4rem;
 }
 </style>
