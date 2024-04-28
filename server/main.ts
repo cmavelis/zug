@@ -327,9 +327,50 @@ server.router.get(
       });
       match.score = state.G.score;
       match.turn = state.ctx.turn;
+      match.activePlayers = state.ctx.activePlayers;
     }
 
     ctx.body = { matches: matchList };
+  },
+);
+
+server.router.get(
+  '/games/:name/by-user/:username',
+  async (ctx: MatchesContext, next: (ctx: Koa.Context) => Promise<void>) => {
+    const { name: gameName, username } = ctx.params;
+    if (gameName !== 'zug') {
+      await next(ctx);
+      return;
+    }
+
+    const existingUser = await User.findOne({
+      where: { name: username },
+    });
+    if (!existingUser) {
+      return;
+    }
+
+    const matches = await existingUser.getMatches();
+    const matchesResponse = matches.map((match) => {
+      const { state, id, players } = match;
+      const { activePlayers } = state?.ctx || {};
+
+      // determine if it's their turn
+      let yourTurn = null;
+      if (activePlayers) {
+        const playerIndex = Object.values(players).findIndex(
+          (player) => player.name === username,
+        );
+        yourTurn = activePlayers[playerIndex] === 'planning';
+      }
+      return {
+        id,
+        activePlayers: state.ctx.activePlayers,
+        yourTurn,
+      };
+    });
+
+    ctx.body = { matches: matchesResponse };
   },
 );
 

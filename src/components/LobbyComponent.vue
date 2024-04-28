@@ -22,15 +22,9 @@ const server = getServerURL();
 
 const saveMatchList = (matchList: LobbyAPI.MatchList) => {
   let matchData = matchList.matches as EnhancedMatch[];
-  if (!showOldMatches.value) {
-    const now = DateTime.now();
-    matchData = matchData.filter((m) => {
-      const updatedAt = DateTime.fromMillis(m.updatedAt);
-      const diffInDays = now.diff(updatedAt, 'days');
-      return diffInDays.days < 7;
-    });
-  }
-
+  matchData.sort((a, b) => {
+    return a.updatedAt - b.updatedAt;
+  });
   matches.value = matchData;
 };
 const lobbyClient = new LobbyClient({ server });
@@ -76,6 +70,20 @@ const usersMatches = computed(() => {
     .map((match) => match.matchID);
 });
 
+const shouldHighlight = (match: EnhancedMatch) => {
+  const { activePlayers, players, gameover } = match;
+
+  let yourTurn;
+  if (activePlayers) {
+    const playerIndex = Object.values(players).findIndex(
+      (player) => player.name === store.zugUsername,
+    );
+    yourTurn = activePlayers[playerIndex] === 'planning';
+  }
+
+  return yourTurn && !gameover;
+};
+
 const yourMatches: Ref<EnhancedMatch[]> = ref([]);
 const openMatches: Ref<EnhancedMatch[]> = ref([]);
 const remainingMatches: Ref<EnhancedMatch[]> = ref([]);
@@ -86,7 +94,10 @@ watch(matches, () => {
   const newRemainingMatches: EnhancedMatch[] = [];
 
   matches.value.forEach((match) => {
-    if (match.players.some((p) => p.name && p.name === store.zugUsername)) {
+    if (
+      match.players.some((p) => p.name && p.name === store.zugUsername) &&
+      newYourMatches.length < 6
+    ) {
       newYourMatches.push(match);
     } else if (match.players.some((p) => !p.name)) {
       newOpenMatches.push(match);
@@ -121,13 +132,13 @@ watch(matches, () => {
       />
       <h2>Matches</h2>
       <div class="center-align">
-        <span>Show all</span>
-        <InputSwitch
-          v-model="showOldMatches"
-          :onclick="fetchMatches"
-          style="flex-shrink: 0"
-          v-tooltip.top="'Matches older than 1 week are hidden by default'"
-        />
+        <!--        <span>Show all</span>-->
+        <!--        <InputSwitch-->
+        <!--          v-model="showOldMatches"-->
+        <!--          :onclick="fetchMatches"-->
+        <!--          style="flex-shrink: 0"-->
+        <!--          v-tooltip.top="'Matches older than 1 week are hidden by default'"-->
+        <!--        />-->
       </div>
     </div>
     <span>{{ joinStatus }}</span>
@@ -137,7 +148,7 @@ watch(matches, () => {
         v-for="match in yourMatches"
         :key="match.matchID"
         :match="match"
-        :highlight="!match.gameover"
+        :highlight="shouldHighlight(match)"
         :handle-match-join="
           () => requestJoinMatch(match.matchID, undefined, navigateToMatch)
         "
@@ -150,7 +161,6 @@ watch(matches, () => {
         v-for="match in openMatches"
         :key="match.matchID"
         :match="match"
-        :highlight="usersMatches.includes(match.matchID)"
         :handle-match-join="
           () => requestJoinMatch(match.matchID, undefined, navigateToMatch)
         "
@@ -163,7 +173,6 @@ watch(matches, () => {
         v-for="match in remainingMatches"
         :key="match.matchID"
         :match="match"
-        :highlight="usersMatches.includes(match.matchID)"
         :handle-match-join="
           () => requestJoinMatch(match.matchID, undefined, navigateToMatch)
         "
