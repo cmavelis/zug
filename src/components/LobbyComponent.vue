@@ -152,7 +152,7 @@ watch(matches, () => {
         v-tooltip.top="
           'Shows your 6 most recent games, highlighting ones where it\'s your turn'
         "
-        :pt="{ root: { class: 'tight-button' } }"
+        :pt="{ root: { class: 'tooltip-button' } }"
         class="mobile-tooltip"
       />
     </divider>
@@ -246,7 +246,8 @@ divider:after {
   gap: 4px;
 }
 
-.tight-button {
+.tooltip-button {
   padding: 0.4rem;
+  z-index: 1;
 }
 </style>
