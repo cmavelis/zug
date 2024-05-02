@@ -32,6 +32,7 @@ const fetchMatches = () => {
   lobbyClient.listMatches('zug').then(saveMatchList).catch(console.error);
 };
 fetchMatches();
+setInterval(fetchMatches, 10000);
 
 const router = useRouter();
 const createMatch = async (
