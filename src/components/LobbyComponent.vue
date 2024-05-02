@@ -13,7 +13,7 @@ import { store } from '@/store';
 import { getServerURL } from '@/utils';
 import { useMatch } from '@/composables/useMatch';
 import type { EnhancedMatch } from '../../server/types';
-import { DEFAULT_ZUG_CONFIG } from '@/game/zugzwang/config';
+import { DEFAULT_ZUG_CONFIG, LATEST_ZUG_CONFIG } from '@/game/zugzwang/config';
 import { type LobbyAPI } from 'boardgame.io';
 
 const matches: Ref<EnhancedMatch[]> = ref([]);
@@ -121,6 +121,10 @@ watch(matches, () => {
         @click="handleCustomClick"
         severity="secondary"
         label="Custom"
+      ></Button>
+      <Button
+        @click="createMatch({ config: LATEST_ZUG_CONFIG })"
+        label="Latest"
       ></Button>
     </span>
     <div class="matches-header">

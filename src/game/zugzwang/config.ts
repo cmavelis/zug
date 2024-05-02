@@ -19,6 +19,12 @@ export const DEFAULT_ZUG_CONFIG: ZugConfig = {
   piecePushRestrictions: null,
 };
 
+export const LATEST_ZUG_CONFIG: ZugConfig = {
+  ...DEFAULT_ZUG_CONFIG,
+  piecePushRestrictions: { add: 2 },
+  placePriorityAssignment: { beforeTurn: true },
+};
+
 export interface PushRestrictionsConfig {
   multiply?: number;
   add?: number;
