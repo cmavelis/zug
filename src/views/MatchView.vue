@@ -8,7 +8,7 @@ import {
   watch,
   type Ref,
 } from 'vue';
-import { useRoute } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 
 import type { ClientState } from 'boardgame.io/dist/types/src/client/client';
 import type { Ctx, FilteredMetadata } from 'boardgame.io/dist/types/src/types';
@@ -40,6 +40,7 @@ import ButtonStepper from '@/components/ButtonStepper.vue';
 const windowHasFocus = useWindowFocus();
 const toast = useToast();
 const { handleError } = useErrorHandler();
+const router = useRouter();
 
 const server = getServerURL();
 const lobbyClient = new LobbyClient({ server });
@@ -157,7 +158,9 @@ watch(gameStateLoaded, () => {
   }
 });
 
-const historyTurn = ref(1);
+const historyTurn = ref<number>(
+  route.query.turn ? Number(route.query.turn) : 1,
+);
 function incrementHistoryTurn() {
   historyTurn.value++;
 }
@@ -178,7 +181,7 @@ const gameLastTurn = computed(() => {
   }
   return null;
 });
-const historyTurnStep = ref(1);
+const historyTurnStep = ref(route.query.step ? Number(route.query.step) : 1);
 function incrementHistoryStep() {
   if (gameLastTurn.value && historyTurnStep.value < gameLastTurn.value.length)
     historyTurnStep.value++;
@@ -201,6 +204,17 @@ function decrementHistoryStep() {
 function setHistoryStep(value: number) {
   historyTurnStep.value = value;
 }
+
+watch([historyTurn, historyTurnStep], () => {
+  router.replace({
+    path: route.path,
+    query: {
+      ...route.query,
+      turn: historyTurn.value,
+      step: historyTurnStep.value,
+    },
+  });
+});
 
 const canJoin = computed(() => {
   const openPlayerSlot = matchClientOne.client.matchData?.some(
