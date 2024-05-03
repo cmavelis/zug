@@ -8,6 +8,7 @@ export interface ZugConfig {
   placePriorityAssignment?: {
     beforeTurn: boolean;
   };
+  useFairStartingBoard?: boolean;
 }
 
 export const DEFAULT_ZUG_CONFIG: ZugConfig = {
@@ -17,6 +18,7 @@ export const DEFAULT_ZUG_CONFIG: ZugConfig = {
   piecePriorityDuplicates: false,
   startingPiecePriorities: [2, 3, 4, 5],
   piecePushRestrictions: null,
+  useFairStartingBoard: true,
 };
 
 export const LATEST_ZUG_CONFIG: ZugConfig = {
