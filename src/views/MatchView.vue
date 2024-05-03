@@ -157,7 +157,9 @@ watch(gameStateLoaded, () => {
   }
 });
 
-const historyTurn = ref(1);
+const historyTurn = ref<number>(
+  route.query.turn ? Number(route.query.turn) : 1,
+);
 function incrementHistoryTurn() {
   historyTurn.value++;
 }
@@ -178,7 +180,7 @@ const gameLastTurn = computed(() => {
   }
   return null;
 });
-const historyTurnStep = ref(1);
+const historyTurnStep = ref(route.query.step ? Number(route.query.step) : 1);
 function incrementHistoryStep() {
   if (gameLastTurn.value && historyTurnStep.value < gameLastTurn.value.length)
     historyTurnStep.value++;
