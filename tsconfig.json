@@ -9,7 +9,9 @@
       "@/*": [
         "./src/*"
       ]
-    }
+    },
+    "resolveJsonModule": true,
+    "esModuleInterop": true
   },
   "files": [],
   "references": [
