@@ -1,7 +1,8 @@
 import type { Game } from 'boardgame.io';
 import { INVALID_MOVE } from 'boardgame.io/core';
-import { shuffle } from 'lodash';
+import { isEqual, shuffle, random } from 'lodash';
 
+import fairBoards from './setup/fair-boards.json';
 import { createPiece, type Piece } from '@/game/pieces';
 import type { Order, Orders } from '@/game/orders';
 import { orderResolver } from '@/game/orders';
@@ -90,9 +91,24 @@ export const SimulChess: Game<GObject> = {
         pieceToCreate: { owner: 1, position: { x: 3, y: 3 } },
       });
     } else {
-      const { startingPiecePriorities } = setupData.config;
-      const p1PiecePriorities = shuffle(startingPiecePriorities);
-      const p2PiecePriorities = shuffle(startingPiecePriorities);
+      const {
+        startingPiecePriorities,
+        useFairStartingBoard,
+        piecePriorityOptions,
+      } = setupData.config;
+      let p1PiecePriorities: number[] = [];
+      let p2PiecePriorities: number[] = [];
+      if (
+        useFairStartingBoard &&
+        isEqual(piecePriorityOptions, DEFAULT_ZUG_CONFIG.piecePriorityOptions)
+      ) {
+        const startingBoard = fairBoards[random(0, fairBoards.length)];
+        p1PiecePriorities = startingBoard[0];
+        p2PiecePriorities = startingBoard[1];
+      } else {
+        p1PiecePriorities = shuffle(startingPiecePriorities);
+        p2PiecePriorities = shuffle(startingPiecePriorities);
+      }
 
       [0, 1, 2, 3].forEach((x, i) =>
         createPiece({
