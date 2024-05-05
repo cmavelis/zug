@@ -1,11 +1,9 @@
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue';
+import { ref, watch } from 'vue';
 import type { Ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { LobbyClient } from 'boardgame.io/client';
 import Button from 'primevue/button';
-import InputSwitch from 'primevue/inputswitch';
-import { DateTime } from 'luxon';
 
 import LobbyMatch from '@/components/LobbyMatch.vue';
 import type { GameSetupData } from '@/game/Game';
@@ -17,7 +15,6 @@ import { DEFAULT_ZUG_CONFIG, LATEST_ZUG_CONFIG } from '@/game/zugzwang/config';
 import { type LobbyAPI } from 'boardgame.io';
 
 const matches: Ref<EnhancedMatch[]> = ref([]);
-const showOldMatches = ref(false);
 const lastFetched = ref();
 const server = getServerURL();
 
@@ -72,14 +69,6 @@ const handleCustomClick = () => {
     name: 'match-configure',
   });
 };
-
-const usersMatches = computed(() => {
-  return matches.value
-    .filter((m) =>
-      m.players.some((p) => p.name && p.name === store.zugUsername),
-    )
-    .map((match) => match.matchID);
-});
 
 const shouldHighlight = (match: EnhancedMatch) => {
   const { activePlayers, players, gameover } = match;
