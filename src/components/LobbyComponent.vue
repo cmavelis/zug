@@ -147,8 +147,8 @@ watch(matches, () => {
       </div>
     </div>
     <span>{{ joinStatus }}</span>
-    <divider
-      ><h3>Your matches</h3>
+    <div class="divider">
+      <h3>Your matches</h3>
       <Button
         data-tooltip="Shows your 6 most recent games, highlighting ones where it's your turn"
         tabindex="0"
@@ -160,7 +160,7 @@ watch(matches, () => {
         :pt="{ root: { class: 'tooltip-button' } }"
         class="mobile-tooltip"
       />
-    </divider>
+    </div>
     <section class="matches-list">
       <LobbyMatch
         v-for="match in yourMatches"
@@ -173,7 +173,7 @@ watch(matches, () => {
         :handle-match-navigate="() => navigateToMatch(match.matchID)"
       />
     </section>
-    <divider><h3>Open matches</h3></divider>
+    <div class="divider"><h3>Open matches</h3></div>
     <section class="matches-list">
       <LobbyMatch
         v-for="match in openMatches"
@@ -185,7 +185,7 @@ watch(matches, () => {
         :handle-match-navigate="() => navigateToMatch(match.matchID)"
       />
     </section>
-    <divider><h3>Other matches</h3></divider>
+    <div class="divider"><h3>Other matches</h3></div>
     <section class="matches-list">
       <LobbyMatch
         v-for="match in remainingMatches"
@@ -201,21 +201,21 @@ watch(matches, () => {
 </template>
 
 <style scoped>
-divider {
+.divider {
   display: flex;
   white-space: nowrap;
   gap: 8px;
   align-items: center;
 }
 
-divider:before {
+.divider:before {
   display: block;
   content: '';
   width: 100%;
   border-top: 1px solid var(--color-text);
 }
 
-divider:after {
+.divider:after {
   display: block;
   content: '';
   width: 100%;
