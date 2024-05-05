@@ -18,7 +18,15 @@ import { type LobbyAPI } from 'boardgame.io';
 
 const matches: Ref<EnhancedMatch[]> = ref([]);
 const showOldMatches = ref(false);
+const lastFetched = ref();
 const server = getServerURL();
+
+const dateFormatter = new Intl.DateTimeFormat('en-US', {
+  month: 'short',
+  day: 'numeric',
+  hour: 'numeric',
+  minute: 'numeric',
+});
 
 const saveMatchList = (matchList: LobbyAPI.MatchList) => {
   let matchData = matchList.matches as EnhancedMatch[];
@@ -26,13 +34,15 @@ const saveMatchList = (matchList: LobbyAPI.MatchList) => {
     return b.updatedAt - a.updatedAt;
   });
   matches.value = matchData;
+  lastFetched.value = dateFormatter.format(new Date());
 };
 const lobbyClient = new LobbyClient({ server });
 const fetchMatches = () => {
   lobbyClient.listMatches('zug').then(saveMatchList).catch(console.error);
 };
 fetchMatches();
-setInterval(fetchMatches, 10000);
+// polling too expensive right now
+// setInterval(fetchMatches, 10000);
 
 const router = useRouter();
 const createMatch = async (
@@ -136,15 +146,7 @@ watch(matches, () => {
         style="justify-self: end"
       />
       <h2>Matches</h2>
-      <div class="center-align">
-        <!--        <span>Show all</span>-->
-        <!--        <InputSwitch-->
-        <!--          v-model="showOldMatches"-->
-        <!--          :onclick="fetchMatches"-->
-        <!--          style="flex-shrink: 0"-->
-        <!--          v-tooltip.top="'Matches older than 1 week are hidden by default'"-->
-        <!--        />-->
-      </div>
+      <div class="center-align">Last fetched: {{ lastFetched }}</div>
     </div>
     <span>{{ joinStatus }}</span>
     <div class="divider">
