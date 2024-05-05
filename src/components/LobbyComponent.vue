@@ -1,11 +1,9 @@
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue';
+import { ref, watch } from 'vue';
 import type { Ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { LobbyClient } from 'boardgame.io/client';
 import Button from 'primevue/button';
-import InputSwitch from 'primevue/inputswitch';
-import { DateTime } from 'luxon';
 
 import LobbyMatch from '@/components/LobbyMatch.vue';
 import type { GameSetupData } from '@/game/Game';
@@ -17,8 +15,15 @@ import { DEFAULT_ZUG_CONFIG, LATEST_ZUG_CONFIG } from '@/game/zugzwang/config';
 import { type LobbyAPI } from 'boardgame.io';
 
 const matches: Ref<EnhancedMatch[]> = ref([]);
-const showOldMatches = ref(false);
+const lastFetched = ref();
 const server = getServerURL();
+
+const dateFormatter = new Intl.DateTimeFormat('en-US', {
+  month: 'short',
+  day: 'numeric',
+  hour: 'numeric',
+  minute: 'numeric',
+});
 
 const saveMatchList = (matchList: LobbyAPI.MatchList) => {
   let matchData = matchList.matches as EnhancedMatch[];
@@ -26,13 +31,15 @@ const saveMatchList = (matchList: LobbyAPI.MatchList) => {
     return b.updatedAt - a.updatedAt;
   });
   matches.value = matchData;
+  lastFetched.value = dateFormatter.format(new Date());
 };
 const lobbyClient = new LobbyClient({ server });
 const fetchMatches = () => {
   lobbyClient.listMatches('zug').then(saveMatchList).catch(console.error);
 };
 fetchMatches();
-setInterval(fetchMatches, 10000);
+// polling too expensive right now
+// setInterval(fetchMatches, 10000);
 
 const router = useRouter();
 const createMatch = async (
@@ -62,14 +69,6 @@ const handleCustomClick = () => {
     name: 'match-configure',
   });
 };
-
-const usersMatches = computed(() => {
-  return matches.value
-    .filter((m) =>
-      m.players.some((p) => p.name && p.name === store.zugUsername),
-    )
-    .map((match) => match.matchID);
-});
 
 const shouldHighlight = (match: EnhancedMatch) => {
   const { activePlayers, players, gameover } = match;
@@ -136,19 +135,11 @@ watch(matches, () => {
         style="justify-self: end"
       />
       <h2>Matches</h2>
-      <div class="center-align">
-        <!--        <span>Show all</span>-->
-        <!--        <InputSwitch-->
-        <!--          v-model="showOldMatches"-->
-        <!--          :onclick="fetchMatches"-->
-        <!--          style="flex-shrink: 0"-->
-        <!--          v-tooltip.top="'Matches older than 1 week are hidden by default'"-->
-        <!--        />-->
-      </div>
+      <div class="center-align">Last fetched: {{ lastFetched }}</div>
     </div>
     <span>{{ joinStatus }}</span>
-    <divider
-      ><h3>Your matches</h3>
+    <div class="divider">
+      <h3>Your matches</h3>
       <Button
         data-tooltip="Shows your 6 most recent games, highlighting ones where it's your turn"
         tabindex="0"
@@ -160,7 +151,7 @@ watch(matches, () => {
         :pt="{ root: { class: 'tooltip-button' } }"
         class="mobile-tooltip"
       />
-    </divider>
+    </div>
     <section class="matches-list">
       <LobbyMatch
         v-for="match in yourMatches"
@@ -173,7 +164,7 @@ watch(matches, () => {
         :handle-match-navigate="() => navigateToMatch(match.matchID)"
       />
     </section>
-    <divider><h3>Open matches</h3></divider>
+    <div class="divider"><h3>Open matches</h3></div>
     <section class="matches-list">
       <LobbyMatch
         v-for="match in openMatches"
@@ -185,7 +176,7 @@ watch(matches, () => {
         :handle-match-navigate="() => navigateToMatch(match.matchID)"
       />
     </section>
-    <divider><h3>Other matches</h3></divider>
+    <div class="divider"><h3>Other matches</h3></div>
     <section class="matches-list">
       <LobbyMatch
         v-for="match in remainingMatches"
@@ -201,21 +192,21 @@ watch(matches, () => {
 </template>
 
 <style scoped>
-divider {
+.divider {
   display: flex;
   white-space: nowrap;
   gap: 8px;
   align-items: center;
 }
 
-divider:before {
+.divider:before {
   display: block;
   content: '';
   width: 100%;
   border-top: 1px solid var(--color-text);
 }
 
-divider:after {
+.divider:after {
   display: block;
   content: '';
   width: 100%;
