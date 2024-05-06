@@ -8,7 +8,7 @@ import {
   watch,
   type Ref,
 } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
+import { useRoute } from 'vue-router';
 
 import type { ClientState } from 'boardgame.io/dist/types/src/client/client';
 import type { Ctx, FilteredMetadata } from 'boardgame.io/dist/types/src/types';
@@ -41,7 +41,6 @@ import { useMatchLink } from '@/composables/useMatchLink';
 const windowHasFocus = useWindowFocus();
 const toast = useToast();
 const { handleError } = useErrorHandler();
-const router = useRouter();
 
 const server = getServerURL();
 const lobbyClient = new LobbyClient({ server });
@@ -206,17 +205,6 @@ function decrementHistoryStep() {
 function setHistoryStep(value: number) {
   historyTurnStep.value = value;
 }
-
-watch([historyTurn, historyTurnStep], () => {
-  router.replace({
-    path: route.path,
-    query: {
-      ...route.query,
-      turn: historyTurn.value,
-      step: historyTurnStep.value,
-    },
-  });
-});
 
 const canJoin = computed(() => {
   const openPlayerSlot = matchClientOne.client.matchData?.some(
