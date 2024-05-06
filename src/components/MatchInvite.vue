@@ -46,7 +46,7 @@ const handeShowQR = () => {
     <Button
       icon="pi pi-link"
       outlined
-      @click="copyLink"
+      @click="copyLink()"
       size="small"
       :pt="{
         icon: { style: 'font-size: 1.2rem' },

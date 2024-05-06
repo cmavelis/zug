@@ -13,10 +13,7 @@ export const useMatchLink = (matchID: string) => {
     });
   };
 
-  const copyLink = (
-    _e: Event,
-    args?: { query: { turn: string; step: string } },
-  ) => {
+  const copyLink = (args?: { query: { turn: string; step: string } }) => {
     let link = `${origin}/match/${matchID}`;
     const params = new URLSearchParams(args?.query);
     if (params.size) {

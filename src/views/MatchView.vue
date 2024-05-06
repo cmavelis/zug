@@ -379,13 +379,12 @@ getNotificationSound(store.zugUsername).then((notificationSound) => {
           icon="pi pi-link"
           outlined
           @click="
-            (e) =>
-              copyLink(e, {
-                query: {
-                  turn: String(historyTurn),
-                  step: String(historyTurnStep),
-                },
-              })
+            copyLink({
+              query: {
+                turn: String(historyTurn),
+                step: String(historyTurnStep),
+              },
+            })
           "
           size="small"
           label="HISTORY"
