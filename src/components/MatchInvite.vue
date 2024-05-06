@@ -2,8 +2,8 @@
 import { ref, watch } from 'vue';
 import Button from 'primevue/button';
 import Dialog from 'primevue/dialog';
-import { useToast } from 'primevue/usetoast';
 import QRCode from 'qrcode';
+import { useMatchLink } from '@/composables/useMatchLink';
 
 interface MatchInviteProps {
   matchID: string;
@@ -16,21 +16,7 @@ const canvas = ref(null);
 
 const { origin } = window.location;
 const link = `${origin}/match/${props.matchID}`;
-
-const toast = useToast();
-const showCopyMessage = () => {
-  toast.add({
-    severity: 'info',
-    summary: 'Match link copied',
-    detail: link,
-    life: 4000,
-  });
-};
-
-const copyLink = () => {
-  navigator.clipboard.writeText(link);
-  showCopyMessage();
-};
+const { copyLink } = useMatchLink(props.matchID);
 
 watch(canvas, () => {
   if (canvas.value) {

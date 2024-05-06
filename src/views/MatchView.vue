@@ -36,6 +36,7 @@ import { useMatch } from '@/composables/useMatch';
 import { LobbyClient } from 'boardgame.io/client';
 import { getServerURL } from '@/utils';
 import ButtonStepper from '@/components/ButtonStepper.vue';
+import { useMatchLink } from '@/composables/useMatchLink';
 
 const windowHasFocus = useWindowFocus();
 const toast = useToast();
@@ -105,6 +106,7 @@ if (typeof route.params.matchID === 'string') {
 } else {
   matchID = route.params.matchID[0];
 }
+const { copyLink } = useMatchLink(matchID);
 
 /**
  * TODO: allow side-by-side clients in testing matches or while spectating (playerID=null)
@@ -384,7 +386,24 @@ getNotificationSound(store.zugUsername).then((notificationSound) => {
       :showOrders="isPlayerSelected"
     />
     <div v-if="gameLastTurn">
-      <p>HISTORY</p>
+      <div>
+        <Button
+          icon="pi pi-link"
+          outlined
+          @click="
+            () =>
+              copyLink({
+                query: {
+                  turn: String(historyTurn),
+                  step: String(historyTurnStep),
+                },
+              })
+          "
+          size="small"
+          label="HISTORY"
+          iconPos="right"
+        />
+      </div>
       <div class="history-stepper-row">
         <span class="p-buttonset nowrap">
           <ButtonStepper icon="pi pi-step-backward" @click="historyTurn = 1" />
