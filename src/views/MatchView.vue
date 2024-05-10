@@ -1,12 +1,12 @@
 <script setup lang="ts">
 import {
   computed,
-  reactive,
   ref,
   onMounted,
   onUnmounted,
   watch,
   type Ref,
+  shallowReactive,
 } from 'vue';
 import { useRoute } from 'vue-router';
 
@@ -126,7 +126,7 @@ onUnmounted(() => {
   matchClientOne.client.stop();
 });
 
-const gameState: ReactiveGameState = reactive({
+const gameState: ReactiveGameState = shallowReactive({
   G: {} as GObject,
   ctx: {} as Ctx,
 });
