@@ -5,7 +5,7 @@ import * as Koa from 'koa';
 import { decodeToken, encodeToken } from './auth';
 import { type ZugUser } from '../src/utils/auth';
 import { type EnhancedMatch } from './types';
-import { type LobbyAPI } from 'boardgame.io/dist/types/src/types';
+import { type LobbyAPI, type Server } from 'boardgame.io/dist/types/src/types';
 import { db, sequelize, User, TempUser, Match, dbInitialized } from './db';
 import connectUserMatches from './scripts/connectUserMatches';
 
@@ -316,21 +316,25 @@ server.router.get(
       await next(ctx);
       return;
     }
-    await next(ctx);
 
-    // this list already filtered for unlisted matches
-    const matchList = ctx.body.matches as EnhancedMatch[];
-    // add additional data without changing the client library call
-    for (const match of matchList) {
-      const { state } = await db.fetch(match.matchID, {
-        state: true,
-      });
-      match.score = state.G.score;
-      match.turn = state.ctx.turn;
-      match.activePlayers = state.ctx.activePlayers;
-    }
+    const matchList = await sequelize.query('SELECT * FROM "MatchesView"');
+    const matches: EnhancedMatch[] = matchList[0].map(
+      // same mapping as boardgame.io api code https://github.com/boardgameio/boardgame.io/blob/main/src/server/api.ts
+      (match: Server.MatchData) => {
+        return {
+          ...match,
+          players: Object.values(match.players).map(
+            (player: Server.PlayerMetadata) => {
+              // strip away credentials
+              const { _credentials, ...strippedInfo } = player;
+              return strippedInfo;
+            },
+          ),
+        };
+      },
+    );
 
-    ctx.body = { matches: matchList };
+    ctx.body = { matches };
   },
 );
 
