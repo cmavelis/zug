@@ -128,6 +128,16 @@ export function orderResolver({ G }: { G: GObject }) {
   let turnHistory: GameStateHistory[] = [];
   let orderPairs: (Order | null)[][];
 
+  // add history step with all orders
+  turnHistory.push(
+    cloneDeep({
+      cells,
+      orders,
+      pieces,
+      score,
+    }),
+  );
+
   // "piece" variant sorts orders by piece ID instead of as submitted
   if (G.config.priority === 'piece') {
     orderPairs = arrangeOrderPairs(G, orders[0], orders[1]);
@@ -559,6 +569,16 @@ export function orderResolver({ G }: { G: GObject }) {
     );
     removePieces(G, toRemove);
   }
+
+  // add turn end state to history
+  turnHistory.push(
+    cloneDeep({
+      cells,
+      orders: [],
+      pieces,
+      score,
+    }),
+  );
   G.history.push(turnHistory);
 
   // assigned priority placement

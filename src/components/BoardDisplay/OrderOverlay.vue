@@ -35,8 +35,9 @@ const points = computed(() => {
     let x2 = x1;
     let y2 = y1;
     if ('toTarget' in order) {
-      x2 = x1 + order.toTarget.x * sideLength;
-      y2 = y1 + order.toTarget.y * sideLength;
+      const almostSideLength = 0.8 * sideLength;
+      x2 = x1 + order.toTarget.x * almostSideLength;
+      y2 = y1 + order.toTarget.y * almostSideLength;
     }
     return {
       x1,
