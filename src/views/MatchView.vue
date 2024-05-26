@@ -44,7 +44,7 @@ const { handleError } = useErrorHandler();
 
 const server = getServerURL();
 const lobbyClient = new LobbyClient({ server });
-const { joinStatus, requestJoinMatch } = useMatch(lobbyClient);
+const { joinStatus, requestJoinMatch, navigateToMatch } = useMatch(lobbyClient);
 
 watch(windowHasFocus, (newFocus) => {
   if (newFocus) {
@@ -236,6 +236,17 @@ const handleJoin = () => {
     });
 };
 
+const handleRematch = () => {
+  // lobbyClient
+  //   .playAgain('zug', matchID, {
+  //     playerID: String(playerID.value),
+  //     credentials: store.zugToken,
+  //   })
+  //   .then((nextMatch) => {
+  navigateToMatch('CvilFl7GYL9').then(console.log).catch(console.error);
+  // });
+};
+
 const serverURL = getServerURL();
 const handlePoke = async () => {
   try {
@@ -364,7 +375,9 @@ getNotificationSound(store.zugUsername).then((notificationSound) => {
         Your opponent is waiting for you to finish...
       </p>
       <p class="game-over" v-else-if="winner === 'tie'">It's a tie!</p>
-      <p class="game-over" v-else-if="winner">{{ winner }} wins!</p>
+      <p class="game-over" v-else-if="winner">
+        {{ winner }} wins! <br /><button @click="handleRematch">rematch</button>
+      </p>
     </div>
     <BoardComponent
       v-if="gameStateLoaded && playerID !== null"
