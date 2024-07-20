@@ -178,6 +178,7 @@ const gameLastTurn = computed(() => {
   }
   const { history } = gameState.G as GObject;
   if (history.length > 0) {
+    console.log(history.length, historyTurn.value);
     return history[historyTurn.value - 1];
   }
   return null;
@@ -366,14 +367,19 @@ getNotificationSound(store.zugUsername).then((notificationSound) => {
       <p class="game-over" v-else-if="winner === 'tie'">It's a tie!</p>
       <p class="game-over" v-else-if="winner">{{ winner }} wins!</p>
     </div>
+    <BoardDisplay
+      v-if="historyTurn <= gameState.G.history.length"
+      :state="{ G: gameLastTurn[historyTurnStep - 1] }"
+      :orderNumber="historyTurnStep"
+    />
     <BoardComponent
-      v-if="gameStateLoaded && playerID !== null"
+      v-else-if="gameStateLoaded && playerID !== null"
       :client="matchClientOne.client"
       :state="gameState"
       :playerID="playerID"
       :showOrders="isPlayerSelected"
     />
-    <div v-if="gameLastTurn">
+    <div>
       <div>
         <Button
           icon="pi pi-link"
@@ -405,7 +411,7 @@ getNotificationSound(store.zugUsername).then((notificationSound) => {
           <ButtonStepper
             icon="pi pi-caret-right"
             @click="incrementHistoryTurn()"
-            :disabled="historyTurn >= gameState.G.history.length"
+            :disabled="historyTurn > gameState.G.history.length"
           />
           <ButtonStepper
             icon="pi pi-step-forward"
@@ -433,15 +439,10 @@ getNotificationSound(store.zugUsername).then((notificationSound) => {
           />
           <ButtonStepper
             icon="pi pi-step-forward"
-            @click="setHistoryStep(gameLastTurn.length)"
+            @click="setHistoryStep(gameLastTurn?.length)"
           />
         </span>
       </div>
-      <hr class="history-spacer" />
-      <BoardDisplay
-        :state="{ G: gameLastTurn[historyTurnStep - 1] }"
-        :orderNumber="historyTurnStep"
-      />
     </div>
     <div v-if="gameState.G.config" class="match-settings">
       <p>match settings</p>
