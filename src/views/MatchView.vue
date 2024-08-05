@@ -367,15 +367,11 @@ getNotificationSound(store.zugUsername).then((notificationSound) => {
       <p class="game-over" v-else-if="winner === 'tie'">It's a tie!</p>
       <p class="game-over" v-else-if="winner">{{ winner }} wins!</p>
     </div>
-    <BoardDisplay
-      v-if="historyTurn <= gameState.G.history.length"
-      :state="{ G: gameLastTurn[historyTurnStep - 1] }"
-      :orderNumber="historyTurnStep"
-    />
     <BoardComponent
-      v-else-if="gameStateLoaded && playerID !== null"
       :client="matchClientOne.client"
-      :state="gameState"
+      :state="gameLastTurn[historyTurnStep - 1]"
+      :ctx="gameState.ctx"
+      :config="gameState.G.config"
       :playerID="playerID"
       :showOrders="isPlayerSelected"
     />
