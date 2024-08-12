@@ -169,7 +169,7 @@ function decrementHistoryTurn() {
   historyTurn.value--;
 }
 function setHistoryLastTurn() {
-  historyTurn.value = gameState.G.history.length;
+  historyTurn.value = gameState.G.history.length + 1;
 }
 
 const gameLastTurn = computed(() => {
@@ -178,7 +178,6 @@ const gameLastTurn = computed(() => {
   }
   const { history } = gameState.G as GObject;
   if (history.length > 0) {
-    console.log(history.length, historyTurn.value);
     return history[historyTurn.value - 1];
   }
   return null;
@@ -207,6 +206,18 @@ function setHistoryStep(value: number) {
   historyTurnStep.value = value;
 }
 
+const boardState = computed(() => {
+  const { history } = gameState.G as GObject;
+
+  if (historyTurn.value > history.length) {
+    console.log(gameState.G);
+    return gameState.G;
+  }
+  if (gameLastTurn.value) {
+    return gameLastTurn.value[historyTurnStep.value - 1];
+  }
+  return null;
+});
 const canJoin = computed(() => {
   const openPlayerSlot = matchClientOne.client.matchData?.some(
     (player) => player.name === undefined,
@@ -369,7 +380,7 @@ getNotificationSound(store.zugUsername).then((notificationSound) => {
     </div>
     <BoardComponent
       :client="matchClientOne.client"
-      :state="gameLastTurn[historyTurnStep - 1]"
+      :state="boardState"
       :ctx="gameState.ctx"
       :config="gameState.G.config"
       :playerID="playerID"

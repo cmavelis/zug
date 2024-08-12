@@ -457,6 +457,7 @@ onUnmounted(() => {
       <BoardDisplay
         :pieces="props.state.pieces"
         :orders="flatOrders"
+        :events="props.state.events"
         :board="props.config.board"
         :hovered-cell="cellHover"
         :handle-cell-hover="handleCellHover"
