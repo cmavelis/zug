@@ -36,6 +36,7 @@ import { LobbyClient } from 'boardgame.io/client';
 import { getServerURL } from '@/utils';
 import ButtonStepper from '@/components/ButtonStepper.vue';
 import { useMatchLink } from '@/composables/useMatchLink';
+import BoardDisplayV2 from '@/components/BoardDisplay/BoardDisplayV2.vue';
 
 const windowHasFocus = useWindowFocus();
 const toast = useToast();
@@ -384,6 +385,7 @@ getNotificationSound(store.zugUsername).then((notificationSound) => {
       <p class="game-over" v-else-if="winner">{{ winner }} wins!</p>
     </div>
     <BoardComponent
+      v-if="boardState !== null && playerID !== null"
       :client="matchClientOne.client"
       :state="boardState"
       :ctx="gameState.ctx"
