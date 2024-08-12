@@ -2,6 +2,7 @@
 import { computed, ref, onMounted, onUnmounted, watch } from 'vue';
 import type { Ref } from 'vue';
 import type { _ClientImpl } from 'boardgame.io/dist/types/src/client/client';
+import type { Ctx } from 'boardgame.io';
 import Button from 'primevue/button';
 
 import { BoardDisplayV2 as BoardDisplay } from '@/components/BoardDisplay';
@@ -29,7 +30,7 @@ const NUMBER_PIECES = 4;
 interface BoardProps {
   client: _ClientImpl<GameState>;
   state: GameStateHistory;
-  ctx: any;
+  ctx: Ctx;
   config: ZugConfig;
   playerID: number;
   showOrders: boolean;
@@ -62,8 +63,8 @@ const piecesToPlace = computed(
     flatOrders.value.filter((order) => order.type === 'place').length,
 );
 const gamePhase = computed(() => {
-  if (props.state.ctx.activePlayers) {
-    return props.state.ctx.activePlayers[props.playerID] || '?';
+  if (props.ctx.activePlayers) {
+    return props.ctx.activePlayers[props.playerID] || '?';
   } else {
     return 'end';
   }
@@ -196,7 +197,7 @@ const handlePieceHover = (id: number) => {
   handleCellHover(coordinatesToArray(piece.position, props.config.board));
 };
 
-const getPieceCoords = (pieceID: number, G: GameState) => {
+const getPieceCoords = (pieceID: number, G: GameStateHistory) => {
   const piece = G.pieces.find((p) => p.id === pieceID);
   if (!piece) {
     throw Error(`Could not find piece with ID: ${pieceID}`);
@@ -204,7 +205,7 @@ const getPieceCoords = (pieceID: number, G: GameState) => {
   return piece.position;
 };
 
-const getNumberPiecesMissing = (G: GameState, playerID: number) => {
+const getNumberPiecesMissing = (G: GameStateHistory, playerID: number) => {
   return NUMBER_PIECES - G.pieces.filter((p) => p.owner === playerID).length;
 };
 
@@ -243,7 +244,7 @@ const targetClick = () => {
     if (pieceToPlace.value > 0) {
       order.newPiecePriority = pieceToPlace.value;
     }
-    if (!canAddPlaceOrder(order, props.state)) {
+    if (!canAddPlaceOrder(order, { ...props.state, config: props.config })) {
       return;
     }
   }

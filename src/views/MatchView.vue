@@ -452,7 +452,7 @@ getNotificationSound(store.zugUsername).then((notificationSound) => {
           />
           <ButtonStepper
             icon="pi pi-step-forward"
-            @click="setHistoryStep(gameLastTurn?.length)"
+            @click="setHistoryStep(gameLastTurn?.length || 1)"
           />
         </span>
       </div>
