@@ -6,12 +6,7 @@ import Button from 'primevue/button';
 
 import { BoardDisplayV2 as BoardDisplay } from '@/components/BoardDisplay';
 import PlaceButton from '@/components/BoardComponentPlaceButton.vue';
-import type {
-  GameState,
-  GameStateHistory,
-  GObject,
-  ZugConfig,
-} from '@/game/Game';
+import type { GameState, GameStateHistory, ZugConfig } from '@/game/Game';
 import type { Order, OrderTypes } from '@/game/orders';
 import {
   arrayToCoordinates,
@@ -38,6 +33,7 @@ interface BoardProps {
   config: ZugConfig;
   playerID: number;
   showOrders: boolean;
+  isActiveTurn: boolean;
 }
 
 const selectedPiece: Ref<undefined | number> = ref(undefined);
@@ -470,6 +466,7 @@ onUnmounted(() => {
         :emphasized-piece-ids="piecesWithoutActions"
         :action-menu-items="actionMenuPerPiece"
         :targetingHints="targetingHints"
+        :disableCommandMenu="!props.isActiveTurn"
       />
     </div>
     <div class="actions-text" v-if="props.showOrders">

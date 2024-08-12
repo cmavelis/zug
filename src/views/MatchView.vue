@@ -206,11 +206,14 @@ function setHistoryStep(value: number) {
   historyTurnStep.value = value;
 }
 
-const boardState = computed(() => {
+const isActiveTurn = computed(() => {
   const { history } = gameState.G as GObject;
 
-  if (historyTurn.value > history.length) {
-    console.log(gameState.G);
+  return historyTurn.value > history.length;
+});
+
+const boardState = computed(() => {
+  if (isActiveTurn.value) {
     return gameState.G;
   }
   if (gameLastTurn.value) {
@@ -385,6 +388,7 @@ getNotificationSound(store.zugUsername).then((notificationSound) => {
       :config="gameState.G.config"
       :playerID="playerID"
       :showOrders="isPlayerSelected"
+      :isActiveTurn="isActiveTurn"
     />
     <div>
       <div>

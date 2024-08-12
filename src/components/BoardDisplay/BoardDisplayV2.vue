@@ -29,10 +29,12 @@ interface BoardDisplayV2Props {
   emphasizedPieceIds?: number[];
   actionMenuItems?: { [key: number]: MenuItem[] };
   targetingHints?: PieceHint[];
+  disableCommandMenu?: boolean;
 }
 
 const props = withDefaults(defineProps<BoardDisplayV2Props>(), {
   showOrders: true,
+  disableCommandMenu: false,
   highlightedCells: () => [],
   handleCellClick: () => {},
   handleCellHover: () => {},
@@ -130,7 +132,9 @@ const isBottomPlayer = (index: number) => {
         'board-piece': true,
       }"
       :iconClass="{
-        'halo-shadow': Boolean(props.emphasizedPieceIds?.includes(piece.id)),
+        'halo-shadow':
+          Boolean(props.emphasizedPieceIds?.includes(piece.id)) &&
+          !props.disableCommandMenu,
       }"
       :hints="
         targetingHints && targetingHints.filter((p) => p.pieceID === piece.id)
@@ -139,7 +143,10 @@ const isBottomPlayer = (index: number) => {
       @click.stop="(e) => handlePieceClick(piece.id, e)"
       @mouseover="handlePieceHover(piece.id)"
     >
-      <template v-if="props.actionMenuItems[piece.id]" #menu>
+      <template
+        v-if="props.actionMenuItems[piece.id] && !props.disableCommandMenu"
+        #menu
+      >
         <SpeedDial
           :visible="props.selectedPieceId === piece.id"
           :model="props.actionMenuItems[piece.id]"
