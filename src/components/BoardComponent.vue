@@ -44,6 +44,17 @@ const pieceToPlace = ref(0);
 
 const props = defineProps<BoardProps>();
 const flatOrders = computed(() => props.state.orders[props.playerID] || []);
+const allOrders = computed(() => {
+  let orders: Order[] = [];
+  for (let i of [0, 1]) {
+    if (props.state.orders[i]) {
+      orders = orders.concat(props.state.orders[i]);
+    }
+  }
+
+  return orders;
+});
+
 const actionsUsed = computed(() => flatOrders.value.map((order) => order.type));
 const piecesToPlace = computed(
   () =>
@@ -452,7 +463,7 @@ onUnmounted(() => {
       </div>
       <BoardDisplay
         :pieces="props.state.pieces"
-        :orders="flatOrders"
+        :orders="allOrders"
         :events="props.state.events"
         :board="props.config.board"
         :hovered-cell="cellHover"

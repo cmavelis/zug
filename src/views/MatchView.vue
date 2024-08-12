@@ -211,7 +211,7 @@ function setHistoryStep(value: number) {
 const isActiveTurn = computed(() => {
   const { history } = gameState.G as GObject;
 
-  return historyTurn.value > history.length;
+  return history && historyTurn.value > history.length;
 });
 
 const boardState = computed(() => {
