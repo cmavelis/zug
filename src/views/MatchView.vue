@@ -19,7 +19,6 @@ import { useErrorHandler } from '@/composables/useErrorHandler';
 import axios from 'axios';
 
 import BoardComponent from '@/components/BoardComponent.vue';
-import { BoardDisplay } from '@/components/BoardDisplay';
 import { useWindowFocus } from '@/composables/useWindowFocus';
 import { SimulChessClient } from '@/game/App';
 import type { GObject } from '@/game/Game';
@@ -156,6 +155,9 @@ watch(gameStateLoaded, () => {
     if (joinedPlayerID !== undefined && joinedPlayerID >= 0) {
       playerID.value = joinedPlayerID;
     }
+  }
+  if (!route.query.turn) {
+    setHistoryLastTurn();
   }
 });
 
