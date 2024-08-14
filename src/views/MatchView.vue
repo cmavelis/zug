@@ -36,7 +36,7 @@ import { LobbyClient } from 'boardgame.io/client';
 import { getServerURL } from '@/utils';
 import ButtonStepper from '@/components/ButtonStepper.vue';
 import { useMatchLink } from '@/composables/useMatchLink';
-import BoardDisplayV2 from '@/components/BoardDisplay/BoardDisplayV2.vue';
+import { BoardDisplay } from '@/components/BoardDisplay';
 
 const windowHasFocus = useWindowFocus();
 const toast = useToast();
@@ -172,7 +172,11 @@ function decrementHistoryTurn() {
   historyTurn.value--;
 }
 function setHistoryLastTurn() {
-  historyTurn.value = gameState.G.history.length + 1;
+  if (!playerID.value) {
+    historyTurn.value = gameState.G.history.length;
+  } else {
+    historyTurn.value = gameState.G.history.length + 1;
+  }
 }
 
 const gameLastTurn = computed(() => {
@@ -393,6 +397,11 @@ getNotificationSound(store.zugUsername).then((notificationSound) => {
       :playerID="playerID"
       :showOrders="isPlayerSelected"
       :isActiveTurn="isActiveTurn"
+    />
+    <BoardDisplay
+      v-else-if="gameLastTurn"
+      :state="{ G: gameLastTurn[historyTurnStep - 1] }"
+      :orderNumber="historyTurnStep"
     />
     <div>
       <div>
