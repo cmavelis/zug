@@ -2,11 +2,12 @@
 import { computed, ref, onMounted, onUnmounted, watch } from 'vue';
 import type { Ref } from 'vue';
 import type { _ClientImpl } from 'boardgame.io/dist/types/src/client/client';
+import type { Ctx } from 'boardgame.io';
 import Button from 'primevue/button';
 
 import { BoardDisplayV2 as BoardDisplay } from '@/components/BoardDisplay';
 import PlaceButton from '@/components/BoardComponentPlaceButton.vue';
-import type { GameState } from '@/game/Game';
+import type { GameState, GameStateHistory, ZugConfig } from '@/game/Game';
 import type { Order, OrderTypes } from '@/game/orders';
 import {
   arrayToCoordinates,
@@ -28,9 +29,12 @@ const NUMBER_PIECES = 4;
 
 interface BoardProps {
   client: _ClientImpl<GameState>;
-  state: { G: GameState; ctx: any };
+  state: GameStateHistory;
+  ctx: Ctx;
+  config: ZugConfig;
   playerID: number;
   showOrders: boolean;
+  isActiveTurn: boolean;
 }
 
 const selectedPiece: Ref<undefined | number> = ref(undefined);
@@ -40,16 +44,27 @@ const endTurnMessage = ref('');
 const pieceToPlace = ref(0);
 
 const props = defineProps<BoardProps>();
-const flatOrders = computed(() => props.state.G.orders[props.playerID] || []);
+const flatOrders = computed(() => props.state.orders[props.playerID] || []);
+const allOrders = computed(() => {
+  let orders: Order[] = [];
+  for (let i of [0, 1]) {
+    if (props.state.orders[i]) {
+      orders = orders.concat(props.state.orders[i]);
+    }
+  }
+
+  return orders;
+});
+
 const actionsUsed = computed(() => flatOrders.value.map((order) => order.type));
 const piecesToPlace = computed(
   () =>
-    getNumberPiecesMissing(props.state.G, props.playerID) -
+    getNumberPiecesMissing(props.state, props.playerID) -
     flatOrders.value.filter((order) => order.type === 'place').length,
 );
 const gamePhase = computed(() => {
-  if (props.state.ctx.activePlayers) {
-    return props.state.ctx.activePlayers[props.playerID] || '?';
+  if (props.ctx.activePlayers) {
+    return props.ctx.activePlayers[props.playerID] || '?';
   } else {
     return 'end';
   }
@@ -59,7 +74,7 @@ const canEndTurn = computed(
 );
 const piecesWithoutActions = computed(() => {
   const idSet = new Set(
-    props.state.G.pieces
+    props.state.pieces
       .filter((p) => p.owner === props.playerID)
       .map((p) => p.id),
   );
@@ -67,7 +82,7 @@ const piecesWithoutActions = computed(() => {
   return Array.from(idSet);
 });
 const piecesToPlaceSorted = computed(() => {
-  const piecesToPlace = props.state.G.piecesToPlace || { 0: [], 1: [] };
+  const piecesToPlace = props.state.piecesToPlace || { 0: [], 1: [] };
   return {
     0: [...piecesToPlace[0]].sort(),
     1: [...piecesToPlace[1]].sort(),
@@ -78,30 +93,30 @@ const validSquares: Ref<number[]> = computed(() => {
   if (selectedAction.value === 'place') {
     return getValidSquaresForOrder({
       playerID: props.playerID,
-      board: props.state.G.config.board,
+      board: props.config.board,
       orderType: 'place',
-    }).map((coord) => coordinatesToArray(coord, props.state.G.config.board));
+    }).map((coord) => coordinatesToArray(coord, props.config.board));
   }
   if (
     selectionPhase.value === SELECTION_PHASES.targeting &&
     selectedAction.value &&
     selectedPiece.value !== undefined
   ) {
-    const piece = getPiece(props.state.G, selectedPiece.value);
+    const piece = getPiece(props.state, selectedPiece.value);
     if (piece)
       return getValidSquaresForOrder({
         playerID: props.playerID,
-        board: props.state.G.config.board,
+        board: props.config.board,
         orderType: selectedAction.value,
         origin: piece.position,
-      }).map((coord) => coordinatesToArray(coord, props.state.G.config.board));
+      }).map((coord) => coordinatesToArray(coord, props.config.board));
   }
   return [];
 });
 
 // hint at pieces that can't be pushed
 const targetingHints: Ref<any[]> = computed(() => {
-  const { piecePushRestrictions } = props.state.G.config;
+  const { piecePushRestrictions } = props.config;
   if (piecePushRestrictions === null) {
     return [];
   }
@@ -111,9 +126,9 @@ const targetingHints: Ref<any[]> = computed(() => {
     selectedAction.value?.startsWith('push') &&
     selectedPiece.value !== undefined
   ) {
-    const piece = getPiece(props.state.G, selectedPiece.value);
+    const piece = getPiece(props.state, selectedPiece.value);
     if (piece)
-      return props.state.G.pieces.map((p) => {
+      return props.state.pieces.map((p) => {
         return {
           pieceID: p.id,
           notPushable: !canPushWithConfig(piecePushRestrictions, piece, p),
@@ -150,7 +165,7 @@ const handlePieceClick = (id: number, e?: Event) => {
     return;
   }
 
-  const piece = getPiece(props.state.G, id);
+  const piece = getPiece(props.state, id);
   if (!piece) return;
 
   // pieces now capture the click, not the cell
@@ -176,15 +191,13 @@ const handlePieceClick = (id: number, e?: Event) => {
 };
 
 const handlePieceHover = (id: number) => {
-  const piece = getPiece(props.state.G, id);
+  const piece = getPiece(props.state, id);
   if (!piece) return;
 
-  handleCellHover(
-    coordinatesToArray(piece.position, props.state.G.config.board),
-  );
+  handleCellHover(coordinatesToArray(piece.position, props.config.board));
 };
 
-const getPieceCoords = (pieceID: number, G: GameState) => {
+const getPieceCoords = (pieceID: number, G: GameStateHistory) => {
   const piece = G.pieces.find((p) => p.id === pieceID);
   if (!piece) {
     throw Error(`Could not find piece with ID: ${pieceID}`);
@@ -192,7 +205,7 @@ const getPieceCoords = (pieceID: number, G: GameState) => {
   return piece.position;
 };
 
-const getNumberPiecesMissing = (G: GameState, playerID: number) => {
+const getNumberPiecesMissing = (G: GameStateHistory, playerID: number) => {
   return NUMBER_PIECES - G.pieces.filter((p) => p.owner === playerID).length;
 };
 
@@ -209,12 +222,9 @@ const targetClick = () => {
   let pieceCoords = { x: 0, y: 0 };
   // negative value is nonexistent piece, use absolute coords
   if (selectedPiece.value >= 0) {
-    pieceCoords = getPieceCoords(selectedPiece.value, props.state.G);
+    pieceCoords = getPieceCoords(selectedPiece.value, props.state);
   }
-  const targetCoords = arrayToCoordinates(
-    cellHover.value,
-    props.state.G.config.board,
-  );
+  const targetCoords = arrayToCoordinates(cellHover.value, props.config.board);
 
   const toTarget = getDisplacement(pieceCoords, targetCoords);
   const order = createOrder(
@@ -234,7 +244,7 @@ const targetClick = () => {
     if (pieceToPlace.value > 0) {
       order.newPiecePriority = pieceToPlace.value;
     }
-    if (!canAddPlaceOrder(order, props.state.G)) {
+    if (!canAddPlaceOrder(order, { ...props.state, config: props.config })) {
       return;
     }
   }
@@ -250,7 +260,7 @@ const targetClick = () => {
 // select piece, then action, then cell
 const handleCellClick = (cellID: number) => {
   console.debug('cell click', cellID);
-  const pieceID = props.state.G.cells[cellID];
+  const pieceID = props.state.cells[cellID];
   endTurnMessage.value = '';
 
   if (
@@ -393,9 +403,7 @@ onUnmounted(() => {
           v-model.number="pieceToPlace"
           type="number"
         />
-        <template
-          v-if="props.state.G.config.placePriorityAssignment?.beforeTurn"
-        >
+        <template v-if="props.config.placePriorityAssignment?.beforeTurn">
           <div class="place-button-group">
             <PlaceButton
               v-for="piecePriority in piecesToPlaceSorted[0]"
@@ -455,9 +463,10 @@ onUnmounted(() => {
         />
       </div>
       <BoardDisplay
-        :pieces="props.state.G.pieces"
-        :orders="flatOrders"
-        :board="props.state.G.config.board"
+        :pieces="props.state.pieces"
+        :orders="allOrders"
+        :events="props.state.events"
+        :board="props.config.board"
         :hovered-cell="cellHover"
         :handle-cell-hover="handleCellHover"
         :handle-cell-click="handleCellClick"
@@ -469,6 +478,7 @@ onUnmounted(() => {
         :emphasized-piece-ids="piecesWithoutActions"
         :action-menu-items="actionMenuPerPiece"
         :targetingHints="targetingHints"
+        :disableCommandMenu="!props.isActiveTurn"
       />
     </div>
     <div class="actions-text" v-if="props.showOrders">
@@ -499,7 +509,7 @@ onUnmounted(() => {
         <p>ACTIONS</p>
         <p v-if="endTurnMessage" class="info-message">{{ endTurnMessage }}</p>
         <template
-          v-for="order in props.state.G.orders[props.playerID]"
+          v-for="order in props.state.orders[props.playerID]"
           :key="order.sourcePieceId"
         >
           <p>

@@ -17,10 +17,12 @@ export interface GameSetupData {
   empty?: boolean;
 }
 
+export interface ZugConfig extends CommonGameConfig {
+  board: Coordinates;
+}
+
 export interface GameState {
-  config: CommonGameConfig & {
-    board: Coordinates;
-  };
+  config: ZugConfig;
   cells: Array<null | number>;
   orders: { [playerID: number]: Orders };
   pieces: Piece[];
@@ -37,7 +39,7 @@ export interface GameEvent {
 export type GameStateHistory = Omit<GameState, 'config'>;
 
 export type GObject = {
-  history: Omit<GameState, 'config'>[][];
+  history: GameStateHistory[][];
 } & GameState;
 
 let hostname: any;

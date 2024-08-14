@@ -19,7 +19,6 @@ import { useErrorHandler } from '@/composables/useErrorHandler';
 import axios from 'axios';
 
 import BoardComponent from '@/components/BoardComponent.vue';
-import { BoardDisplay } from '@/components/BoardDisplay';
 import { useWindowFocus } from '@/composables/useWindowFocus';
 import { SimulChessClient } from '@/game/App';
 import type { GObject } from '@/game/Game';
@@ -37,6 +36,7 @@ import { LobbyClient } from 'boardgame.io/client';
 import { getServerURL } from '@/utils';
 import ButtonStepper from '@/components/ButtonStepper.vue';
 import { useMatchLink } from '@/composables/useMatchLink';
+import { BoardDisplay } from '@/components/BoardDisplay';
 
 const windowHasFocus = useWindowFocus();
 const toast = useToast();
@@ -157,6 +157,9 @@ watch(gameStateLoaded, () => {
       playerID.value = joinedPlayerID;
     }
   }
+  if (!route.query.turn) {
+    setHistoryLastTurn();
+  }
 });
 
 const historyTurn = ref<number>(
@@ -169,7 +172,11 @@ function decrementHistoryTurn() {
   historyTurn.value--;
 }
 function setHistoryLastTurn() {
-  historyTurn.value = gameState.G.history.length;
+  if (!playerID.value) {
+    historyTurn.value = gameState.G.history.length;
+  } else {
+    historyTurn.value = gameState.G.history.length + 1;
+  }
 }
 
 const gameLastTurn = computed(() => {
@@ -206,6 +213,21 @@ function setHistoryStep(value: number) {
   historyTurnStep.value = value;
 }
 
+const isActiveTurn = computed(() => {
+  const { history } = gameState.G as GObject;
+
+  return history && historyTurn.value > history.length;
+});
+
+const boardState = computed(() => {
+  if (isActiveTurn.value) {
+    return gameState.G;
+  }
+  if (gameLastTurn.value) {
+    return gameLastTurn.value[historyTurnStep.value - 1];
+  }
+  return null;
+});
 const canJoin = computed(() => {
   const openPlayerSlot = matchClientOne.client.matchData?.some(
     (player) => player.name === undefined,
@@ -367,13 +389,21 @@ getNotificationSound(store.zugUsername).then((notificationSound) => {
       <p class="game-over" v-else-if="winner">{{ winner }} wins!</p>
     </div>
     <BoardComponent
-      v-if="gameStateLoaded && playerID !== null"
+      v-if="boardState !== null && playerID !== null"
       :client="matchClientOne.client"
-      :state="gameState"
+      :state="boardState"
+      :ctx="gameState.ctx"
+      :config="gameState.G.config"
       :playerID="playerID"
       :showOrders="isPlayerSelected"
+      :isActiveTurn="isActiveTurn"
     />
-    <div v-if="gameLastTurn">
+    <BoardDisplay
+      v-else-if="gameLastTurn"
+      :state="{ G: gameLastTurn[historyTurnStep - 1] }"
+      :orderNumber="historyTurnStep"
+    />
+    <div>
       <div>
         <Button
           icon="pi pi-link"
@@ -405,7 +435,7 @@ getNotificationSound(store.zugUsername).then((notificationSound) => {
           <ButtonStepper
             icon="pi pi-caret-right"
             @click="incrementHistoryTurn()"
-            :disabled="historyTurn >= gameState.G.history.length"
+            :disabled="historyTurn > gameState.G.history.length"
           />
           <ButtonStepper
             icon="pi pi-step-forward"
@@ -433,15 +463,10 @@ getNotificationSound(store.zugUsername).then((notificationSound) => {
           />
           <ButtonStepper
             icon="pi pi-step-forward"
-            @click="setHistoryStep(gameLastTurn.length)"
+            @click="setHistoryStep(gameLastTurn?.length || 1)"
           />
         </span>
       </div>
-      <hr class="history-spacer" />
-      <BoardDisplay
-        :state="{ G: gameLastTurn[historyTurnStep - 1] }"
-        :orderNumber="historyTurnStep"
-      />
     </div>
     <div v-if="gameState.G.config" class="match-settings">
       <p>match settings</p>

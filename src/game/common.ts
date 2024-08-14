@@ -1,4 +1,4 @@
-import type { GameState } from '@/game/Game';
+import type { GameState, GameStateHistory } from '@/game/Game';
 import type { Orders } from '@/game/orders';
 import { isNumber } from 'lodash';
 
@@ -76,7 +76,7 @@ export function reportError(e: string) {
   console.error(e);
 }
 
-export const getPiece = (G: GameState, id: number) => {
+export const getPiece = (G: GameStateHistory, id: number) => {
   return G.pieces.find((p) => p.id === id);
 };
 
