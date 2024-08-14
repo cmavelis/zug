@@ -10,9 +10,7 @@ import './assets/theme/theme.css';
 import 'primeicons/primeicons.css';
 import './assets/icons/zug-icons.css';
 
-if (import.meta.env.DEV || process.env.RAILWAY_ENVIRONMENT_NAME === 'dev') {
-  document.title = 'zug dev';
-}
+document.title = import.meta.env.VITE_APP_TITLE;
 
 const app = createApp(App);
 
