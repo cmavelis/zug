@@ -10,6 +10,10 @@ import './assets/theme/theme.css';
 import 'primeicons/primeicons.css';
 import './assets/icons/zug-icons.css';
 
+if (import.meta.env.DEV) {
+  document.title = 'zug dev';
+}
+
 const app = createApp(App);
 
 app.use(router);
