@@ -1,0 +1,20 @@
+@media (pointer: coarse), (hover: none) {
+  .mobile-tooltip {
+    position: relative;
+    display: inline-flex;
+    justify-content: center;
+    overflow: visible;
+  }
+  .mobile-tooltip:focus::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    top: 90%;
+    color: #000;
+    background-color: #fff;
+    border: 1px solid;
+    width: 200px;
+    padding: 4px;
+    font-size: 12px;
+    white-space: normal;
+  }
+}

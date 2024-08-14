@@ -4,23 +4,21 @@ import {
   isValidOrder,
 } from '@/game/zugzwang/validators';
 import type { Piece } from '@/game/pieces';
-import type { AttackOrder, PushStraightOrder } from '@/game/orders';
+import type { AttackOrder, PlaceOrder, PushStraightOrder } from '@/game/orders';
+import { cloneDeep } from 'lodash';
+import { makeTestPiece } from '@/game/test-utils';
 
-const testPiece: Piece = {
+const testPiece: Piece = makeTestPiece({
   id: 0,
   position: { x: 2, y: 1 },
   owner: 1,
-  isDefending: false,
-  priority: 0,
-};
+});
 
-const testPiece2: Piece = {
+const testPiece2: Piece = makeTestPiece({
   id: 1,
   position: { x: 2, y: 1 },
   owner: 0,
-  isDefending: false,
-  priority: 0,
-};
+});
 
 const testAttack1: AttackOrder = {
   sourcePieceId: 0,
@@ -46,20 +44,54 @@ const testPushS2: PushStraightOrder = {
   priority: 1,
 };
 
+const testPlace0: PlaceOrder = {
+  sourcePieceId: -1,
+  toTarget: { x: 0, y: 0 },
+  type: 'place',
+  owner: 0,
+  priority: 1,
+};
+
+const testPlace0Bad: PlaceOrder = cloneDeep(testPlace0);
+testPlace0Bad.owner = 1;
+
+const testPlace1: PlaceOrder = {
+  sourcePieceId: -1,
+  toTarget: { x: 3, y: 3 },
+  type: 'place',
+  owner: 1,
+  priority: 1,
+};
+const testPlace1Bad: PlaceOrder = cloneDeep(testPlace1);
+testPlace1Bad.owner = 0;
+
 test('attackValidator valid', () => {
-  expect(isValidOrder(testPiece, testAttack1)).toEqual(true);
+  expect(isValidOrder(testPiece.owner, testAttack1)).toEqual(true);
 });
 
 test('attackValidator invalid', () => {
-  expect(isValidOrder(testPiece2, testAttack1)).toEqual(false);
+  expect(isValidOrder(testPiece2.owner, testAttack1)).toEqual(false);
 });
 
 test('push straight valid', () => {
-  expect(isValidOrder(testPiece, testPushS1)).toEqual(true);
+  expect(isValidOrder(testPiece.owner, testPushS1)).toEqual(true);
 });
 
 test('push straight invalid', () => {
-  expect(isValidOrder(testPiece, testPushS2)).toEqual(false);
+  expect(isValidOrder(testPiece.owner, testPushS2)).toEqual(false);
+});
+
+test('player 0 place valid', () => {
+  expect(isValidOrder(testPlace0.owner, testPlace0)).toEqual(true);
+});
+test('player 0 place invalid', () => {
+  expect(isValidOrder(testPlace0Bad.owner, testPlace0Bad)).toEqual(false);
+});
+test('player 1 place valid', () => {
+  expect(isValidOrder(testPlace1.owner, testPlace1)).toEqual(true);
+});
+test('player 1 place invalid', () => {
+  expect(isValidOrder(testPlace1Bad.owner, testPlace1Bad)).toEqual(false);
 });
 
 test('getSquares for place order', () => {

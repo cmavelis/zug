@@ -1,26 +1,19 @@
 import type { Game } from 'boardgame.io';
 import { INVALID_MOVE } from 'boardgame.io/core';
+import { isEqual, shuffle, random } from 'lodash';
+
+import fairBoards from './setup/fair-boards.json';
 import { createPiece, type Piece } from '@/game/pieces';
 import type { Order, Orders } from '@/game/orders';
 import { orderResolver } from '@/game/orders';
 import type { Coordinates } from '@/game/common';
 import { isValidOrder } from '@/game/zugzwang/validators';
+import type { ZugConfig as CommonGameConfig } from '@/game/zugzwang/config';
 import { stripSecrets } from '@/game/common';
+import { DEFAULT_ZUG_CONFIG } from '@/game/zugzwang/config';
 
-export type PriorityMode =
-  | 'order-choice' // the original; orders get priority based on when they were assigned in the turn
-  | 'piece'; // pieces have their own priorities based on their ID, instead of order
-
-export type OutOfBoundsMode =
-  | 'immediate' // pieces will be removed from play immediately after being knocked out of bounds
-  | 'turn-end'; // pieces removed from play if OB at end of turn
-
-interface CommonGameConfig {
-  outOfBounds: OutOfBoundsMode;
-  priority: PriorityMode;
-}
-
-export interface GameSetupData extends Partial<CommonGameConfig> {
+export interface GameSetupData {
+  config: Partial<CommonGameConfig>;
   empty?: boolean;
 }
 
@@ -31,14 +24,17 @@ export interface GameState {
   cells: Array<null | number>;
   orders: { [playerID: number]: Orders };
   pieces: Piece[];
+  piecesToPlace?: { [playerID: number]: number[] }; // optional key for back-compat
   score: { [playerID: number]: number };
   events?: GameEvent[];
 }
 
 export interface GameEvent {
-  type: 'score';
+  type: 'score' | 'destroy';
   sourcePieceId: number;
 }
+
+export type GameStateHistory = Omit<GameState, 'config'>;
 
 export type GObject = {
   history: Omit<GameState, 'config'>[][];
@@ -63,8 +59,8 @@ export const SimulChess: Game<GObject> = {
     const initialGame = {
       config: {
         board,
-        outOfBounds: setupData?.outOfBounds || ('immediate' as OutOfBoundsMode),
-        priority: setupData?.priority || ('piece' as PriorityMode),
+        ...DEFAULT_ZUG_CONFIG,
+        ...setupData.config,
       },
       cells: Array(board.x * board.y).fill(null),
       pieces: [],
@@ -95,19 +91,38 @@ export const SimulChess: Game<GObject> = {
         pieceToCreate: { owner: 1, position: { x: 3, y: 3 } },
       });
     } else {
-      [0, 1, 2, 3].forEach((x) =>
+      const {
+        startingPiecePriorities,
+        useFairStartingBoard,
+        piecePriorityOptions,
+      } = setupData.config;
+      let p1PiecePriorities: number[] = [];
+      let p2PiecePriorities: number[] = [];
+      if (
+        useFairStartingBoard &&
+        isEqual(piecePriorityOptions, DEFAULT_ZUG_CONFIG.piecePriorityOptions)
+      ) {
+        const startingBoard = fairBoards[random(0, fairBoards.length)];
+        p1PiecePriorities = startingBoard[0];
+        p2PiecePriorities = startingBoard[1];
+      } else {
+        p1PiecePriorities = shuffle(startingPiecePriorities);
+        p2PiecePriorities = shuffle(startingPiecePriorities);
+      }
+
+      [0, 1, 2, 3].forEach((x, i) =>
         createPiece({
           G: initialGame,
           pieceToCreate: { owner: 0, position: { x, y: 0 } },
-          priorityArray: [2, 3, 4, 5],
+          forcedPriority: p1PiecePriorities[i],
         }),
       );
 
-      [0, 1, 2, 3].forEach((x) =>
+      [0, 1, 2, 3].forEach((x, i) =>
         createPiece({
           G: initialGame,
           pieceToCreate: { owner: 1, position: { x, y: 3 } },
-          priorityArray: [2, 3, 4, 5],
+          forcedPriority: p2PiecePriorities[i],
         }),
       );
     }
@@ -157,7 +172,7 @@ export const SimulChess: Game<GObject> = {
                 }
 
                 // validate type/direction
-                if (!isValidOrder(movedPiece, order)) {
+                if (!isValidOrder(movedPiece.owner, order)) {
                   return INVALID_MOVE;
                 }
               }
@@ -171,6 +186,17 @@ export const SimulChess: Game<GObject> = {
             move: ({ G, playerID }: { G: GameState; playerID: string }) => {
               const playerNumber = +playerID;
               G.orders[playerNumber].pop();
+            },
+            noLimit: true,
+          },
+          removeOrder: {
+            move: ({ G }: { G: GameState }, pieceID: number) => {
+              for (const i of [0, 1]) {
+                if (!G.orders[i]) return;
+                G.orders[i] = G.orders[i].filter(
+                  (order) => order.sourcePieceId !== pieceID,
+                );
+              }
             },
             noLimit: true,
           },
@@ -188,7 +214,11 @@ export const SimulChess: Game<GObject> = {
         );
     },
     onEnd: ({ G }) => {
-      return orderResolver({ G });
+      try {
+        return orderResolver({ G });
+      } catch (e) {
+        console.error(e);
+      }
     },
   },
 
@@ -196,10 +226,18 @@ export const SimulChess: Game<GObject> = {
 
   endIf: ({ G }) => {
     const gameTo = 4;
-    if (G.score[0] >= gameTo) {
+    const p1Score = G.score[0];
+    const p2Score = G.score[1];
+    if (p1Score >= gameTo && p2Score >= gameTo) {
+      if (p1Score === p2Score) {
+        return { winner: -1 }; // TIE!
+      }
+      return { winner: p1Score > p2Score ? 0 : 1 };
+    }
+    if (p1Score >= gameTo) {
       return { winner: 0 };
     }
-    if (G.score[1] >= gameTo) {
+    if (p2Score >= gameTo) {
       return { winner: 1 };
     }
   },

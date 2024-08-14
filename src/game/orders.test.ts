@@ -1,0 +1,120 @@
+import { test, expect } from 'vitest';
+import {
+  arrangeOrderPairs,
+  canPushWithConfig,
+  createOrderArrayCompareFn,
+} from '@/game/orders';
+import { makeTestGame, makeTestOrder, makeTestPiece } from '@/game/test-utils';
+import { type PushRestrictionsConfig } from '@/game/zugzwang/config';
+
+const piecePriority3 = makeTestPiece({ id: 0, priority: 3 });
+const piecePriority1 = makeTestPiece({ id: 1, priority: 1 });
+
+const piecePriority3Order = makeTestOrder({ sourcePieceId: 0 });
+const piecePriority1Order = makeTestOrder({ sourcePieceId: 1 });
+const piece1OrderPriority4 = makeTestOrder({ sourcePieceId: 1, priority: 4 });
+const piecePlaceOrder = makeTestOrder({
+  type: 'place',
+  sourcePieceId: -1,
+});
+const priority1PlaceOrder = makeTestOrder({
+  type: 'place',
+  sourcePieceId: -1,
+  newPiecePriority: 1,
+});
+const priority3PlaceOrder = makeTestOrder({
+  type: 'place',
+  sourcePieceId: -1,
+  newPiecePriority: 3,
+});
+const priority6PlaceOrder = makeTestOrder({
+  type: 'place',
+  sourcePieceId: -1,
+  newPiecePriority: 6,
+});
+
+const G = makeTestGame({ pieces: [piecePriority3, piecePriority1] });
+const orders = [piecePriority3Order, piecePriority1Order];
+const ordersP2 = [piece1OrderPriority4, piecePriority1Order];
+
+test('sort orders, different piece priorities', () => {
+  const unsortedOrders = [piecePriority3Order, piecePriority1Order];
+  const sortedOrders = unsortedOrders
+    .slice()
+    .sort(createOrderArrayCompareFn(G));
+
+  expect(sortedOrders).toEqual([piecePriority1Order, piecePriority3Order]);
+});
+
+test('sort orders, same piece priorities', () => {
+  const unsortedOrders = [piece1OrderPriority4, piecePriority1Order];
+  const sortedOrders = unsortedOrders
+    .slice()
+    .sort(createOrderArrayCompareFn(G));
+
+  expect(sortedOrders).toEqual([piecePriority1Order, piece1OrderPriority4]);
+});
+
+test('arrange order pairs, basic (new method)', () => {
+  const sortedOrderPairs = arrangeOrderPairs(G, orders, ordersP2);
+  expect(sortedOrderPairs).toEqual([
+    [piecePriority1Order, piecePriority1Order],
+    [null, piece1OrderPriority4],
+    [piecePriority3Order, null],
+  ]);
+});
+
+test('arrange order pairs, with place actions', () => {
+  const sortedOrderPairs = arrangeOrderPairs(
+    G,
+    [piecePlaceOrder, piecePlaceOrder].concat(orders),
+    [piecePlaceOrder].concat(ordersP2),
+  );
+  expect(sortedOrderPairs).toEqual([
+    [piecePriority1Order, piecePriority1Order],
+    [null, piece1OrderPriority4],
+    [piecePriority3Order, null],
+    [piecePlaceOrder, piecePlaceOrder],
+    [piecePlaceOrder, null],
+  ]);
+});
+
+test('arrange order pairs, with prioritized place actions', () => {
+  const sortedOrderPairs = arrangeOrderPairs(
+    G,
+    [priority6PlaceOrder, priority1PlaceOrder, priority3PlaceOrder].concat(
+      orders,
+    ),
+    [priority6PlaceOrder].concat(ordersP2),
+  );
+  expect(sortedOrderPairs).toEqual([
+    [piecePriority1Order, piecePriority1Order],
+    [null, piece1OrderPriority4],
+    [priority1PlaceOrder, null],
+    [piecePriority3Order, null],
+    [priority3PlaceOrder, null],
+    [priority6PlaceOrder, priority6PlaceOrder],
+  ]);
+});
+
+test.each([
+  [{}, 1, 1, true],
+  [{ add: 1 }, 1, 3, false],
+  [{ add: 2 }, 1, 3, true],
+  [{ multiply: 2 }, 1, 3, false],
+  [{ multiply: 2 }, 2, 3, true],
+  [{ multiply: 2, add: 1 }, 1, 4, false],
+  [{ multiply: 2, add: 1 }, 2, 5, true],
+])(
+  'canPushWithConfig(%s, %i, %i) -> %s',
+  // @ts-ignore
+  (a: PushRestrictionsConfig, b, c, expected) => {
+    expect(
+      canPushWithConfig(
+        a,
+        makeTestPiece({ priority: b }),
+        makeTestPiece({ priority: c }),
+      ),
+    ).toBe(expected);
+  },
+);

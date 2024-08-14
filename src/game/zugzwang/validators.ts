@@ -10,6 +10,7 @@ import type {
 } from '@/game/orders';
 import type { Coordinates } from '@/game/common';
 import { addDisplacement } from '@/game/common';
+import type { GameState } from '@/game/Game';
 
 export function isDiagonal(vector: Coordinates): boolean {
   const xChangesAllowed = [-1, 1];
@@ -70,16 +71,16 @@ const ORDER_CONFIG: {
   place: {
     shape: 'area',
     yAllowed: [0],
-    absolute: true,
+    absolute: true, // meaning not relative to piece
   },
 };
 
-export function isValidOrder(piece: Piece, order: Order): boolean {
+export function isValidOrder(pieceOwner: 0 | 1, order: Order): boolean {
   const config = ORDER_CONFIG[order.type as ConfigOrderType];
   const { shape, xAllowed, yAllowed } = config;
 
   const yRelative = order.toTarget.y;
-  const yChange = piece.owner === 0 ? yRelative : -yRelative;
+  const yChange = pieceOwner === 0 ? yRelative : -yRelative;
 
   const xChange = order.toTarget.x;
 
@@ -92,6 +93,9 @@ export function isValidOrder(piece: Piece, order: Order): boolean {
   }
   if (shape === 'diagonal') {
     angleValid = isDiagonal(order.toTarget);
+  }
+  if (order.type === 'place') {
+    return isValidPlaceOrder(order);
   }
 
   let xValid = true;
@@ -133,6 +137,38 @@ export function isValidPlaceOrder(order: PlaceOrder): boolean {
   return yChange === yChangeAllowed;
 }
 
+export function canAddPlaceOrder(order: PlaceOrder, G: GameState): boolean {
+  if (!isValidPlaceOrder(order)) {
+    return false;
+  }
+  if (G.config.placePriorityAssignment) {
+    if (!order.newPiecePriority) {
+      return false;
+    }
+    const { owner } = order;
+    const { piecesToPlace } = G;
+    if (!piecesToPlace || !piecesToPlace[owner] || !piecesToPlace[owner].length)
+      return false;
+
+    const piecesAlreadyBeingPlaced = G.orders[owner]
+      .filter((order): order is PlaceOrder => order.type === 'place')
+      .map((order) => order.newPiecePriority);
+    const piecesLeftToPlace: number[] = [];
+    piecesToPlace[owner].forEach((p) => {
+      if (piecesAlreadyBeingPlaced.includes(p)) {
+        const toRemove = piecesAlreadyBeingPlaced.findIndex((i) => i === p);
+        piecesAlreadyBeingPlaced.splice(toRemove, 1);
+      } else {
+        piecesLeftToPlace.push(p);
+      }
+    });
+
+    return piecesLeftToPlace.includes(order.newPiecePriority);
+  } else {
+    return true;
+  }
+}
+
 // TODO does the origin solve the need for other order info?
 export function getValidSquaresForOrder({
   origin = { x: 0, y: 0 },
@@ -148,7 +184,7 @@ export function getValidSquaresForOrder({
   // TODO:  make vectors, invert, translate
 
   const config = ORDER_CONFIG[orderType];
-  let rawVectors: Coordinates[] = [];
+  const rawVectors: Coordinates[] = [];
   if (config.shape === 'straight') {
     config.xAllowed?.forEach((x) => rawVectors.push({ x, y: 0 }));
     config.yAllowed?.forEach((y) =>

@@ -1,95 +1,103 @@
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue';
+import { ref, watch } from 'vue';
 import type { Ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { LobbyClient } from 'boardgame.io/client';
-import type { LobbyAPI } from 'boardgame.io/dist/types/src/types';
+import Button from 'primevue/button';
+
 import LobbyMatch from '@/components/LobbyMatch.vue';
 import type { GameSetupData } from '@/game/Game';
 import { store } from '@/store';
+import { getServerURL } from '@/utils';
+import { useMatch } from '@/composables/useMatch';
+import type { EnhancedMatch } from '../../server/types';
+import { DEFAULT_ZUG_CONFIG, LATEST_ZUG_CONFIG } from '@/game/zugzwang/config';
+import { type LobbyAPI } from 'boardgame.io';
 
-const matches: Ref<LobbyAPI.Match[]> = ref([]);
-const { protocol, hostname, port } = window.location;
-const server = `${protocol}//${hostname}:${port}`;
+const matches: Ref<EnhancedMatch[]> = ref([]);
+const lastFetched = ref();
+const server = getServerURL();
 
-// todo: poll match list or show refresh button
+const dateFormatter = new Intl.DateTimeFormat('en-US', {
+  month: 'short',
+  day: 'numeric',
+  hour: 'numeric',
+  minute: 'numeric',
+});
+
+const saveMatchList = (matchList: LobbyAPI.MatchList) => {
+  let matchData = matchList.matches as EnhancedMatch[];
+  matchData.sort((a, b) => {
+    return b.updatedAt - a.updatedAt;
+  });
+  matches.value = matchData;
+  lastFetched.value = dateFormatter.format(new Date());
+};
 const lobbyClient = new LobbyClient({ server });
-lobbyClient
-  .listMatches('zug')
-  .then((matchList) => {
-    matches.value = matchList.matches;
-  })
-  .catch(console.error);
+const fetchMatches = () => {
+  lobbyClient.listMatches('zug').then(saveMatchList).catch(console.error);
+};
+fetchMatches();
+// polling too expensive right now
+// setInterval(fetchMatches, 10000);
 
 const router = useRouter();
-const createMatch = async (setupData: GameSetupData = {}) => {
+const createMatch = async (
+  setupData: GameSetupData = { config: DEFAULT_ZUG_CONFIG },
+) => {
   const createdMatch = await lobbyClient.createMatch('zug', {
     numPlayers: 2,
     setupData,
     unlisted: setupData?.empty,
   });
-  await requestJoinMatch(createdMatch.matchID, setupData);
+  await requestJoinMatch(createdMatch.matchID, setupData, navigateToMatch);
 };
 
-const joinStatus = ref('');
-const requestJoinMatch = async (matchID: string, setupData?: GameSetupData) => {
-  joinStatus.value = 'loading';
-  let authHeader = setupData?.empty ? 'open' : 'error';
-  try {
-    const resp = await lobbyClient.joinMatch(
-      'zug',
-      matchID,
-      { playerName: store.zugUsername || 'error' },
-      { headers: { authorization: store.zugToken || authHeader } },
-    );
-    console.log(resp);
-    if (resp.playerID) {
-      joinStatus.value = 'success';
-      navigateToMatch(matchID, resp.playerID, setupData);
-    } else {
-      joinStatus.value = 'failed';
-    }
-  } catch (e) {
-    console.error(e);
-    joinStatus.value = 'failed';
-  }
-};
+const { joinStatus, requestJoinMatch } = useMatch(lobbyClient);
 
-const navigateToMatch = (
-  matchID: string,
-  playerID: string,
-  setupData?: GameSetupData,
-) => {
+const navigateToMatch = (matchID: string) => {
   router.push({
     name: 'match',
     params: {
       matchID,
     },
-    query: {
-      player: setupData?.empty ? 9 : Number(playerID) + 1,
-    },
   });
 };
 
-const usersMatches = computed(() => {
-  return matches.value
-    .filter((m) =>
-      m.players.some((p) => p.name && p.name === store.zugUsername),
-    )
-    .map((match) => match.matchID);
-});
+const handleCustomClick = () => {
+  router.push({
+    name: 'match-configure',
+  });
+};
 
-const yourMatches: Ref<LobbyAPI.Match[]> = ref([]);
-const openMatches: Ref<LobbyAPI.Match[]> = ref([]);
-const remainingMatches: Ref<LobbyAPI.Match[]> = ref([]);
+const shouldHighlight = (match: EnhancedMatch) => {
+  const { activePlayers, players, gameover } = match;
+
+  let yourTurn;
+  if (activePlayers) {
+    const playerIndex = Object.values(players).findIndex(
+      (player) => player.name === store.zugUsername,
+    );
+    yourTurn = activePlayers[playerIndex] === 'planning';
+  }
+
+  return yourTurn && !gameover;
+};
+
+const yourMatches: Ref<EnhancedMatch[]> = ref([]);
+const openMatches: Ref<EnhancedMatch[]> = ref([]);
+const remainingMatches: Ref<EnhancedMatch[]> = ref([]);
 
 watch(matches, () => {
-  const newYourMatches: LobbyAPI.Match[] = [];
-  const newOpenMatches: LobbyAPI.Match[] = [];
-  const newRemainingMatches: LobbyAPI.Match[] = [];
+  const newYourMatches: EnhancedMatch[] = [];
+  const newOpenMatches: EnhancedMatch[] = [];
+  const newRemainingMatches: EnhancedMatch[] = [];
 
   matches.value.forEach((match) => {
-    if (match.players.some((p) => p.name && p.name === store.zugUsername)) {
+    if (
+      match.players.some((p) => p.name && p.name === store.zugUsername) &&
+      newYourMatches.length < 6
+    ) {
       newYourMatches.push(match);
     } else if (match.players.some((p) => !p.name)) {
       newOpenMatches.push(match);
@@ -107,72 +115,122 @@ watch(matches, () => {
   <main>
     <h1>Matches Lobby</h1>
     <h2>Create a match</h2>
-    <button class="button-big" @click="createMatch({ priority: 'piece' })">
-      Standard
-    </button>
-    <section class="button-group">
-      <button @click="createMatch({ outOfBounds: 'turn-end' })">
-        Standard + "Greatest"
-      </button>
-      <button @click="createMatch({ priority: 'order-choice' })">
-        "Action order" priority setting
-      </button>
-      <button @click="createMatch({ empty: true })">Testing</button>
-    </section>
-
-    <h2>Matches</h2>
+    <span class="p-buttonset">
+      <Button @click="createMatch()" label="Standard"></Button>
+      <Button
+        @click="handleCustomClick"
+        severity="secondary"
+        label="Custom"
+      ></Button>
+      <Button
+        @click="createMatch({ config: LATEST_ZUG_CONFIG })"
+        label="Latest"
+      ></Button>
+    </span>
+    <div class="matches-header">
+      <Button
+        size="small"
+        label="Refresh"
+        :onclick="fetchMatches"
+        style="justify-self: end"
+      />
+      <h2>Matches</h2>
+      <div class="center-align">Last fetched: {{ lastFetched }}</div>
+    </div>
     <span>{{ joinStatus }}</span>
-    <h3>Your matches</h3>
+    <div class="divider">
+      <h3>Your matches</h3>
+      <Button
+        data-tooltip="Shows your 6 most recent games, highlighting ones where it's your turn"
+        tabindex="0"
+        icon="pi pi-question"
+        severity="secondary"
+        v-tooltip.top="
+          'Shows your 6 most recent games, highlighting ones where it\'s your turn'
+        "
+        :pt="{ root: { class: 'tooltip-button' } }"
+        class="mobile-tooltip"
+      />
+    </div>
     <section class="matches-list">
       <LobbyMatch
         v-for="match in yourMatches"
         :key="match.matchID"
-        v-bind="match"
-        :highlight="!match.gameover"
-        :handle-match-join="() => requestJoinMatch(match.matchID)"
-        :handle-match-navigate="
-          (playerName: string) => navigateToMatch(match.matchID, playerName)
+        :match="match"
+        :highlight="shouldHighlight(match)"
+        :handle-match-join="
+          () => requestJoinMatch(match.matchID, undefined, navigateToMatch)
         "
+        :handle-match-navigate="() => navigateToMatch(match.matchID)"
       />
     </section>
-    <h3>Open matches</h3>
+    <div class="divider"><h3>Open matches</h3></div>
     <section class="matches-list">
       <LobbyMatch
         v-for="match in openMatches"
         :key="match.matchID"
-        :matchID="match.matchID"
-        :players="match.players"
-        :highlight="usersMatches.includes(match.matchID)"
-        :handle-match-join="() => requestJoinMatch(match.matchID)"
-        :handle-match-navigate="
-          (playerName: string) => navigateToMatch(match.matchID, playerName)
+        :match="match"
+        :handle-match-join="
+          () => requestJoinMatch(match.matchID, undefined, navigateToMatch)
         "
+        :handle-match-navigate="() => navigateToMatch(match.matchID)"
       />
     </section>
-    <h3>Other matches</h3>
+    <div class="divider"><h3>Other matches</h3></div>
     <section class="matches-list">
       <LobbyMatch
         v-for="match in remainingMatches"
         :key="match.matchID"
-        :matchID="match.matchID"
-        :players="match.players"
-        :highlight="usersMatches.includes(match.matchID)"
-        :handle-match-join="() => requestJoinMatch(match.matchID)"
-        :handle-match-navigate="
-          (playerName: string) => navigateToMatch(match.matchID, playerName)
+        :match="match"
+        :handle-match-join="
+          () => requestJoinMatch(match.matchID, undefined, navigateToMatch)
         "
+        :handle-match-navigate="() => navigateToMatch(match.matchID)"
       />
     </section>
   </main>
 </template>
 
 <style scoped>
+.divider {
+  display: flex;
+  white-space: nowrap;
+  gap: 8px;
+  align-items: center;
+}
+
+.divider:before {
+  display: block;
+  content: '';
+  width: 100%;
+  border-top: 1px solid var(--color-text);
+}
+
+.divider:after {
+  display: block;
+  content: '';
+  width: 100%;
+  border-top: 1px solid var(--color-text);
+}
+
 .matches-list {
   display: flex;
   gap: 1rem;
   justify-content: center;
   flex-wrap: wrap;
   margin-bottom: 1rem;
+}
+
+.matches-header {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  align-items: center;
+}
+
+.center-align {
+  display: flex;
+  align-items: center;
+  gap: 4px;
 }
 
 .button-group {
@@ -183,12 +241,9 @@ watch(matches, () => {
   align-items: center;
   gap: 4px;
 }
-button {
-  width: fit-content;
-}
 
-.button-big {
-  font-size: 1.5rem;
-  margin: 0.5rem;
+.tooltip-button {
+  padding: 0.4rem;
+  z-index: 1;
 }
 </style>

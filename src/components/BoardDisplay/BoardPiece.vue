@@ -1,14 +1,26 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import type { Piece } from '@/game/pieces';
+import { BOARD_PIXEL_SIZE } from '@/constants';
 
 interface BoardPiece extends Piece {
   iconClass?: { [key: string]: boolean };
+  hints?: PieceHint[];
+}
+
+export interface PieceHint {
+  pieceID: number;
+  notPushable: boolean;
 }
 
 const props = defineProps<BoardPiece>();
 
-const squareSize = 50;
+const squareSize = BOARD_PIXEL_SIZE;
+
+// only 1 right now: notPushable
+const firstHint = computed(() => {
+  return props.hints ? props.hints[0] : null;
+});
 
 const styleObject = computed(() => {
   const translateX = `${props.position.x * squareSize}px`;
@@ -20,38 +32,55 @@ const styleObject = computed(() => {
     height: squareSize + 'px',
   };
 });
-
-// need this? //const pieceColor = computed(() => (props.owner === 0 ? '#729bf1' : '#62d368'));
-
-const pieceColor = props.owner === 0 ? '#729bf1' : '#62d368';
 </script>
 
 <template>
-  <div class="piece" :style="styleObject">
-    <div :class="{ pieceIcon: true, ...props.iconClass }">
+  <div
+    :class="{ piece: true, 'push-hint': firstHint && firstHint.notPushable }"
+    :style="styleObject"
+  >
+    <div
+      :class="{
+        pieceIcon: true,
+        'player-one-piece': props.owner === 0,
+        'player-two-piece': props.owner === 1,
+        ...props.iconClass,
+      }"
+    >
       {{ props.priority }}
     </div>
+    <slot name="menu"></slot>
   </div>
 </template>
 
 <style scoped>
 .piece {
-  pointer-events: none;
   position: absolute;
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 1; /* below the order overlay */
+  transition: transform 0.5s ease-out;
+  font-size: medium;
+  font-weight: bold;
 }
 
 .pieceIcon {
-  background-color: v-bind(pieceColor);
   border-radius: 50%;
   height: 80%;
   width: 80%;
   display: flex;
   align-items: center;
   justify-content: center;
+  cursor: pointer;
+}
+
+.push-hint::after {
+  content: '🫸🚫';
   color: black;
+  position: absolute;
+  bottom: -6px;
+  border-radius: 8px;
+  background-color: rgba(0, 0, 0, 0.6);
 }
 </style>

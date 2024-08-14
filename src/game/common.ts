@@ -1,5 +1,6 @@
 import type { GameState } from '@/game/Game';
 import type { Orders } from '@/game/orders';
+import { isNumber } from 'lodash';
 
 export interface Coordinates {
   x: number;
@@ -48,6 +49,29 @@ export const isOppositeVector = (
   return vector1.x === -vector2.x && vector1.y === -vector2.y;
 };
 
+export const doesIndexMatchCoordinate = ({
+  index,
+  board,
+  x,
+  y,
+}: {
+  index: number;
+  board: Coordinates;
+  x?: number;
+  y?: number;
+}) => {
+  const coordinates = arrayToCoordinates(index, board);
+  let matchX = true;
+  let matchY = true;
+  if (isNumber(x)) {
+    matchX = coordinates.x === x;
+  }
+  if (isNumber(y)) {
+    matchY = coordinates.y === y;
+  }
+  return matchX && matchY;
+};
+
 export function reportError(e: string) {
   console.error(e);
 }
@@ -70,4 +94,9 @@ export const stripSecrets = (
     orders[playerNumber] = G.orders[playerNumber];
   }
   return { ...G, orders };
+};
+
+export const randomFromArray = <T>(choiceArray: Array<T>): T => {
+  const randomIndex = Math.floor(Math.random() * choiceArray.length);
+  return choiceArray[randomIndex];
 };

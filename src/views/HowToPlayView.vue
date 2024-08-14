@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import BoardDisplay from '@/components/BoardDisplayV2.vue';
+import { BoardDisplayV2 as BoardDisplay } from '@/components/BoardDisplay';
 import type { ConfigOrderType } from '@/game/zugzwang/validators';
 import { getValidSquaresForOrder } from '@/game/zugzwang/validators';
 import { ORDER_PRIORITIES } from '@/game/orders';
@@ -17,7 +17,9 @@ const orderNames: OrdersHere[] = [
 
 const position = { x: 1, y: 1 };
 
-const pieces = [{ id: 0, owner: 0, position, isDefending: false, priority: 0 }];
+const pieces = [
+  { id: 0, owner: 0 as 0 | 1, position, isDefending: false, priority: 0 },
+];
 
 const board = { x: 3, y: 3 };
 const fullBoard = { x: 4, y: 4 };

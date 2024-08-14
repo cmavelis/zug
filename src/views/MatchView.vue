@@ -1,22 +1,25 @@
 <script setup lang="ts">
 import {
   computed,
-  reactive,
   ref,
   onMounted,
   onUnmounted,
   watch,
   type Ref,
+  shallowReactive,
 } from 'vue';
 import { useRoute } from 'vue-router';
-import OverlayPanel from 'primevue/overlaypanel';
 
 import type { ClientState } from 'boardgame.io/dist/types/src/client/client';
 import type { Ctx, FilteredMetadata } from 'boardgame.io/dist/types/src/types';
 import { isEqual } from 'lodash';
+import Button from 'primevue/button';
+import { useToast } from '@/composables/useToast';
+import { useErrorHandler } from '@/composables/useErrorHandler';
+import axios from 'axios';
 
 import BoardComponent from '@/components/BoardComponent.vue';
-import BoardDisplay from '@/components/BoardDisplay.vue';
+import { BoardDisplay } from '@/components/BoardDisplay';
 import { useWindowFocus } from '@/composables/useWindowFocus';
 import { SimulChessClient } from '@/game/App';
 import type { GObject } from '@/game/Game';
@@ -27,8 +30,21 @@ import {
   startTitleNotification,
   stopTitleNotification,
 } from '@/utils/titleAnimation';
+import MatchInvite from '@/components/MatchInvite.vue';
+import LoginComponent from '@/components/LoginComponent.vue';
+import { useMatch } from '@/composables/useMatch';
+import { LobbyClient } from 'boardgame.io/client';
+import { getServerURL } from '@/utils';
+import ButtonStepper from '@/components/ButtonStepper.vue';
+import { useMatchLink } from '@/composables/useMatchLink';
 
 const windowHasFocus = useWindowFocus();
+const toast = useToast();
+const { handleError } = useErrorHandler();
+
+const server = getServerURL();
+const lobbyClient = new LobbyClient({ server });
+const { joinStatus, requestJoinMatch } = useMatch(lobbyClient);
 
 watch(windowHasFocus, (newFocus) => {
   if (newFocus) {
@@ -50,7 +66,7 @@ interface ReactiveGameState {
 }
 
 const route = useRoute();
-let playerIDDefault = -1;
+let playerIDDefault: number | null = null;
 
 if (route.query.player) {
   if ([1, 2].includes(Number(route.query.player))) {
@@ -59,12 +75,12 @@ if (route.query.player) {
     store.setIsDebug();
   }
 }
-const playerID = ref(playerIDDefault);
+const playerID = ref<number | null>(playerIDDefault);
 const isPlayerSelected = computed(() => {
   return playerID.value === 0 || playerID.value === 1;
 });
 const keyListener = (event: KeyboardEvent) => {
-  // @ts-expect-error tagname DNE
+  // @ts-expect-error tagName DNE
   if (event?.target?.tagName?.toLowerCase() === 'input') {
     return;
   }
@@ -89,21 +105,28 @@ if (typeof route.params.matchID === 'string') {
 } else {
   matchID = route.params.matchID[0];
 }
+const { copyLink } = useMatchLink(matchID);
 
 /**
  * TODO: allow side-by-side clients in testing matches or while spectating (playerID=null)
  */
 const matchClientOne = new SimulChessClient(
-  String(playerID.value),
+  playerID.value === null ? playerID.value : String(playerID.value),
   matchID,
   store.zugToken,
 );
 
 watch(playerID, () => {
-  matchClientOne.client.updatePlayerID(String(playerID.value));
+  matchClientOne.client.updatePlayerID(
+    playerID.value === null ? playerID.value : String(playerID.value),
+  );
 });
 
-const gameState: ReactiveGameState = reactive({
+onUnmounted(() => {
+  matchClientOne.client.stop();
+});
+
+const gameState: ReactiveGameState = shallowReactive({
   G: {} as GObject,
   ctx: {} as Ctx,
 });
@@ -121,7 +144,24 @@ const updateGameState = (state: ClientState<{ G: GObject; ctx: Ctx }>) => {
 };
 matchClientOne.client.subscribe(updateGameState);
 
-const historyTurn = ref(1);
+watch(gameStateLoaded, () => {
+  if (!gameStateLoaded.value) {
+    return;
+  }
+  if (!playerIDDefault) {
+    // determine player # from user, set automatically
+    const joinedPlayerID = matchClientOne.client.matchData?.findIndex(
+      (player) => player.name && player.name === store.zugUsername,
+    );
+    if (joinedPlayerID !== undefined && joinedPlayerID >= 0) {
+      playerID.value = joinedPlayerID;
+    }
+  }
+});
+
+const historyTurn = ref<number>(
+  route.query.turn ? Number(route.query.turn) : 1,
+);
 function incrementHistoryTurn() {
   historyTurn.value++;
 }
@@ -142,16 +182,84 @@ const gameLastTurn = computed(() => {
   }
   return null;
 });
-const historyTurnStep = ref(1);
+const historyTurnStep = ref(route.query.step ? Number(route.query.step) : 1);
 function incrementHistoryStep() {
-  historyTurnStep.value++;
+  if (gameLastTurn.value && historyTurnStep.value < gameLastTurn.value.length)
+    historyTurnStep.value++;
+  else if (
+    gameLastTurn.value &&
+    historyTurnStep.value >= gameLastTurn.value.length &&
+    historyTurn.value < gameState.G.history.length
+  ) {
+    historyTurn.value++;
+    historyTurnStep.value = 1;
+  }
 }
 function decrementHistoryStep() {
-  historyTurnStep.value--;
+  if (historyTurnStep.value > 1) historyTurnStep.value--;
+  else if (historyTurnStep.value === 1 && historyTurn.value > 1) {
+    historyTurn.value--;
+    historyTurnStep.value = gameState.G.history[historyTurn.value - 1].length;
+  }
 }
 function setHistoryStep(value: number) {
   historyTurnStep.value = value;
 }
+
+const canJoin = computed(() => {
+  const openPlayerSlot = matchClientOne.client.matchData?.some(
+    (player) => player.name === undefined,
+  );
+  return playerID.value === null && !gameLastTurn.value && openPlayerSlot;
+});
+const handleJoin = () => {
+  requestJoinMatch(matchID)
+    .then((resp) => {
+      if (resp) {
+        playerID.value = Number(resp.playerID);
+        location.reload();
+      } else {
+        toast.add({
+          severity: 'error',
+          summary: 'Error',
+          detail: 'There was a problem joining the match',
+        });
+      }
+    })
+    .catch((e) => {
+      console.error(e);
+      toast.add({
+        severity: 'error',
+        summary: 'Error',
+        detail: 'There was a problem joining the match',
+      });
+    });
+};
+
+const serverURL = getServerURL();
+const handlePoke = async () => {
+  try {
+    const resp = await axios.post(`${serverURL}/games/zug/${matchID}/poke`, {
+      playerID: playerID.value === 0 ? 1 : 0,
+    });
+    if (resp.status === 200) {
+      const { data } = resp;
+      if (data.error) {
+        toast.add({
+          severity: 'error',
+          summary: data.error,
+          detail: 'Try again tomorrow?',
+        });
+      } else {
+        toast.add({
+          summary: 'Poked!',
+        });
+      }
+    }
+  } catch (e) {
+    handleError(e, 'Could not find a way to poke your opponent.');
+  }
+};
 
 // new turn watcher
 watch(
@@ -165,6 +273,9 @@ watch(
 );
 
 const gamePhase = computed(() => {
+  if (playerID.value === null) {
+    return 'spectate';
+  }
   if (gameState.ctx.activePlayers) {
     return gameState.ctx.activePlayers[playerID.value] || '?';
   } else {
@@ -174,6 +285,9 @@ const gamePhase = computed(() => {
 
 const winner = computed(() => {
   if (gameState.ctx.gameover && matchData.value) {
+    if (gameState.ctx.gameover.winner === -1) {
+      return 'tie';
+    }
     return matchData.value[gameState.ctx.gameover?.winner].name;
   }
   return false;
@@ -187,13 +301,8 @@ const opponentWaiting = computed(() => {
   return gameState.ctx.activePlayers[opponentPlayerID] === 'resolution';
 });
 
-const op = ref();
-const toggleMatchInfo = (event: Event) => {
-  op.value.toggle(event);
-};
-
 // "your turn" sound
-getNotificationSound(store.zugUsername === 'Ben').then((notificationSound) => {
+getNotificationSound(store.zugUsername).then((notificationSound) => {
   const audio = new Audio(notificationSound);
   audio.volume = 0.75;
   watch(
@@ -211,94 +320,133 @@ getNotificationSound(store.zugUsername === 'Ben').then((notificationSound) => {
 </script>
 
 <template>
-  <OverlayPanel ref="op" appendTo="body">
-    <div>
-      <!--prettier-ignore-->
-      <pre>{{JSON.stringify(gameState.G.config, null, 2).trim()}}</pre>
-    </div>
-  </OverlayPanel>
   <main>
-    <p v-if="!isPlayerSelected">Choose a player</p>
+    <div v-if="canJoin">
+      <p>To join, first sign in</p>
+      <LoginComponent />
+      <p>Then click join:</p>
+      <Button label="Join" @click="handleJoin"></Button>
+      <p>{{ joinStatus }}</p>
+    </div>
     <div class="player-info">
       <span />
-      <input
-        type="radio"
-        v-if="store.isDebug || !isPlayerSelected"
-        v-model="playerID"
-        :value="0"
-      />
-      <span :class="{ checked: playerID === 0 }">
+      <span
+        :class="{
+          checked: playerID === 0,
+          status: true,
+          online: matchData && matchData[0]?.isConnected,
+        }"
+      >
         {{ matchData ? matchData[0].name : 'player 1' }}</span
       >
-      ({{ gameState.G.score ? gameState.G.score[0] : '?' }}) - ({{
-        gameState.G.score ? gameState.G.score[1] : '?'
-      }})
-      <span :class="{ checked: playerID === 1 }"
+      <span class="score">
+        ({{ gameState.G.score ? gameState.G.score[0] : '?' }}) - ({{
+          gameState.G.score ? gameState.G.score[1] : '?'
+        }})
+      </span>
+      <span
+        :class="{
+          checked: playerID === 1,
+          status: true,
+          online: matchData && matchData[1]?.isConnected,
+        }"
         >{{ matchData ? matchData[1].name : 'player 2' }}
       </span>
-      <input
-        type="radio"
-        v-if="store.isDebug || !isPlayerSelected"
-        v-model="playerID"
-        :value="1"
-      />
-      <button class="match-info-button" @click="toggleMatchInfo">?</button>
+      <MatchInvite :matchID="matchID" />
     </div>
-
-    <p v-if="!winner">
-      phase:
-      {{ gamePhase }}
-    </p>
-    <p class="game-over" v-else>{{ winner }} wins!</p>
-
-    <p v-if="gamePhase === 'resolution'" class="info-message">
-      Waiting for opponent to finish turn...
-    </p>
-    <p v-if="opponentWaiting" class="info-message">
-      Your opponent is waiting for you to finish...
-    </p>
+    <div class="game-phase-text">
+      <p v-if="gamePhase === 'spectate'">You are spectating this game</p>
+      <span v-else-if="gamePhase === 'resolution'" class="info-message">
+        <span>Waiting for opponent to finish turn...</span>
+        <button @click="handlePoke">poke?</button>
+      </span>
+      <p v-else-if="opponentWaiting" class="info-message">
+        Your opponent is waiting for you to finish...
+      </p>
+      <p class="game-over" v-else-if="winner === 'tie'">It's a tie!</p>
+      <p class="game-over" v-else-if="winner">{{ winner }} wins!</p>
+    </div>
     <BoardComponent
-      v-if="gameStateLoaded"
+      v-if="gameStateLoaded && playerID !== null"
       :client="matchClientOne.client"
       :state="gameState"
       :playerID="playerID"
       :showOrders="isPlayerSelected"
     />
     <div v-if="gameLastTurn">
-      <button @click="historyTurn = 1">
-        {{ '|<' }}
-      </button>
-      <button :disabled="historyTurn <= 1" @click="decrementHistoryTurn()">
-        -
-      </button>
-      <span id="history-order-number-display">{{ historyTurn }}</span>
-      <button
-        :disabled="historyTurn >= gameState.G.history.length"
-        @click="incrementHistoryTurn()"
-      >
-        +
-      </button>
-      <button @click="setHistoryLastTurn()">>|</button>
-      <div>TURN {{ historyTurn }}</div>
-      <button @click="setHistoryStep(1)">
-        {{ '|<' }}
-      </button>
-      <button :disabled="historyTurnStep <= 1" @click="decrementHistoryStep()">
-        -
-      </button>
-      <span id="history-order-number-display">{{ historyTurnStep }}</span>
-      <button
-        :disabled="historyTurnStep >= gameLastTurn.length"
-        @click="incrementHistoryStep()"
-      >
-        +
-      </button>
-      <button @click="setHistoryStep(gameLastTurn.length)">>|</button>
-
+      <div>
+        <Button
+          icon="pi pi-link"
+          outlined
+          @click="
+            copyLink({
+              query: {
+                turn: String(historyTurn),
+                step: String(historyTurnStep),
+              },
+            })
+          "
+          size="small"
+          label="HISTORY"
+          iconPos="right"
+        />
+      </div>
+      <div class="history-stepper-row">
+        <span class="p-buttonset nowrap">
+          <ButtonStepper icon="pi pi-step-backward" @click="historyTurn = 1" />
+          <ButtonStepper
+            icon="pi pi-caret-left"
+            @click="decrementHistoryTurn()"
+            :disabled="historyTurn <= 1"
+          />
+        </span>
+        <span class="history-order-number-display">{{ historyTurn }}</span>
+        <span class="p-buttonset nowrap">
+          <ButtonStepper
+            icon="pi pi-caret-right"
+            @click="incrementHistoryTurn()"
+            :disabled="historyTurn >= gameState.G.history.length"
+          />
+          <ButtonStepper
+            icon="pi pi-step-forward"
+            @click="setHistoryLastTurn()"
+          />
+        </span>
+      </div>
+      <div>TURN {{ historyTurn }} STEP {{ historyTurnStep }}</div>
+      <div class="history-stepper-row">
+        <span class="p-buttonset nowrap">
+          <ButtonStepper
+            icon="pi pi-step-backward"
+            @click="setHistoryStep(1)"
+          />
+          <ButtonStepper
+            icon="pi pi-caret-left"
+            @click="decrementHistoryStep()"
+          />
+        </span>
+        <span class="history-order-number-display">{{ historyTurnStep }}</span>
+        <span class="p-buttonset nowrap">
+          <ButtonStepper
+            icon="pi pi-caret-right"
+            @click="incrementHistoryStep()"
+          />
+          <ButtonStepper
+            icon="pi pi-step-forward"
+            @click="setHistoryStep(gameLastTurn.length)"
+          />
+        </span>
+      </div>
+      <hr class="history-spacer" />
       <BoardDisplay
         :state="{ G: gameLastTurn[historyTurnStep - 1] }"
         :orderNumber="historyTurnStep"
       />
+    </div>
+    <div v-if="gameState.G.config" class="match-settings">
+      <p>match settings</p>
+      <!--prettier-ignore-->
+      <pre>{{JSON.stringify(gameState.G.config, null, 2).trim()}}</pre>
     </div>
   </main>
 </template>
@@ -310,44 +458,75 @@ main {
 
 .player-info {
   display: grid;
-  grid-template-columns: 1fr 100px auto 100px 1fr;
+  grid-template-columns: 1fr minmax(100px, 150px) auto minmax(100px, 150px) 1fr;
   justify-content: center;
+  align-items: center;
   gap: 0.2rem;
 }
 
-.match-info-button {
-  --circle-size: 1.8rem;
-  background: transparent;
-  font-size: 1.2rem;
-  font-weight: bold;
-  color: var(--color-theme-green);
-  border: 2px solid var(--color-theme-green);
-  border-radius: var(--circle-size);
-  width: var(--circle-size);
-  height: var(--circle-size);
+.status {
+  text-overflow: ellipsis;
+  overflow: hidden;
+  padding-left: 8px;
 }
 
-.match-info-button:hover {
-  background-color: var(--color-border-hover);
+.status::before {
+  content: '\25CF';
+  color: grey;
+  right: 4px;
+  position: relative;
+}
+
+.online::before {
+  color: var(--color-theme-primary);
+}
+
+.score {
+  white-space: nowrap;
+}
+
+.history-spacer {
+  border: none;
+  height: 3rem;
 }
 
 .info-message {
   color: coral;
 }
 
-#history-order-number-display {
+.history-stepper-row {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.history-order-number-display {
   display: inline-block;
   width: 2rem;
+  font-size: 1.2rem;
 }
 
 .checked {
-  color: var(--color-theme-green);
+  color: var(--color-theme-primary);
   font-weight: bold;
+}
+
+.game-phase-text {
+  min-height: 1.6rem;
+  padding: 0.2rem;
 }
 
 .game-over {
   font-size: 2rem;
   font-weight: bold;
-  color: var(--color-theme-green);
+  color: var(--color-theme-primary);
+}
+
+.match-settings {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  text-align: left;
+  align-items: center;
 }
 </style>

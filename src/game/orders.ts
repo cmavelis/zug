@@ -1,4 +1,4 @@
-import { cloneDeep, countBy, forOwn, isEqual, remove } from 'lodash';
+import { cloneDeep, countBy, forOwn, isEqual, remove, zip } from 'lodash';
 import type { Coordinates } from '@/game/common';
 import {
   addDisplacement,
@@ -7,7 +7,12 @@ import {
   getPiece,
   reportError,
 } from '@/game/common';
-import type { GameState, GObject } from '@/game/Game';
+import type {
+  GameEvent,
+  GameState,
+  GameStateHistory,
+  GObject,
+} from '@/game/Game';
 import {
   isValidMoveDiagonal,
   isValidMoveStraight,
@@ -15,14 +20,17 @@ import {
 } from '@/game/zugzwang/validators';
 import { logProxy } from '@/utils';
 import type { Piece, PieceToCreate } from '@/game/pieces';
-import { createPiece } from '@/game/pieces';
-import { PRIORITIES_LIST, MOVES_CAN_PUSH } from '@/game/zugzwang/config';
+import { createPiece, generatePiecePriority, getPieces } from '@/game/pieces';
+import {
+  MOVES_CAN_PUSH,
+  type PushRestrictionsConfig,
+} from '@/game/zugzwang/config';
 
 // orders are stored with displacement from piece to target
 export interface OrderBase {
   sourcePieceId: number;
   toTarget: Coordinates;
-  owner: number;
+  owner: 0 | 1;
   priority: number;
 }
 
@@ -117,43 +125,30 @@ function movePieces(G: GameState, moveArray: Move[]) {
 export function orderResolver({ G }: { G: GObject }) {
   const { cells, orders, pieces, score } = G;
 
-  const turnHistory = [];
-  let sortedOrders1: (Order | null)[] = orders[0];
-  let sortedOrders2: (Order | null)[] = orders[1];
+  let turnHistory: GameStateHistory[] = [];
+  let orderPairs: (Order | null)[][];
+
+  // add history step with all orders
+  turnHistory.push(
+    cloneDeep({
+      cells,
+      orders,
+      pieces,
+      score,
+    }),
+  );
 
   // "piece" variant sorts orders by piece ID instead of as submitted
-
-  // create list with right # slots
-  // iterate through orders, slotting in the right spot (error if occupied)
-  // tack on "other" orders at the end (place, etc)
   if (G.config.priority === 'piece') {
-    sortedOrders1 = PRIORITIES_LIST.map(() => null);
-    sortedOrders2 = PRIORITIES_LIST.map(() => null);
-
-    const arrangeOrders = (targetArray: (Order | null)[]) => (order: Order) => {
-      const piece = getPiece(G, order.sourcePieceId);
-      // "place" e.g.
-      if (!piece) {
-        targetArray.push(order);
-        return;
-      }
-      const { priority } = piece;
-      if (targetArray[priority - 1]) {
-        console.error(
-          `Order already exists for player with piece priority ${priority}`,
-        );
-        return;
-      }
-      targetArray[priority - 1] = order;
-    };
-
-    orders[0].forEach(arrangeOrders(sortedOrders1));
-    orders[1].forEach(arrangeOrders(sortedOrders2));
+    orderPairs = arrangeOrderPairs(G, orders[0], orders[1]);
+  } else {
+    // @ts-expect-error order potentially undefined
+    orderPairs = zip(orders[0], orders[1]);
   }
 
-  const numberOrders = Math.max(sortedOrders1.length, sortedOrders2.length);
+  const numberOrders = orderPairs.length;
   for (let i = 0; i < numberOrders; i++) {
-    const ordersToResolve = [sortedOrders1[i], sortedOrders2[i]];
+    const ordersToResolve = orderPairs[i];
 
     // for history
     const ordersUsed = {
@@ -292,6 +287,17 @@ export function orderResolver({ G }: { G: GObject }) {
         pieceIDsToRemove.push(...findOutOfBoundsPieces(G));
       }
       pieceIDsToRemove.push(...findOverlappingPieces(G));
+      if (pieceIDsToRemove.length > 0) {
+        const eventsToAdd: GameEvent[] = pieceIDsToRemove.flatMap((id) =>
+          typeof id === 'number'
+            ? {
+                type: 'destroy',
+                sourcePieceId: id,
+              }
+            : [],
+        );
+        turnHistory = addEventsToHistory(G, turnHistory, eventsToAdd);
+      }
       removePieces(G, pieceIDsToRemove);
     } else {
       // sequential move resolution, already sorted by priority
@@ -318,6 +324,17 @@ export function orderResolver({ G }: { G: GObject }) {
           pieceIDsToRemove.push(...findOutOfBoundsPieces(G));
         }
         pieceIDsToRemove.push(...findOverlappingPieces(G));
+        if (pieceIDsToRemove.length > 0) {
+          const eventsToAdd: GameEvent[] = pieceIDsToRemove.flatMap((id) =>
+            typeof id === 'number'
+              ? {
+                  type: 'destroy',
+                  sourcePieceId: id,
+                }
+              : [],
+          );
+          turnHistory = addEventsToHistory(G, turnHistory, eventsToAdd);
+        }
         removePieces(G, pieceIDsToRemove);
       });
     }
@@ -379,8 +396,27 @@ export function orderResolver({ G }: { G: GObject }) {
       console.log('piece ', order.sourcePieceId, ' no longer exists');
       return [];
     }
+    // check restriction rules
+    if (G.config.piecePushRestrictions) {
+      const newPosition = addDisplacement(
+        pushingPiece.position,
+        order.toTarget,
+      );
+      const targetPiece = pieces.find((p) => isEqual(p.position, newPosition));
+      if (!targetPiece) {
+        return [];
+      }
 
-    // todo validate
+      if (
+        !canPushWithConfig(
+          G.config.piecePushRestrictions,
+          pushingPiece,
+          targetPiece,
+        )
+      ) {
+        return [];
+      }
+    }
 
     // apply effects
     const pushesArray = getPushes(pushingPiece, order.toTarget);
@@ -401,7 +437,7 @@ export function orderResolver({ G }: { G: GObject }) {
         return;
       }
 
-      if (!(actingPiece && isValidOrder(actingPiece, order))) {
+      if (!(actingPiece && isValidOrder(actingPiece.owner, order))) {
         console.log(order && JSON.parse(JSON.stringify(order)));
         console.log(actingPiece && JSON.parse(JSON.stringify(actingPiece)));
         reportError('Invalid action received');
@@ -480,8 +516,6 @@ export function orderResolver({ G }: { G: GObject }) {
     return false;
   }
 
-  G.history.push(turnHistory);
-
   // clear orders out for next turn
   orders[0] = [];
   orders[1] = [];
@@ -496,24 +530,20 @@ export function orderResolver({ G }: { G: GObject }) {
 
   // remove OB pieces
   const outOfBoundsPieces = [];
-  if (G.config.outOfBounds === 'turn-end') {
+  if (G.config.outOfBounds === 'turnEnd') {
     outOfBoundsPieces.push(...findOutOfBoundsPieces(G));
   }
-  removePieces(G, outOfBoundsPieces);
-
-  // add OB events to history
-  turnHistory.push(
-    cloneDeep({
-      cells,
-      orders: [],
-      pieces,
-      score,
-      events: outOfBoundsPieces.map((id) => ({
+  if (outOfBoundsPieces.length > 0) {
+    turnHistory = addEventsToHistory(
+      G,
+      turnHistory,
+      outOfBoundsPieces.map((id) => ({
         type: 'destroy',
         sourcePieceId: id,
       })),
-    }),
-  );
+    );
+    removePieces(G, outOfBoundsPieces);
+  }
 
   // score & remove pieces in the goal
   const toRemove: number[] = [];
@@ -527,20 +557,54 @@ export function orderResolver({ G }: { G: GObject }) {
     }
   });
 
-  // add score events to history
+  if (toRemove.length > 0) {
+    // add score events to history
+    turnHistory = addEventsToHistory(
+      G,
+      turnHistory,
+      toRemove.map((id) => ({
+        type: 'score',
+        sourcePieceId: id,
+      })),
+    );
+    removePieces(G, toRemove);
+  }
+
+  // add turn end state to history
   turnHistory.push(
     cloneDeep({
       cells,
       orders: [],
       pieces,
       score,
-      events: toRemove.map((id) => ({
-        type: 'score',
-        sourcePieceId: id,
-      })),
     }),
   );
-  removePieces(G, toRemove);
+  G.history.push(turnHistory);
+
+  // assigned priority placement
+  if (G.config.placePriorityAssignment?.beforeTurn) {
+    G.piecesToPlace = {};
+    for (const p of [0, 1]) {
+      const numberCurrentPieces = getPieces({
+        G,
+        playerID: p as 0 | 1,
+      }).length;
+      const maxPiecesPerPlayer = 4;
+      G.piecesToPlace[p] = Array(maxPiecesPerPlayer - numberCurrentPieces)
+        .fill(1)
+        .reduce((accumulator: number[]) => {
+          const nextPriority = generatePiecePriority({
+            G,
+            pieceToCreate: { owner: p as 0 | 1 },
+            excludePriorities: accumulator,
+          });
+          return accumulator.concat([nextPriority]);
+        }, []);
+      console.log(
+        `Player ${p}, placing the following pieces: ${G.piecesToPlace[p]}`,
+      );
+    }
+  }
 
   return G;
 }
@@ -607,3 +671,186 @@ function isPositionOnBoard(G: GameState, position: Coordinates): boolean {
   }
   return !(position.y < 0 || position.y >= G.config.board.y);
 }
+
+export function createOrderArrayCompareFn(
+  G: GameState,
+): (orderA: Order | null, orderB: Order | null) => number {
+  return (orderA, orderB) => {
+    if (orderA === null || orderB === null) {
+      return 0;
+    }
+    const pieceA = getPiece(G, orderA.sourcePieceId);
+    const pieceB = getPiece(G, orderB.sourcePieceId);
+
+    let priorityPieceA;
+    let priorityPieceB;
+
+    // 'place' action has no piece associated
+    if (!pieceA) {
+      if ('newPiecePriority' in orderA && orderA.newPiecePriority) {
+        priorityPieceA = orderA.newPiecePriority;
+      } else {
+        return 1;
+      }
+    } else {
+      priorityPieceA = pieceA.priority;
+    }
+    if (!pieceB) {
+      if ('newPiecePriority' in orderB && orderB.newPiecePriority) {
+        priorityPieceB = orderB.newPiecePriority;
+      } else {
+        return -1;
+      }
+    } else {
+      priorityPieceB = pieceB.priority;
+    }
+
+    // compare piece priorities
+    if (priorityPieceA < priorityPieceB) {
+      return -1;
+    }
+    if (priorityPieceA > priorityPieceB) {
+      return 1;
+    }
+
+    // if equal, then compare:
+    if (orderA.priority < orderB.priority) {
+      return -1;
+    }
+    if (orderA.priority > orderB.priority) {
+      return 1;
+    }
+
+    return 0;
+  };
+}
+
+type OrderArray = (Order | null)[];
+type OrderPairArray = OrderArray[];
+
+export function arrangeOrderPairs(
+  G: GameState,
+  orderArray0: OrderArray,
+  orderArray1: OrderArray,
+): OrderPairArray {
+  // first, sort the arrays by priority for easy iteration
+  const orderArray0Sorted = orderArray0
+    .slice()
+    .sort(createOrderArrayCompareFn(G));
+  const orderArray1Sorted = orderArray1
+    .slice()
+    .sort(createOrderArrayCompareFn(G));
+
+  const orderPairs: OrderPairArray = [];
+
+  let iterating = true;
+  let array0index = 0;
+  let array1index = 0;
+
+  // pair up exact priority matches for resolver to run through
+  while (iterating) {
+    const order0 = orderArray0Sorted[array0index];
+    let piece0;
+    // priority comparison is piece priority, or newPiecePriority in the case of place actions
+    let priority0 = 99;
+    let priority1 = 99;
+
+    if (order0) {
+      piece0 = getPiece(G, order0.sourcePieceId);
+      if ('newPiecePriority' in order0 && order0.newPiecePriority) {
+        priority0 = order0.newPiecePriority;
+      }
+    }
+    if (piece0 && piece0.priority > 0) {
+      priority0 = piece0.priority;
+    }
+
+    const order1 = orderArray1Sorted[array1index];
+    let piece1;
+    if (order1) {
+      piece1 = getPiece(G, order1.sourcePieceId);
+      if ('newPiecePriority' in order1 && order1.newPiecePriority) {
+        priority1 = order1.newPiecePriority;
+      }
+    }
+    if (piece1 && piece1.priority > 0) {
+      priority1 = piece1.priority;
+    }
+
+    let addOrder0 = false;
+    let addOrder1 = false;
+    const nextPair: OrderArray = [null, null];
+
+    // if no order for one list, can skip piece comparison
+    if (!(order0 && order1)) {
+      addOrder0 = !!order0;
+      addOrder1 = !!order1;
+    } else if (priority0 !== priority1) {
+      // pieces, unequal priority
+      if (priority0 < priority1) {
+        addOrder0 = true;
+      } else if (priority0 > priority1) {
+        addOrder1 = true;
+      }
+    } else {
+      // piece priority tied, or place action taken; compare order intrinsic priority
+      if (order0.priority < order1.priority) {
+        addOrder0 = true;
+      } else if (order0.priority > order1.priority) {
+        addOrder1 = true;
+      } else if (order0.priority === order1.priority) {
+        addOrder0 = true;
+        addOrder1 = true;
+      }
+    }
+
+    if (addOrder0) {
+      nextPair[0] = order0;
+      array0index++;
+    }
+    if (addOrder1) {
+      nextPair[1] = order1;
+      array1index++;
+    }
+    if (!(addOrder0 || addOrder1)) {
+      iterating = false;
+    } else {
+      orderPairs.push(nextPair);
+    }
+  }
+
+  return orderPairs;
+}
+
+const addEventsToHistory = (
+  G: GameState,
+  historyArray: GameStateHistory[],
+  events: GameEvent[],
+) => {
+  if (events.length === 0) {
+    console.error('Events array length 0');
+    console.trace();
+    return historyArray;
+  }
+  const newHistoryArray = historyArray.slice();
+  newHistoryArray.push(
+    cloneDeep({
+      cells: G.cells,
+      orders: [] as Orders[],
+      pieces: G.pieces,
+      score: G.score,
+      events,
+    }),
+  );
+  return newHistoryArray;
+};
+
+export const canPushWithConfig = (
+  pushConfig: PushRestrictionsConfig,
+  pushingPiece: Piece,
+  targetPiece: Piece,
+) => {
+  const { multiply, add } = pushConfig;
+  const adjustedPriority = pushingPiece.priority * (multiply || 1) + (add || 0);
+  return adjustedPriority >= targetPiece.priority;
+};

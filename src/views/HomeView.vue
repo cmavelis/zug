@@ -14,4 +14,7 @@ import LoginComponent from '@/components/LoginComponent.vue';
 main {
   text-align: center;
 }
+.p-inputswitch-slider {
+  text-align: initial;
+}
 </style>

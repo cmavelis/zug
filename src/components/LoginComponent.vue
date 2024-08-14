@@ -8,11 +8,13 @@ import {
   type ZugUser,
 } from '@/utils/auth';
 import { store } from '@/store';
+import { getServerURL } from '@/utils';
 
 const usernameInput = ref('');
+const serverURL = getServerURL();
 
 const login = async () => {
-  const resp = await axios.post('/api/login', {
+  const resp = await axios.post(`${serverURL}/api/login`, {
     username: usernameInput.value,
   });
   if (resp.status === 200) {
@@ -26,7 +28,7 @@ const login = async () => {
 
 // TODO: temp button
 const discordLogin = async () => {
-  const resp = await axios.post('/api/login/discord', {
+  const resp = await axios.post(`${serverURL}/api/login/discord`, {
     username: usernameInput.value,
   });
   if (resp.status === 200) {

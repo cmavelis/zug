@@ -22,7 +22,19 @@
 }
 
 :root {
-  --color-background: var(--vt-c-black);
+  --vermilion: #ec4938ff;
+  --sandy-brown: #fea153ff;
+  --coral: #f28d67ff;
+  --tekhelet: #542073ff;
+  --dark-purple: #42223bff;
+  --licorice: #1b0e18;
+  --french-blue: #1C77C3;
+  --cerulean: #3A7CA5;
+}
+
+:root {
+  --color-background: var(--licorice);
+  --color-background-two: var(--dark-purple);
   --color-background-soft: var(--vt-c-black-soft);
   --color-background-mute: var(--vt-c-black-mute);
 
@@ -31,8 +43,22 @@
 
   --color-heading: var(--vt-c-text-dark-1);
   --color-text: var(--vt-c-text-dark-2);
+  --color-theme-primary: var(--coral);
 
-  --color-theme-green: hsla(160, 100%, 37%, 1)
+  --color-player-one: var(--sandy-brown);
+  --color-player-two: var(--vermilion);
+}
+
+.player-one-piece {
+  background-color: var(--color-player-one);
+  color: black;
+  font-weight: bold;
+}
+
+.player-two-piece {
+  background-color: var(--color-player-two);
+  color: black;
+  font-weight: bold;
 }
 
 html {
@@ -42,11 +68,30 @@ html {
 body {
   min-height: 100vh;
   color: var(--color-text);
-  background: var(--color-background);
-  transition: color 0.5s, background-color 0.5s;
+  background: var(--color-background-two);
+  background: linear-gradient(
+      0deg,
+      var(--color-background-two),
+      var(--color-background)
+    )
+    fixed;
+  transition:
+    color 0.5s,
+    background-color 0.5s;
   line-height: 1.6;
-  font-family: Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu,
-    Cantarell, 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+  font-family:
+    Inter,
+    -apple-system,
+    BlinkMacSystemFont,
+    'Segoe UI',
+    Roboto,
+    Oxygen,
+    Ubuntu,
+    Cantarell,
+    'Fira Sans',
+    'Droid Sans',
+    'Helvetica Neue',
+    sans-serif;
   font-size: 14px;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
@@ -54,5 +99,5 @@ body {
 }
 
 p {
-  margin:0;
+  margin: 0;
 }

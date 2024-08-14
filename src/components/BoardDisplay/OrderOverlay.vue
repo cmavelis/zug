@@ -5,14 +5,18 @@ import { isEqual } from 'lodash';
 import type { Coordinates } from '@/game/common';
 import type { Piece } from '@/game/pieces';
 import type { GameEvent } from '@/game/Game';
+import { BOARD_PIXEL_SIZE } from '@/constants';
 
 interface Props {
   pieces: Piece[];
   order: Order | GameEvent;
+  svgOffset?: number;
 }
 
-const props = defineProps<Props>();
-const sideLength = 50;
+const props = withDefaults(defineProps<Props>(), {
+  svgOffset: 0,
+});
+const sideLength = BOARD_PIXEL_SIZE;
 
 const coordsToPixels = (coordinates: Coordinates, squareLength: number) => {
   return {
@@ -31,8 +35,9 @@ const points = computed(() => {
     let x2 = x1;
     let y2 = y1;
     if ('toTarget' in order) {
-      x2 = x1 + order.toTarget.x * sideLength;
-      y2 = y1 + order.toTarget.y * sideLength;
+      const almostSideLength = 0.8 * sideLength;
+      x2 = x1 + order.toTarget.x * almostSideLength;
+      y2 = y1 + order.toTarget.y * almostSideLength;
     }
     return {
       x1,
@@ -50,7 +55,7 @@ const points = computed(() => {
 });
 
 const lineColor = computed(() => {
-  if (props.order.type === 'attack') {
+  if (props.order.type === 'attack' || props.order.type === 'destroy') {
     return 'red';
   }
   if (
@@ -73,16 +78,16 @@ const lineColor = computed(() => {
   <g class="order">
     <line
       v-if="points !== null"
-      :x1="points.x1"
-      :y1="points.y1"
-      :x2="points.x2"
-      :y2="points.y2"
+      :x1="points.x1 + svgOffset"
+      :y1="points.y1 + svgOffset"
+      :x2="points.x2 + svgOffset"
+      :y2="points.y2 + svgOffset"
       :stroke="lineColor"
     ></line>
     <circle
       v-if="points !== null"
-      :cx="points.x1"
-      :cy="points.y1"
+      :cx="points.x1 + svgOffset"
+      :cy="points.y1 + svgOffset"
       r="10"
       :fill="lineColor"
     ></circle>

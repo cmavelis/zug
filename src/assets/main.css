@@ -1,4 +1,11 @@
 @import './base.css';
+@import './mobile-tooltip.css';
+
+:root {
+  --link-hover-color: hsla(283, 100%, 75%, 0.2);
+  /* also set programmatically */
+  --square-size: 56px;
+}
 
 #app {
   max-width: 1280px;
@@ -9,20 +16,22 @@
 
 @media (max-width: 500px) {
   #app {
-    padding: 1rem;
+    padding: 0;
   }
 }
 
-a,
-.green {
+a {
   text-decoration: none;
-  color: var(--color-theme-green);
+}
+
+p > a {
+  color: var(--color-theme-primary);
   transition: 0.4s;
 }
 
 @media (hover: hover) {
-  a:hover {
-    background-color: hsla(160, 100%, 37%, 0.2);
+  p > a:hover {
+    background-color: var(--link-hover-color);
   }
 }
 
@@ -31,30 +40,40 @@ button {
   touch-action: manipulation;
 }
 
-
 @keyframes halo {
   from {
-    box-shadow:
-            0 0 var(--still-blur) aliceblue,
-            0 0 var(--blur) var(--color);
-  }
-  50% {
-    box-shadow:
-            0 0 var(--still-blur) aliceblue,
-            0 0 10px var(--color);
+    transform: scale(0.8);
+    opacity: 0.8;
   }
   to {
-    box-shadow:
-            0 0 var(--still-blur) aliceblue,
-            0 0 var(--blur) var(--color);
+    transform: scale(1.1);
+    opacity: 0;
   }
 }
 
 .halo-shadow {
-  --blur: 1px;
-  --still-blur: 5px;
-  --color: #5b8598;
-  animation-duration: 3s;
+  --color: #b8ddff;
+}
+
+.halo-shadow::before {
+  content: '';
+  border-radius: 50%;
+  animation-duration: 2.5s;
   animation-name: halo;
   animation-iteration-count: infinite;
+  position: absolute;
+  background-color: var(--color);
+  height: 100%;
+  width: 100%;
+  z-index: -1;
+}
+.halo-shadow::after {
+  content: '';
+  border-radius: 50%;
+  position: absolute;
+  background-color: var(--color);
+  height: 90%;
+  width: 90%;
+  z-index: -1;
+  opacity: 0.5;
 }
