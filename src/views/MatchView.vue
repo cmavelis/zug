@@ -199,7 +199,7 @@ function incrementHistoryStep() {
   else if (
     gameLastTurn.value &&
     historyTurnStep.value >= gameLastTurn.value.length &&
-    historyTurn.value < gameState.G.history.length
+    historyTurn.value <= gameState.G.history.length
   ) {
     historyTurn.value++;
     historyTurnStep.value = 1;
