@@ -173,11 +173,14 @@ function decrementHistoryTurn() {
   historyTurn.value--;
   setHistoryStep(1);
 }
+function setHistoryTurn(turn: number) {
+  historyTurn.value = turn;
+}
 function setHistoryLastTurn() {
   if (typeof playerID.value !== 'number') {
-    historyTurn.value = gameState.G.history.length;
+    setHistoryTurn(gameState.G.history.length);
   } else {
-    historyTurn.value = gameState.G.history.length + 1;
+    setHistoryTurn(gameState.G.history.length + 1);
   }
   setHistoryStep(1);
 }
@@ -189,6 +192,10 @@ async function animateTurn(startTurn: number) {
     await sleep(800);
     incrementHistoryStep();
   }
+}
+function replayLastTurn() {
+  setHistoryTurn(gameState.G.history.length);
+  animateTurn(gameState.G.history.length);
 }
 
 const gameLastTurn = computed(() => {
@@ -397,6 +404,10 @@ getNotificationSound(store.zugUsername).then((notificationSound) => {
       <p v-else-if="opponentWaiting" class="info-message">
         Your opponent is waiting for you to finish...
       </p>
+      <span v-else-if="!winner" class="info-message">
+        <span>Last turn:</span>
+        <Button size="small" @click="replayLastTurn()" label="watch replay" />
+      </span>
       <p class="game-over" v-else-if="winner === 'tie'">It's a tie!</p>
       <p class="game-over" v-else-if="winner">{{ winner }} wins!</p>
     </div>
@@ -536,6 +547,10 @@ main {
 
 .info-message {
   color: coral;
+  display: flex;
+  gap: 0.5rem;
+  justify-content: center;
+  align-items: center;
 }
 
 .history-stepper-row {
