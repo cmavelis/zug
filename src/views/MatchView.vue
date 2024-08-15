@@ -521,11 +521,6 @@ main {
   white-space: nowrap;
 }
 
-.history-spacer {
-  border: none;
-  height: 3rem;
-}
-
 .info-message {
   color: coral;
 }
