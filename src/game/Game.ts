@@ -56,7 +56,7 @@ if (typeof window !== 'undefined' && window?.location) {
 
 export const SimulChess: Game<GObject> = {
   name: 'zug',
-  setup: (_, setupData: GameSetupData) => {
+  setup: (_, setupData: GameSetupData = { config: {} }) => {
     const board = { x: 4, y: 4 };
     const initialGame = {
       config: {
