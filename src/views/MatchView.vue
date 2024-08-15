@@ -174,12 +174,21 @@ function decrementHistoryTurn() {
   setHistoryStep(1);
 }
 function setHistoryLastTurn() {
-  if (!playerID.value) {
+  if (typeof playerID.value !== 'number') {
     historyTurn.value = gameState.G.history.length;
   } else {
     historyTurn.value = gameState.G.history.length + 1;
   }
   setHistoryStep(1);
+}
+
+const sleep = (delay: number) =>
+  new Promise((resolve) => setTimeout(resolve, delay));
+async function animateTurn(startTurn: number) {
+  while (historyTurn.value === startTurn) {
+    await sleep(800);
+    incrementHistoryStep();
+  }
 }
 
 const gameLastTurn = computed(() => {
@@ -426,9 +435,9 @@ getNotificationSound(store.zugUsername).then((notificationSound) => {
       </div>
       <div class="history-stepper-row">
         <span class="p-buttonset nowrap">
-          <ButtonStepper icon="pi pi-step-backward" @click="historyTurn = 1" />
+          <ButtonStepper icon="pi pi-fast-backward" @click="historyTurn = 1" />
           <ButtonStepper
-            icon="pi pi-caret-left"
+            icon="pi pi-step-backward"
             @click="decrementHistoryTurn()"
             :disabled="historyTurn <= 1"
           />
@@ -439,11 +448,15 @@ getNotificationSound(store.zugUsername).then((notificationSound) => {
         <span class="p-buttonset nowrap">
           <ButtonStepper
             icon="pi pi-caret-right"
+            @click="animateTurn(historyTurn)"
+          />
+          <ButtonStepper
+            icon="pi pi-step-forward"
             @click="incrementHistoryTurn()"
             :disabled="isActiveTurn"
           />
           <ButtonStepper
-            icon="pi pi-step-forward"
+            icon="pi pi-fast-forward"
             @click="setHistoryLastTurn()"
           />
         </span>
