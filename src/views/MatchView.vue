@@ -167,9 +167,11 @@ const historyTurn = ref<number>(
 );
 function incrementHistoryTurn() {
   historyTurn.value++;
+  setHistoryStep(1);
 }
 function decrementHistoryTurn() {
   historyTurn.value--;
+  setHistoryStep(1);
 }
 function setHistoryLastTurn() {
   if (!playerID.value) {
@@ -177,6 +179,7 @@ function setHistoryLastTurn() {
   } else {
     historyTurn.value = gameState.G.history.length + 1;
   }
+  setHistoryStep(1);
 }
 
 const gameLastTurn = computed(() => {
