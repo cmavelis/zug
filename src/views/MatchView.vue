@@ -427,7 +427,7 @@ getNotificationSound(store.zugUsername).then((notificationSound) => {
       :orderNumber="historyTurnStep"
     />
     <div>
-      <div>
+      <div style="margin: 4px 0">
         <Button
           icon="pi pi-link"
           outlined
@@ -452,9 +452,10 @@ getNotificationSound(store.zugUsername).then((notificationSound) => {
             @click="decrementHistoryTurn()"
             :disabled="historyTurn <= 1"
           />
+          <ButtonStepper icon="pi pi-replay" @click="replayLastTurn()" />
         </span>
         <span class="history-order-number-display">{{
-          isActiveTurn ? 'LATEST' : historyTurn
+          winner ? 'END' : `${historyTurn}/${gameState.G.history.length + 1}`
         }}</span>
         <span class="p-buttonset nowrap">
           <ButtonStepper
@@ -473,11 +474,7 @@ getNotificationSound(store.zugUsername).then((notificationSound) => {
         </span>
       </div>
       <div>
-        {{
-          isActiveTurn
-            ? 'LATEST'
-            : `TURN ${historyTurn} STEP ${historyTurnStep}`
-        }}
+        {{ winner ? 'END' : `TURN ${historyTurn} STEP ${historyTurnStep}` }}
       </div>
       <div class="history-stepper-row">
         <span class="p-buttonset nowrap">
