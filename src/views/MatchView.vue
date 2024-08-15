@@ -174,12 +174,21 @@ function decrementHistoryTurn() {
   setHistoryStep(1);
 }
 function setHistoryLastTurn() {
-  if (!playerID.value) {
+  if (typeof playerID.value !== 'number') {
     historyTurn.value = gameState.G.history.length;
   } else {
     historyTurn.value = gameState.G.history.length + 1;
   }
   setHistoryStep(1);
+}
+
+const sleep = (delay: number) =>
+  new Promise((resolve) => setTimeout(resolve, delay));
+async function animateTurn(startTurn: number) {
+  while (historyTurn.value === startTurn) {
+    await sleep(800);
+    incrementHistoryStep();
+  }
 }
 
 const gameLastTurn = computed(() => {
@@ -437,6 +446,7 @@ getNotificationSound(store.zugUsername).then((notificationSound) => {
           isActiveTurn ? 'LATEST' : historyTurn
         }}</span>
         <span class="p-buttonset nowrap">
+          <Button @click="animateTurn(historyTurn)">Play</Button>
           <ButtonStepper
             icon="pi pi-caret-right"
             @click="incrementHistoryTurn()"
