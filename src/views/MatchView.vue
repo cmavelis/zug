@@ -455,7 +455,9 @@ getNotificationSound(store.zugUsername).then((notificationSound) => {
           <ButtonStepper icon="pi pi-replay" @click="replayLastTurn()" />
         </span>
         <span class="history-order-number-display">{{
-          winner ? 'END' : `${historyTurn}/${gameState.G.history.length + 1}`
+          winner
+            ? 'END'
+            : `${historyTurn}/${(gameState.G?.history?.length || 0) + 1}`
         }}</span>
         <span class="p-buttonset nowrap">
           <ButtonStepper
