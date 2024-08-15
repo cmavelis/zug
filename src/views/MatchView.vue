@@ -167,9 +167,11 @@ const historyTurn = ref<number>(
 );
 function incrementHistoryTurn() {
   historyTurn.value++;
+  setHistoryStep(1);
 }
 function decrementHistoryTurn() {
   historyTurn.value--;
+  setHistoryStep(1);
 }
 function setHistoryLastTurn() {
   if (!playerID.value) {
@@ -177,6 +179,7 @@ function setHistoryLastTurn() {
   } else {
     historyTurn.value = gameState.G.history.length + 1;
   }
+  setHistoryStep(1);
 }
 
 const gameLastTurn = computed(() => {
@@ -196,7 +199,7 @@ function incrementHistoryStep() {
   else if (
     gameLastTurn.value &&
     historyTurnStep.value >= gameLastTurn.value.length &&
-    historyTurn.value < gameState.G.history.length
+    historyTurn.value <= gameState.G.history.length
   ) {
     historyTurn.value++;
     historyTurnStep.value = 1;
@@ -430,12 +433,14 @@ getNotificationSound(store.zugUsername).then((notificationSound) => {
             :disabled="historyTurn <= 1"
           />
         </span>
-        <span class="history-order-number-display">{{ historyTurn }}</span>
+        <span class="history-order-number-display">{{
+          isActiveTurn ? 'LATEST' : historyTurn
+        }}</span>
         <span class="p-buttonset nowrap">
           <ButtonStepper
             icon="pi pi-caret-right"
             @click="incrementHistoryTurn()"
-            :disabled="historyTurn > gameState.G.history.length"
+            :disabled="isActiveTurn"
           />
           <ButtonStepper
             icon="pi pi-step-forward"
@@ -443,7 +448,13 @@ getNotificationSound(store.zugUsername).then((notificationSound) => {
           />
         </span>
       </div>
-      <div>TURN {{ historyTurn }} STEP {{ historyTurnStep }}</div>
+      <div>
+        {{
+          isActiveTurn
+            ? 'LATEST'
+            : `TURN ${historyTurn} STEP ${historyTurnStep}`
+        }}
+      </div>
       <div class="history-stepper-row">
         <span class="p-buttonset nowrap">
           <ButtonStepper
@@ -510,11 +521,6 @@ main {
   white-space: nowrap;
 }
 
-.history-spacer {
-  border: none;
-  height: 3rem;
-}
-
 .info-message {
   color: coral;
 }
@@ -527,7 +533,7 @@ main {
 
 .history-order-number-display {
   display: inline-block;
-  width: 2rem;
+  padding: 0 0.5rem;
   font-size: 1.2rem;
 }
 
