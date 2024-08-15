@@ -435,9 +435,9 @@ getNotificationSound(store.zugUsername).then((notificationSound) => {
       </div>
       <div class="history-stepper-row">
         <span class="p-buttonset nowrap">
-          <ButtonStepper icon="pi pi-step-backward" @click="historyTurn = 1" />
+          <ButtonStepper icon="pi pi-fast-backward" @click="historyTurn = 1" />
           <ButtonStepper
-            icon="pi pi-caret-left"
+            icon="pi pi-step-backward"
             @click="decrementHistoryTurn()"
             :disabled="historyTurn <= 1"
           />
@@ -446,14 +446,17 @@ getNotificationSound(store.zugUsername).then((notificationSound) => {
           isActiveTurn ? 'LATEST' : historyTurn
         }}</span>
         <span class="p-buttonset nowrap">
-          <Button @click="animateTurn(historyTurn)">Play</Button>
           <ButtonStepper
             icon="pi pi-caret-right"
+            @click="animateTurn(historyTurn)"
+          />
+          <ButtonStepper
+            icon="pi pi-step-forward"
             @click="incrementHistoryTurn()"
             :disabled="isActiveTurn"
           />
           <ButtonStepper
-            icon="pi pi-step-forward"
+            icon="pi pi-fast-forward"
             @click="setHistoryLastTurn()"
           />
         </span>
