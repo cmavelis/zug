@@ -7,6 +7,7 @@ import {
   watch,
   type Ref,
   shallowReactive,
+  reactive,
 } from 'vue';
 import { useRoute } from 'vue-router';
 
@@ -196,6 +197,7 @@ async function animateTurn(startTurn: number) {
 function replayLastTurn() {
   setHistoryTurn(gameState.G.history.length);
   animateTurn(gameState.G.history.length);
+  newTurnReady.value = false;
 }
 
 const gameLastTurn = computed(() => {
@@ -302,13 +304,14 @@ const handlePoke = async () => {
   }
 };
 
+const newTurnReady = ref(false);
+
 // new turn watcher
 watch(
   () => gameState.G.history,
   async (newHistory, oldHistory) => {
     if (newHistory && oldHistory && newHistory?.length !== oldHistory?.length) {
-      historyTurnStep.value = 1;
-      setHistoryLastTurn();
+      newTurnReady.value = true;
     }
   },
 );
@@ -404,8 +407,8 @@ getNotificationSound(store.zugUsername).then((notificationSound) => {
       <p v-else-if="opponentWaiting" class="info-message">
         Your opponent is waiting for you to finish...
       </p>
-      <span v-else-if="!winner" class="info-message">
-        <span>Last turn:</span>
+      <span v-else-if="!winner && newTurnReady" class="info-message">
+        <span>You have a new turn to review:</span>
         <Button size="small" @click="replayLastTurn()" label="watch replay" />
       </span>
       <p class="game-over" v-else-if="winner === 'tie'">It's a tie!</p>
