@@ -7,7 +7,6 @@ import {
   watch,
   type Ref,
   shallowReactive,
-  reactive,
 } from 'vue';
 import { useRoute } from 'vue-router';
 
@@ -345,6 +344,13 @@ const opponentWaiting = computed(() => {
   return gameState.ctx.activePlayers[opponentPlayerID] === 'resolution';
 });
 
+const lastTurnSeen = computed(() => {
+  if (gameState.G.players && playerID.value !== null) {
+    return gameState.G.players[playerID.value].seenLatestTurn;
+  }
+  return false;
+});
+
 // "your turn" sound
 getNotificationSound(store.zugUsername).then((notificationSound) => {
   const audio = new Audio(notificationSound);
@@ -407,7 +413,7 @@ getNotificationSound(store.zugUsername).then((notificationSound) => {
       <p v-else-if="opponentWaiting" class="info-message">
         Your opponent is waiting for you to finish...
       </p>
-      <span v-else-if="!winner && newTurnReady" class="info-message">
+      <span v-else-if="!winner && !lastTurnSeen" class="info-message">
         <span>You have a new turn to review:</span>
         <Button size="small" @click="replayLastTurn()" label="watch replay" />
       </span>
