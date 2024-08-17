@@ -196,6 +196,8 @@ async function animateTurn(startTurn: number) {
 function replayLastTurn() {
   setHistoryTurn(gameState.G.history.length);
   animateTurn(gameState.G.history.length);
+  newTurnReady.value = false;
+  matchClientOne.client.moves.markTurnSeen();
 }
 
 const gameLastTurn = computed(() => {
@@ -302,13 +304,14 @@ const handlePoke = async () => {
   }
 };
 
+const newTurnReady = ref(false);
+
 // new turn watcher
 watch(
   () => gameState.G.history,
   async (newHistory, oldHistory) => {
     if (newHistory && oldHistory && newHistory?.length !== oldHistory?.length) {
-      historyTurnStep.value = 1;
-      setHistoryLastTurn();
+      newTurnReady.value = true;
     }
   },
 );
@@ -340,6 +343,13 @@ const opponentWaiting = computed(() => {
   }
   const opponentPlayerID = playerID.value === 1 ? 0 : 1;
   return gameState.ctx.activePlayers[opponentPlayerID] === 'resolution';
+});
+
+const lastTurnSeen = computed(() => {
+  if (gameState.G.players && playerID.value !== null) {
+    return gameState.G.players[playerID.value].seenLatestTurn;
+  }
+  return true;
 });
 
 // "your turn" sound
@@ -404,8 +414,8 @@ getNotificationSound(store.zugUsername).then((notificationSound) => {
       <p v-else-if="opponentWaiting" class="info-message">
         Your opponent is waiting for you to finish...
       </p>
-      <span v-else-if="!winner" class="info-message">
-        <span>Last turn:</span>
+      <span v-else-if="!winner && !lastTurnSeen" class="info-message">
+        <span>You have a new turn to review:</span>
         <Button size="small" @click="replayLastTurn()" label="watch replay" />
       </span>
       <p class="game-over" v-else-if="winner === 'tie'">It's a tie!</p>
@@ -427,7 +437,7 @@ getNotificationSound(store.zugUsername).then((notificationSound) => {
       :orderNumber="historyTurnStep"
     />
     <div>
-      <div>
+      <div style="margin: 4px 0">
         <Button
           icon="pi pi-link"
           outlined
@@ -452,9 +462,12 @@ getNotificationSound(store.zugUsername).then((notificationSound) => {
             @click="decrementHistoryTurn()"
             :disabled="historyTurn <= 1"
           />
+          <ButtonStepper icon="pi pi-replay" @click="replayLastTurn()" />
         </span>
         <span class="history-order-number-display">{{
-          isActiveTurn ? 'LATEST' : historyTurn
+          `${winner && isActiveTurn ? 'END' : historyTurn}/${
+            (gameState.G?.history?.length || 0) + (winner ? 0 : 1)
+          }`
         }}</span>
         <span class="p-buttonset nowrap">
           <ButtonStepper
@@ -474,8 +487,8 @@ getNotificationSound(store.zugUsername).then((notificationSound) => {
       </div>
       <div>
         {{
-          isActiveTurn
-            ? 'LATEST'
+          winner && isActiveTurn
+            ? 'END'
             : `TURN ${historyTurn} STEP ${historyTurnStep}`
         }}
       </div>

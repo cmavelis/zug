@@ -27,6 +27,12 @@ export interface GameState {
   orders: { [playerID: number]: Orders };
   pieces: Piece[];
   piecesToPlace?: { [playerID: number]: number[] }; // optional key for back-compat
+  players?: {
+    // optional key for back-compat
+    [playerID: number]: {
+      seenLatestTurn: boolean;
+    };
+  };
   score: { [playerID: number]: number };
   events?: GameEvent[];
 }
@@ -69,6 +75,9 @@ export const SimulChess: Game<GObject> = {
       orders: { 0: [], 1: [] },
       history: [],
       score: { 0: 0, 1: 0 },
+      players: Object.fromEntries(
+        [0, 1].map((i) => [i, { seenLatestTurn: true }]),
+      ),
     };
 
     if (setupData?.empty || empty) {
@@ -202,6 +211,13 @@ export const SimulChess: Game<GObject> = {
             },
             noLimit: true,
           },
+          markTurnSeen: {
+            move: ({ G, playerID }: { G: GameState; playerID: string }) => {
+              if (G.players) {
+                G.players[Number(playerID)].seenLatestTurn = true;
+              }
+            },
+          },
         },
         next: 'resolution',
       },
@@ -217,7 +233,15 @@ export const SimulChess: Game<GObject> = {
     },
     onEnd: ({ G }) => {
       try {
-        return orderResolver({ G });
+        // process all actions from players
+        const newG = orderResolver({ G });
+        // mark that all players haven't seen the new result
+        for (const i in [0, 1]) {
+          if (newG.players) {
+            newG.players[i].seenLatestTurn = false;
+          }
+        }
+        return newG;
       } catch (e) {
         console.error(e);
       }
