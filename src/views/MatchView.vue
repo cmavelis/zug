@@ -197,6 +197,7 @@ function replayLastTurn() {
   setHistoryTurn(gameState.G.history.length);
   animateTurn(gameState.G.history.length);
   newTurnReady.value = false;
+  matchClientOne.client.moves.markTurnSeen();
 }
 
 const gameLastTurn = computed(() => {
@@ -348,7 +349,7 @@ const lastTurnSeen = computed(() => {
   if (gameState.G.players && playerID.value !== null) {
     return gameState.G.players[playerID.value].seenLatestTurn;
   }
-  return false;
+  return true;
 });
 
 // "your turn" sound
