@@ -6,7 +6,9 @@ import { decodeToken, encodeToken } from './auth';
 import { type ZugUser } from '../src/utils/auth';
 import { type EnhancedMatch } from './types';
 import { type LobbyAPI } from 'boardgame.io/dist/types/src/types';
-import { db, sequelize, User, TempUser, Match } from './db';
+import { db, sequelize, User, TempUser, Match, dbInitialized } from './db';
+import { removeOldMatches } from './db/cleanup';
+
 
 // TODO: figure out which process needs this to be commonJS syntax
 const { Server, Origins } = require('boardgame.io/server');
@@ -16,6 +18,7 @@ const path = require('path');
 const serve = require('koa-static');
 const { koaBody } = require('koa-body');
 const axios = require('axios');
+const cron = require('node-cron');
 
 const makeMatchURL = ({ matchID }: { matchID: string }) => {
   return `${process.env.HOST_URL}/match/${matchID}`;
@@ -23,6 +26,8 @@ const makeMatchURL = ({ matchID }: { matchID: string }) => {
 
 const DAY_IN_MILLISECONDS = 1000 * 60 * 60 * 24;
 const POKE_TIMEOUT = DAY_IN_MILLISECONDS;
+
+dbInitialized.then(() => cron.schedule('0 0 0 * * *', removeOldMatches));
 
 // notify players when it's their turn
 Match.beforeUpsert(async (created) => {
