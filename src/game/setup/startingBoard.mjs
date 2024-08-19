@@ -15,10 +15,12 @@ const badBoards = [
   '3-5-2-4, 5-4-2-3',
 ].map((i) => i.split(', ').map((j) => j.split('-').map(Number)));
 
-const reversedBadBoards = badBoards.map((board) =>
+const badBoardsPlayer1Flipped = badBoards.map((board) =>
   board.map((side) => side.toReversed()),
 );
-const allBadBoards = badBoards.concat(reversedBadBoards);
+const allBadBoardsPlayer1 = badBoards.concat(badBoardsPlayer1Flipped);
+const allBadBoardsPlayer2 = allBadBoardsPlayer1.map((board)=> board.toReversed())
+const allBadBoards =allBadBoardsPlayer1.concat(allBadBoardsPlayer2)
 
 function permuteUtil(nums, visited, permutation, result) {
   if (permutation.length === nums.length) {

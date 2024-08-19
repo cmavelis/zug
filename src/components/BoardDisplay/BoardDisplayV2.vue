@@ -10,11 +10,14 @@ import type { Order, PlaceOrder } from '@/game/orders';
 import BoardPiece, { type PieceHint } from './BoardPiece.vue';
 import OrderOverlay from './OrderOverlay.vue';
 import { coordinatesToArray, doesIndexMatchCoordinate } from '@/game/common';
+import OrderDisplay from '@/components/BoardDisplay/OrderOverlay.vue';
+import type { GameEvent } from '@/game/Game';
 
 interface BoardDisplayV2Props {
   board: Coordinates;
   pieces: Piece[];
   orders: Order[];
+  events?: GameEvent[];
   showOrders?: boolean;
   handleCellClick?: (cellID: number) => void;
   handleCellHover?: (index: number) => void;
@@ -26,10 +29,12 @@ interface BoardDisplayV2Props {
   emphasizedPieceIds?: number[];
   actionMenuItems?: { [key: number]: MenuItem[] };
   targetingHints?: PieceHint[];
+  disableCommandMenu?: boolean;
 }
 
 const props = withDefaults(defineProps<BoardDisplayV2Props>(), {
   showOrders: true,
+  disableCommandMenu: false,
   highlightedCells: () => [],
   handleCellClick: () => {},
   handleCellHover: () => {},
@@ -43,7 +48,9 @@ const boardCells = Array(props.board.x * props.board.y);
 const cols = computed(() => props.board.x);
 const rows = computed(() => props.board.y);
 
-const svgSideLength = BOARD_PIXEL_SIZE * 4;
+const svgSideLength = BOARD_PIXEL_SIZE * 6;
+const svgOriginOffset = BOARD_PIXEL_SIZE;
+
 const placeOrders = computed(() => {
   const orders = props.orders.filter((o) => o.type === 'place') as PlaceOrder[];
   // group by toTarget
@@ -125,7 +132,9 @@ const isBottomPlayer = (index: number) => {
         'board-piece': true,
       }"
       :iconClass="{
-        'halo-shadow': Boolean(props.emphasizedPieceIds?.includes(piece.id)),
+        'halo-shadow':
+          Boolean(props.emphasizedPieceIds?.includes(piece.id)) &&
+          !props.disableCommandMenu,
       }"
       :hints="
         targetingHints && targetingHints.filter((p) => p.pieceID === piece.id)
@@ -134,7 +143,10 @@ const isBottomPlayer = (index: number) => {
       @click.stop="(e) => handlePieceClick(piece.id, e)"
       @mouseover="handlePieceHover(piece.id)"
     >
-      <template v-if="props.actionMenuItems[piece.id]" #menu>
+      <template
+        v-if="props.actionMenuItems[piece.id] && !props.disableCommandMenu"
+        #menu
+      >
         <SpeedDial
           :visible="props.selectedPieceId === piece.id"
           :model="props.actionMenuItems[piece.id]"
@@ -149,14 +161,24 @@ const isBottomPlayer = (index: number) => {
           }"
         /> </template
     ></BoardPiece>
-    <svg v-if="props.showOrders" :width="svgSideLength" :height="svgSideLength">
-      <OrderOverlay
-        v-for="order in overlayOrders"
-        :key="order.toString()"
-        :order="order"
-        :pieces="props.pieces"
-      />
-    </svg>
+    <div v-if="props.showOrders" class="svg-anchor">
+      <svg :width="svgSideLength" :height="svgSideLength">
+        <OrderOverlay
+          v-for="order in overlayOrders"
+          :key="order.toString()"
+          :order="order"
+          :pieces="props.pieces"
+          :svgOffset="svgOriginOffset"
+        />
+        <OrderDisplay
+          v-for="event in props.events"
+          :key="event.toString()"
+          :order="event"
+          :pieces="props.pieces"
+          :svgOffset="svgOriginOffset"
+        />
+      </svg>
+    </div>
   </div>
 </template>
 
@@ -238,10 +260,18 @@ section {
   z-index: 5; /* above other pieces for clicking menu */
 }
 
+.svg-anchor {
+  position: absolute;
+  height: 0;
+  width: 0;
+}
+
 svg {
   pointer-events: none;
-  position: absolute;
+  position: relative;
   z-index: 4;
+  top: calc(-1 * var(--square-size));
+  left: calc(-1 * var(--square-size));
 }
 
 :deep(.p-speeddial-button) {

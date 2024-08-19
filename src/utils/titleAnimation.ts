@@ -1,4 +1,4 @@
-const originalDocumentTitle = document.title;
+const originalDocumentTitle = import.meta.env.VITE_APP_TITLE || 'zug';
 let interval1: string | number | NodeJS.Timeout | undefined,
   interval2: string | number | NodeJS.Timeout | undefined;
 

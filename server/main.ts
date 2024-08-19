@@ -9,6 +9,7 @@ import { type LobbyAPI } from 'boardgame.io/dist/types/src/types';
 import { db, sequelize, User, TempUser, Match, dbInitialized } from './db';
 import { removeOldMatches } from './db/cleanup';
 
+
 // TODO: figure out which process needs this to be commonJS syntax
 const { Server, Origins } = require('boardgame.io/server');
 const { SimulChess } = require('../src/game/Game');

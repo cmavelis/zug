@@ -10,6 +10,8 @@ import './assets/theme/theme.css';
 import 'primeicons/primeicons.css';
 import './assets/icons/zug-icons.css';
 
+document.title = import.meta.env.VITE_APP_TITLE;
+
 const app = createApp(App);
 
 app.use(router);

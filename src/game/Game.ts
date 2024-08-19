@@ -17,14 +17,22 @@ export interface GameSetupData {
   empty?: boolean;
 }
 
+export interface ZugConfig extends CommonGameConfig {
+  board: Coordinates;
+}
+
 export interface GameState {
-  config: CommonGameConfig & {
-    board: Coordinates;
-  };
+  config: ZugConfig;
   cells: Array<null | number>;
   orders: { [playerID: number]: Orders };
   pieces: Piece[];
   piecesToPlace?: { [playerID: number]: number[] }; // optional key for back-compat
+  players?: {
+    // optional key for back-compat
+    [playerID: number]: {
+      seenLatestTurn: boolean;
+    };
+  };
   score: { [playerID: number]: number };
   events?: GameEvent[];
 }
@@ -37,7 +45,7 @@ export interface GameEvent {
 export type GameStateHistory = Omit<GameState, 'config'>;
 
 export type GObject = {
-  history: Omit<GameState, 'config'>[][];
+  history: GameStateHistory[][];
 } & GameState;
 
 let hostname: any;
@@ -54,7 +62,7 @@ if (typeof window !== 'undefined' && window?.location) {
 
 export const SimulChess: Game<GObject> = {
   name: 'zug',
-  setup: (_, setupData: GameSetupData) => {
+  setup: (_, setupData: GameSetupData = { config: {} }) => {
     const board = { x: 4, y: 4 };
     const initialGame = {
       config: {
@@ -67,6 +75,9 @@ export const SimulChess: Game<GObject> = {
       orders: { 0: [], 1: [] },
       history: [],
       score: { 0: 0, 1: 0 },
+      players: Object.fromEntries(
+        [0, 1].map((i) => [i, { seenLatestTurn: true }]),
+      ),
     };
 
     if (setupData?.empty || empty) {
@@ -200,6 +211,13 @@ export const SimulChess: Game<GObject> = {
             },
             noLimit: true,
           },
+          markTurnSeen: {
+            move: ({ G, playerID }: { G: GameState; playerID: string }) => {
+              if (G.players) {
+                G.players[Number(playerID)].seenLatestTurn = true;
+              }
+            },
+          },
         },
         next: 'resolution',
       },
@@ -215,7 +233,15 @@ export const SimulChess: Game<GObject> = {
     },
     onEnd: ({ G }) => {
       try {
-        return orderResolver({ G });
+        // process all actions from players
+        const newG = orderResolver({ G });
+        // mark that all players haven't seen the new result
+        for (const i in [0, 1]) {
+          if (newG.players) {
+            newG.players[i].seenLatestTurn = false;
+          }
+        }
+        return newG;
       } catch (e) {
         console.error(e);
       }
