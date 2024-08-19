@@ -17,6 +17,7 @@ const path = require('path');
 const serve = require('koa-static');
 const { koaBody } = require('koa-body');
 const axios = require('axios');
+const cron = require('node-cron');
 
 const makeMatchURL = ({ matchID }: { matchID: string }) => {
   return `${process.env.HOST_URL}/match/${matchID}`;
@@ -25,7 +26,7 @@ const makeMatchURL = ({ matchID }: { matchID: string }) => {
 const DAY_IN_MILLISECONDS = 1000 * 60 * 60 * 24;
 const POKE_TIMEOUT = DAY_IN_MILLISECONDS;
 
-dbInitialized.then(removeOldMatches);
+dbInitialized.then(() => cron.schedule('0 0 0 * * *', removeOldMatches));
 
 // notify players when it's their turn
 Match.beforeUpsert(async (created) => {

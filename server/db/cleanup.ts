@@ -3,6 +3,8 @@ import { Match } from './index';
 import { DateTime } from 'luxon';
 
 export const removeOldMatches = async () => {
+  console.log('Looking for old matches to delete...');
+
   const oldMatches = await Match.findAll({
     where: {
       'state.ctx.turn': 1,
