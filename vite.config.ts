@@ -22,5 +22,9 @@ export default defineConfig((config) => {
     define: {
       __VUE_PROD_DEVTOOLS__: config.mode === 'development',
     },
+    // fixes local dev, vite trying to bundle react from boardgame.io
+    optimizeDeps: {
+      exclude: ['react'],
+    },
   };
 });
