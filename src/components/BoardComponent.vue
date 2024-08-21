@@ -403,7 +403,7 @@ onUnmounted(() => {
           v-model.number="pieceToPlace"
           type="number"
         />
-        <template v-if="props.config.placePriorityAssignment?.beforeTurn">
+        <template v-if="props.config.placePriorityAssignment">
           <div class="place-button-group">
             <PlaceButton
               v-for="piecePriority in piecesToPlaceSorted[0]"
