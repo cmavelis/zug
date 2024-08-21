@@ -5,6 +5,7 @@ import InputSwitch from 'primevue/inputswitch';
 import InputMask from 'primevue/inputmask';
 import SelectButton from 'primevue/selectbutton';
 import Slider from 'primevue/slider';
+import RadioButton from 'primevue/radiobutton';
 import { useField } from 'vee-validate';
 import { computed, ref } from 'vue';
 import { LobbyClient } from 'boardgame.io/client';
@@ -54,7 +55,13 @@ const piecePriorityDuplicates = ref(PIECE_PRIORITY_DUPLICATES);
 const pieceOnlyPushLowerNumbers = ref(PUSH_ONLY_LOWER_NUMBERS);
 const pushRestrictionMultiply = ref(1);
 const pushRestrictionAdd = ref(0);
-const placeActionPriorities = ref(false);
+const placeActionPriorities = ref('default');
+
+const placeActionOptions = [
+  { key: 'default', label: 'Default' },
+  { key: 'beforeTurn', label: 'Before Turn' },
+  { key: 'duringTurn', label: 'During Turn' },
+];
 
 const ruleSet = computed<ZugConfig>(() => {
   return {
@@ -74,9 +81,12 @@ const ruleSet = computed<ZugConfig>(() => {
             multiply: pushRestrictionMultiply.value,
           }
         : null,
-    placePriorityAssignment: {
-      beforeTurn: Boolean(placeActionPriorities),
-    },
+    placePriorityAssignment:
+      placeActionPriorities.value === 'default'
+        ? undefined
+        : {
+            [placeActionPriorities.value]: true,
+          },
   };
 });
 
@@ -195,8 +205,18 @@ const createMatch = async () => {
         </div>
       </div>
       <div class="config-item">
-        <span>Place action experiments:</span>
-        <InputSwitch v-model="placeActionPriorities" />
+        <span>Place priority assignment:</span>
+        <div v-for="option in placeActionOptions" :key="option.key">
+          <RadioButton
+            v-model="placeActionPriorities"
+            :inputId="option.key"
+            name="dynamic"
+            :value="option.key"
+          />
+          <label :for="option.key" style="margin-left: 4px">{{
+            option.label
+          }}</label>
+        </div>
       </div>
     </div>
   </div>

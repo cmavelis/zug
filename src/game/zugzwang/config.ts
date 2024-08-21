@@ -6,7 +6,8 @@ export interface ZugConfig {
   startingPiecePriorities: number[];
   piecePushRestrictions: PushRestrictionsConfig | null;
   placePriorityAssignment?: {
-    beforeTurn: boolean;
+    beforeTurn?: boolean;
+    duringTurn?: boolean;
   };
   useFairStartingBoard?: boolean;
 }
