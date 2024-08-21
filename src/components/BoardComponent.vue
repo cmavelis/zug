@@ -57,6 +57,7 @@ const allOrders = computed(() => {
 });
 
 const actionsUsed = computed(() => flatOrders.value.map((order) => order.type));
+// # of pieces to place
 const piecesToPlace = computed(
   () =>
     getNumberPiecesMissing(props.state, props.playerID) -
@@ -411,6 +412,7 @@ onUnmounted(() => {
               :piece-priority="piecePriority"
               :disabled="
                 props.playerID !== 0 ||
+                piecesToPlace === 0 ||
                 flatOrders.some((o) => {
                   if ('newPiecePriority' in o) {
                     return o.newPiecePriority === piecePriority;
@@ -434,6 +436,7 @@ onUnmounted(() => {
               :piece-priority="piecePriority"
               :disabled="
                 props.playerID !== 1 ||
+                piecesToPlace === 0 ||
                 flatOrders.some((o) => {
                   if ('newPiecePriority' in o) {
                     return o.newPiecePriority === piecePriority;
