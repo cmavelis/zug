@@ -52,7 +52,7 @@ button {
 }
 
 .halo-shadow {
-  --color: #b8ddff;
+  --color: var(--blue-50);
 }
 
 .halo-shadow::before {

@@ -419,6 +419,11 @@ onUnmounted(() => {
                   }
                 })
               "
+              :selected="
+                selectedAction === 'place' &&
+                pieceToPlace === piecePriority &&
+                props.playerID === 0
+              "
               class="player-one-piece"
               @click="
                 () => {
@@ -442,6 +447,11 @@ onUnmounted(() => {
                     return o.newPiecePriority === piecePriority;
                   }
                 })
+              "
+              :selected="
+                selectedAction === 'place' &&
+                pieceToPlace === piecePriority &&
+                props.playerID === 1
               "
               class="player-two-piece"
               @click="
@@ -567,6 +577,7 @@ onUnmounted(() => {
   height: 100%;
   display: flex;
   flex-direction: column;
+  gap: 2px;
 }
 
 .place-button-default {

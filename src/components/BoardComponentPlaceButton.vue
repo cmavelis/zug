@@ -3,6 +3,7 @@ import Button from 'primevue/button';
 
 interface Props {
   piecePriority: number;
+  selected?: boolean;
 }
 const props = defineProps<Props>();
 </script>
@@ -11,9 +12,16 @@ const props = defineProps<Props>();
   <Button
     :label="String(props.piecePriority)"
     size="small"
-    severity="secondary"
     v-bind="$attrs"
+    :class="{
+      selected: props.selected,
+    }"
   />
 </template>
 
-<style scoped></style>
+<style scoped>
+.selected {
+  outline: 2px solid var(--blue-200);
+  z-index: 1;
+}
+</style>
