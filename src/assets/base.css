@@ -51,12 +51,14 @@
 
 .player-one-piece {
   background-color: var(--color-player-one);
+  border-color: var(--color-player-one);
   color: black;
   font-weight: bold;
 }
 
 .player-two-piece {
   background-color: var(--color-player-two);
+  border-color: var(--color-player-two);
   color: black;
   font-weight: bold;
 }
