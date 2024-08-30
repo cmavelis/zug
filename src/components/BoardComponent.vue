@@ -258,6 +258,18 @@ const targetClick = () => {
   clearAction();
 };
 
+const handlePlaceButtonClick = (piecePriority: number) => {
+  if (selectedAction.value !== 'place') {
+    selectAction('place');
+    pieceToPlace.value = piecePriority;
+  } else if (pieceToPlace.value === piecePriority) {
+    clearAction();
+    pieceToPlace.value = 0;
+  } else {
+    pieceToPlace.value = piecePriority;
+  }
+};
+
 // select piece, then action, then cell
 const handleCellClick = (cellID: number) => {
   console.debug('cell click', cellID);
@@ -425,12 +437,7 @@ onUnmounted(() => {
                 props.playerID === 0
               "
               class="player-one-piece"
-              @click="
-                () => {
-                  selectAction('place');
-                  pieceToPlace = piecePriority;
-                }
-              "
+              @click="handlePlaceButtonClick(piecePriority)"
             />
           </div>
           <label>place</label>
@@ -454,12 +461,7 @@ onUnmounted(() => {
                 props.playerID === 1
               "
               class="player-two-piece"
-              @click="
-                () => {
-                  selectAction('place');
-                  pieceToPlace = piecePriority;
-                }
-              "
+              @click="handlePlaceButtonClick(piecePriority)"
             />
           </div>
         </template>
