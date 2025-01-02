@@ -52,7 +52,7 @@ const logout = () => {
   </div>
   <div v-else>
     <input class="login" v-model="usernameInput" />
-    <button @click="login">name login</button>
+    <button @click="login">guest login</button>
     <p>(no password)</p>
     or
     <br />

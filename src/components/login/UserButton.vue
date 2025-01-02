@@ -7,8 +7,8 @@ const { isClerkUser, clerk } = useClerk();
 const clerkElement = useTemplateRef('clerk-mount');
 
 onMounted(() => {
-  if (!isClerkUser) {
-    clerk.mountSignIn(clerkElement.value);
+  if (isClerkUser) {
+    clerk.mountUserButton(clerkElement.value);
   }
 });
 </script>
