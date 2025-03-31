@@ -12,15 +12,15 @@ export const db = new PostgresStore(process.env.DATABASE_URL as string, {
 
 export const Match = db.sequelize.model('Match');
 
-export const TempUser = sequelize.define('TempUser', {
-  name: { type: DataTypes.TEXT, allowNull: false },
-  credentials: { type: DataTypes.UUID, allowNull: false },
-});
 export const User = sequelize.define('User', {
+  id: {
+    type: DataTypes.UUID,
+    primaryKey: true,
+    defaultValue: DataTypes.UUIDV4,
+  },
   name: { type: DataTypes.TEXT, allowNull: false, unique: true },
-  credentials: { type: DataTypes.UUID, allowNull: false },
-  discordUser: DataTypes.JSON,
-  discordOauth: DataTypes.JSON,
+  clerkId: { type: DataTypes.UUID, allowNull: false, unique: true },
+  isGuest: { type: DataTypes.BOOLEAN, allowNull: false, defaultValue: true },
 });
 
 export const UserMatch = sequelize.define('UserMatch', {
@@ -32,7 +32,7 @@ export const UserMatch = sequelize.define('UserMatch', {
     },
   },
   UserId: {
-    type: DataTypes.INTEGER,
+    type: DataTypes.UUIDV4,
     references: {
       model: User,
       key: 'id',
