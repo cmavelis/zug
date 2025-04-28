@@ -30,7 +30,6 @@ import {
   stopTitleNotification,
 } from '@/utils/titleAnimation';
 import MatchInvite from '@/components/MatchInvite.vue';
-import LoginComponent from '@/components/LoginComponent.vue';
 import { useMatch } from '@/composables/useMatch';
 import { LobbyClient } from 'boardgame.io/client';
 import { getServerURL } from '@/utils';
@@ -396,7 +395,6 @@ getNotificationSound(store.zugUsername).then((notificationSound) => {
   <main>
     <div v-if="canJoin">
       <p>To join, first sign in</p>
-      <LoginComponent />
       <p>Then click join:</p>
       <Button label="Join" @click="handleJoin"></Button>
       <p>{{ joinStatus }}</p>
