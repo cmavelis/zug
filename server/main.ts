@@ -16,7 +16,6 @@ const { botClient } = require('./discordBot');
 const path = require('path');
 const serve = require('koa-static');
 const { koaBody } = require('koa-body');
-const axios = require('axios');
 const cron = require('node-cron');
 
 const makeMatchURL = ({ matchID }: { matchID: string }) => {
