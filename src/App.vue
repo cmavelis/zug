@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { RouterLink, RouterView } from 'vue-router';
-import { store } from './store';
+import { SignedIn, SignedOut, SignInButton, UserButton } from '@clerk/vue';
 import Toast from 'primevue/toast';
 import { BOARD_PIXEL_SIZE } from '@/constants';
 import Logo from '@/assets/logo.svg';
@@ -19,7 +19,13 @@ root.style.setProperty('--square-size', squareSize);
         <RouterLink to="/"><Logo class="logo"></Logo></RouterLink>
         <RouterLink to="/how-to-play">How To Play</RouterLink>
         <RouterLink to="/about">About</RouterLink>
-        <span>{{ store.zugUsername }}</span>
+
+        <SignedOut>
+          <SignInButton />
+        </SignedOut>
+        <SignedIn>
+          <UserButton />
+        </SignedIn>
       </nav>
     </div>
   </header>
@@ -72,13 +78,13 @@ nav {
   margin-bottom: 1rem;
 }
 
-nav * {
+nav > * {
   display: inline-block;
   padding: 0 1rem;
   border-left: 1px solid var(--color-border);
 }
 
-nav *:first-child {
+nav > *:first-child {
   border: 0;
 }
 
