@@ -20,12 +20,14 @@ root.style.setProperty('--square-size', squareSize);
         <RouterLink to="/how-to-play">How To Play</RouterLink>
         <RouterLink to="/about">About</RouterLink>
 
-        <SignedOut>
-          <SignInButton />
-        </SignedOut>
-        <SignedIn>
-          <UserButton />
-        </SignedIn>
+        <div>
+          <SignedOut>
+            <SignInButton />
+          </SignedOut>
+          <SignedIn>
+            <UserButton />
+          </SignedIn>
+        </div>
       </nav>
     </div>
   </header>
