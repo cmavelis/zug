@@ -6,9 +6,8 @@ import { decodeToken, encodeToken } from './auth';
 import { type ZugUser } from '../src/utils/auth';
 import { type EnhancedMatch } from './types';
 import { type LobbyAPI } from 'boardgame.io/dist/types/src/types';
-import { db, sequelize, User, TempUser, Match, dbInitialized } from './db';
+import { db, sequelize, User, Match, dbInitialized } from './db';
 import { removeOldMatches } from './db/cleanup';
-
 
 // TODO: figure out which process needs this to be commonJS syntax
 const { Server, Origins } = require('boardgame.io/server');
@@ -17,7 +16,6 @@ const { botClient } = require('./discordBot');
 const path = require('path');
 const serve = require('koa-static');
 const { koaBody } = require('koa-body');
-const axios = require('axios');
 const cron = require('node-cron');
 
 const makeMatchURL = ({ matchID }: { matchID: string }) => {
@@ -29,53 +27,50 @@ const POKE_TIMEOUT = DAY_IN_MILLISECONDS;
 
 dbInitialized.then(() => cron.schedule('0 0 0 * * *', removeOldMatches));
 
-// notify players when it's their turn
-Match.beforeUpsert(async (created) => {
-  const { id } = created;
-  const oldMatch = await Match.findByPk(id);
-  const oldActivePlayers = oldMatch?.state?.ctx.activePlayers;
-  const newActivePlayers = created?.state?.ctx.activePlayers;
-
-  if (!(oldActivePlayers && newActivePlayers)) {
-    return;
-  }
-
-  for (const p of [0, 1]) {
-    const oldPhase = oldActivePlayers[p];
-    const newPhase = newActivePlayers[p];
-    if (oldPhase === newPhase) {
-      continue;
-    }
-    const player = oldMatch.players[p];
-    if (!player.isConnected) {
-      const otherPlayer = oldMatch.players[p === 0 ? 1 : 0];
-      // send discord message
-      User.findOne({ where: { name: player.name } })
-        .then((user) => {
-          if (!user) return;
-          botClient.users
-            .send(
-              user.discordUser.id,
-              `It's your turn against ${otherPlayer.name}: \n ${makeMatchURL({
-                matchID: created.id,
-              })}`,
-            )
-
-            .then(() =>
-              console.debug(
-                `discord message sent to ${user.discordUser.username} ${user.discordUser.id}`,
-              ),
-            )
-            .catch(console.error);
-        })
-        .catch(console.error);
-    }
-  }
-});
-
-const getDiscordTokenExchangeURI = (origin: string) => {
-  return origin + '/api/exchange/discord';
-};
+// TODO: re-enable
+// // notify players when it's their turn
+// Match.beforeUpsert(async (created) => {
+//   const { id } = created;
+//   const oldMatch = await Match.findByPk(id);
+//   const oldActivePlayers = oldMatch?.state?.ctx.activePlayers;
+//   const newActivePlayers = created?.state?.ctx.activePlayers;
+//
+//   if (!(oldActivePlayers && newActivePlayers)) {
+//     return;
+//   }
+//
+//   for (const p of [0, 1]) {
+//     const oldPhase = oldActivePlayers[p];
+//     const newPhase = newActivePlayers[p];
+//     if (oldPhase === newPhase) {
+//       continue;
+//     }
+//     const player = oldMatch.players[p];
+//     if (!player.isConnected) {
+//       const otherPlayer = oldMatch.players[p === 0 ? 1 : 0];
+//       // send discord message
+//       User.findOne({ where: { name: player.name } })
+//         .then((user) => {
+//           if (!user) return;
+//           botClient.users
+//             .send(
+//               user.discordUser.id,
+//               `It's your turn against ${otherPlayer.name}: \n ${makeMatchURL({
+//                 matchID: created.id,
+//               })}`,
+//             )
+//
+//             .then(() =>
+//               console.debug(
+//                 `discord message sent to ${user.discordUser.username} ${user.discordUser.id}`,
+//               ),
+//             )
+//             .catch(console.error);
+//         })
+//         .catch(console.error);
+//     }
+//   }
+// });
 
 interface IBaseUser {
   name: string;
@@ -90,31 +85,38 @@ interface ZugToken extends ZugUser {
   iat: number; // 'instantiated at'
 }
 
-const generateCredentials = async (ctx: {
-  request: { headers: { [x: string]: any } };
-}) => {
-  const authHeader = ctx.request.headers['authorization'];
-  if (authHeader === 'open') {
-    return 'open';
-  }
-
-  const token: ZugToken = decodeToken(authHeader);
-  return token.authToken;
+import { verifyToken } from '@clerk/backend';
+const verifyOptions = {
+  secretKey: process.env.CLERK_SECRET_KEY,
 };
 
-const authenticateCredentials = async (
-  credentials: string,
-  playerMetadata: any,
-) => {
-  // this allows testing matches to work
-  if (playerMetadata?.credentials === 'open') {
-    return true;
+// Custom authentication handlers
+const generateCredentials = async (ctx) => {
+  // user sends clerk session token as auth header
+  const authHeader = ctx.request.headers.authorization;
+  const token = authHeader.replace('Bearer ', '');
+  const verifiedToken = await verifyToken(token, verifyOptions);
+  console.log('generating credentials', verifiedToken);
+
+  // TODO: check for guest account if not clerk token
+  if (!verifiedToken) {
+    ctx.status = 401;
+    throw new Error('Invalid authentication token');
   }
-  if (credentials) {
-    const token: ZugToken = decodeToken(credentials);
-    if (token?.authToken === playerMetadata?.credentials) return true;
+
+  // TODO: return zug userID
+  return verifiedToken.sub;
+};
+
+const authenticateCredentials = async (credentials, playerMetadata) => {
+  try {
+    const token = await verifyToken(credentials, verifyOptions);
+    console.log('authenticating credentials', token);
+    // TODO: check against Users
+    return token.sub === playerMetadata.credentials;
+  } catch (error) {
+    return false;
   }
-  return false;
 };
 
 //server: : { router: Router<DefaultState, Context> }
@@ -161,120 +163,6 @@ server.router.post(
       authToken: encodeToken(tokenPayload),
       userID: username,
     };
-  },
-);
-
-server.router.post(
-  '/api/login/discord',
-  koaBody(),
-  async (ctx: { request: any; body?: any }) => {
-    const { request } = ctx;
-    const { username } = request.body;
-
-    const existingUser: IUser = await User.findOne({
-      where: { name: username },
-    });
-
-    let credentials: string = randomUUID();
-    if (existingUser) {
-      credentials = existingUser.credentials;
-    } else {
-      // oauth discord
-      const origin = ctx.request.origin;
-      console.info('request origin to /api/login/discord:', origin);
-      const uri = getDiscordTokenExchangeURI(origin);
-      const uriEncoded = encodeURIComponent(uri);
-      ctx.body = {
-        redirect: `https://discord.com/oauth2/authorize?response_type=code&client_id=1170904526635675678&scope=identify&state=15773059ghq9183habn&redirect_uri=${uriEncoded}&prompt=consent`,
-      };
-      return;
-    }
-
-    const tokenPayload = {
-      ...request.body,
-      credentials,
-    };
-
-    ctx.body = {
-      authToken: encodeToken(tokenPayload),
-      userID: username,
-    };
-  },
-);
-
-const DISCORD_API_ENDPOINT = 'https://discord.com/api/v10';
-const CLIENT_ID = process.env.DISCORD_CLIENT_ID;
-const CLIENT_SECRET = process.env.DISCORD_CLIENT_SECRET;
-
-// discord: exchange code for OAuth credentials, creating user
-server.router.get(
-  '/api/exchange/discord',
-  async (ctx: { body?: any; redirect?: any; request?: any }) => {
-    const { request } = ctx;
-    const { origin } = request;
-    const code = request?.query?.code;
-    if (!code) {
-      //redirect to error
-      console.error('no code provided!');
-    }
-    const uri = getDiscordTokenExchangeURI(origin);
-    // do discord oauth https://discord.com/developers/docs/topics/oauth2#authorization-code-grant-access-token-exchange-example
-    const data = {
-      grant_type: 'authorization_code',
-      code: code,
-      redirect_uri: uri,
-    };
-    const discordURL = DISCORD_API_ENDPOINT + '/oauth2/token';
-    const auth = {
-      username: CLIENT_ID,
-      password: CLIENT_SECRET,
-    };
-    const resp = await axios
-      .post(discordURL, data, {
-        headers: {
-          'Content-Type': 'application/x-www-form-urlencoded',
-        },
-        auth,
-      })
-      .catch(console.error);
-    ctx.body = resp.data;
-    const Authorization = 'Bearer ' + resp.data['access_token'];
-
-    const discordUser = await axios
-      .get(DISCORD_API_ENDPOINT + '/users/@me', {
-        headers: { Authorization },
-      })
-      .catch(console.error);
-
-    const newCredentials = randomUUID();
-
-    const [zugUser, created] = await User.findOrCreate({
-      where: {
-        name: discordUser.data.username,
-      },
-      defaults: {
-        credentials: newCredentials,
-        discordUser: discordUser.data,
-        discordOauth: resp.data,
-      },
-    }).catch(console.error);
-
-    if (created) {
-      botClient.users
-        .send(
-          discordUser.data.id,
-          'Your account has been linked to Zug.  You may be asked to re-verify your account every week or so.\nThanks for playing!\n\n-Cam',
-        )
-        .catch(console.error);
-    }
-
-    const token = encodeToken({
-      userID: discordUser.data.username,
-      authToken: zugUser.credentials,
-    });
-    ctx.redirect(
-      origin + `/login?token=${token}&username=${discordUser.data.username}`,
-    );
   },
 );
 

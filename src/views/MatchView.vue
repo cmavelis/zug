@@ -30,13 +30,13 @@ import {
   stopTitleNotification,
 } from '@/utils/titleAnimation';
 import MatchInvite from '@/components/MatchInvite.vue';
-import LoginComponent from '@/components/LoginComponent.vue';
 import { useMatch } from '@/composables/useMatch';
 import { LobbyClient } from 'boardgame.io/client';
 import { getServerURL } from '@/utils';
 import ButtonStepper from '@/components/ButtonStepper.vue';
 import { useMatchLink } from '@/composables/useMatchLink';
 import { BoardDisplay } from '@/components/BoardDisplay';
+import { Clerk } from '@clerk/clerk-js';
 
 const windowHasFocus = useWindowFocus();
 const toast = useToast();
@@ -107,19 +107,40 @@ if (typeof route.params.matchID === 'string') {
 }
 const { copyLink } = useMatchLink(matchID);
 
+const clerkPubKey = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
+
+const clerkToken = ref('');
+const clerkUsername = ref('');
+const loadClerk = async () => {
+  const clerk = new Clerk(clerkPubKey);
+  await clerk.load();
+  const token = await clerk.session?.getToken();
+  if (token) {
+    clerkToken.value = token;
+  }
+  const username = clerk?.session?.user.username;
+  if (username) {
+    clerkUsername.value = username;
+  }
+};
+
 /**
  * TODO: allow side-by-side clients in testing matches or while spectating (playerID=null)
  */
 const matchClientOne = new SimulChessClient(
   playerID.value === null ? playerID.value : String(playerID.value),
   matchID,
-  store.zugToken,
 );
+loadClerk();
 
 watch(playerID, () => {
   matchClientOne.client.updatePlayerID(
     playerID.value === null ? playerID.value : String(playerID.value),
   );
+});
+
+watch(clerkToken, () => {
+  matchClientOne.client.updateCredentials(clerkToken.value);
 });
 
 onUnmounted(() => {
@@ -151,7 +172,7 @@ watch(gameStateLoaded, () => {
   if (!playerIDDefault) {
     // determine player # from user, set automatically
     const joinedPlayerID = matchClientOne.client.matchData?.findIndex(
-      (player) => player.name && player.name === store.zugUsername,
+      (player) => player.name && player.name === clerkUsername.value,
     );
     if (joinedPlayerID !== undefined && joinedPlayerID >= 0) {
       playerID.value = joinedPlayerID;
@@ -374,7 +395,6 @@ getNotificationSound(store.zugUsername).then((notificationSound) => {
   <main>
     <div v-if="canJoin">
       <p>To join, first sign in</p>
-      <LoginComponent />
       <p>Then click join:</p>
       <Button label="Join" @click="handleJoin"></Button>
       <p>{{ joinStatus }}</p>

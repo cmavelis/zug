@@ -140,7 +140,7 @@ const isBottomPlayer = (index: number) => {
         targetingHints && targetingHints.filter((p) => p.pieceID === piece.id)
       "
       v-bind="piece"
-      @click.stop="(e) => handlePieceClick(piece.id, e)"
+      @click.stop="(e: any) => handlePieceClick(piece.id, e)"
       @mouseover="handlePieceHover(piece.id)"
     >
       <template
