@@ -12,7 +12,6 @@ import { removeOldMatches } from './db/cleanup';
 // TODO: figure out which process needs this to be commonJS syntax
 const { Server, Origins } = require('boardgame.io/server');
 const { SimulChess } = require('../src/game/Game');
-const { botClient } = require('./discordBot');
 const path = require('path');
 const serve = require('koa-static');
 const { koaBody } = require('koa-body');
@@ -264,61 +263,61 @@ server.router.get(
   },
 );
 
-server.router.post('/games/:name/:id/poke', koaBody(), async (ctx) => {
-  const matchID = ctx.params.id;
-  const playerID = ctx.request.body.playerID;
-  if (typeof playerID === 'undefined' || playerID === null) {
-    ctx.throw(400, 'playerID is required');
-  }
-
-  const match = await Match.findByPk(matchID);
-
-  if (!match) {
-    ctx.throw(404, 'Match ' + matchID + ' not found');
-  }
-
-  if (!match.players[playerID]) {
-    ctx.throw(404, 'Player ' + playerID + ' not found');
-  }
-  const playerUserName = match.players[playerID].name;
-  if (!playerUserName) {
-    ctx.throw(404, 'Player ' + playerID + ' not available');
-  }
-  const users = await match.getUsers({ where: { name: playerUserName } });
-  const user = users[0];
-
-  if (!user) {
-    ctx.throw(
-      404,
-      'User ' + playerUserName + ' not found associated with match',
-    );
-  }
-
-  const userMatch = user.UserMatch;
-  if (!userMatch) {
-    ctx.throw(404);
-  }
-  const { lastPoke } = userMatch;
-  const lastPokeDate = new Date(lastPoke);
-  const nowDate = new Date();
-
-  if (!lastPoke || nowDate - lastPokeDate > POKE_TIMEOUT) {
-    botClient.users
-      .send(
-        user.discordUser.id,
-        `Your opponent is reminding you to make a move! ${makeMatchURL({
-          matchID,
-        })}`,
-      )
-      .catch(console.error);
-
-    userMatch.lastPoke = sequelize.literal('CURRENT_TIMESTAMP');
-    userMatch.save();
-    ctx.status = 200;
-  } else {
-    ctx.body = { error: 'Cannot poke again yet' };
-  }
-});
+// server.router.post('/games/:name/:id/poke', koaBody(), async (ctx) => {
+//   const matchID = ctx.params.id;
+//   const playerID = ctx.request.body.playerID;
+//   if (typeof playerID === 'undefined' || playerID === null) {
+//     ctx.throw(400, 'playerID is required');
+//   }
+//
+//   const match = await Match.findByPk(matchID);
+//
+//   if (!match) {
+//     ctx.throw(404, 'Match ' + matchID + ' not found');
+//   }
+//
+//   if (!match.players[playerID]) {
+//     ctx.throw(404, 'Player ' + playerID + ' not found');
+//   }
+//   const playerUserName = match.players[playerID].name;
+//   if (!playerUserName) {
+//     ctx.throw(404, 'Player ' + playerID + ' not available');
+//   }
+//   const users = await match.getUsers({ where: { name: playerUserName } });
+//   const user = users[0];
+//
+//   if (!user) {
+//     ctx.throw(
+//       404,
+//       'User ' + playerUserName + ' not found associated with match',
+//     );
+//   }
+//
+//   const userMatch = user.UserMatch;
+//   if (!userMatch) {
+//     ctx.throw(404);
+//   }
+//   const { lastPoke } = userMatch;
+//   const lastPokeDate = new Date(lastPoke);
+//   const nowDate = new Date();
+//
+//   if (!lastPoke || nowDate - lastPokeDate > POKE_TIMEOUT) {
+//     botClient.users
+//       .send(
+//         user.discordUser.id,
+//         `Your opponent is reminding you to make a move! ${makeMatchURL({
+//           matchID,
+//         })}`,
+//       )
+//       .catch(console.error);
+//
+//     userMatch.lastPoke = sequelize.literal('CURRENT_TIMESTAMP');
+//     userMatch.save();
+//     ctx.status = 200;
+//   } else {
+//     ctx.body = { error: 'Cannot poke again yet' };
+//   }
+// });
 
 server.run(Number(process.env.PORT) || 8000, () => {
   server.app.use(
