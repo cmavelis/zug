@@ -165,7 +165,7 @@ const updateGameState = (state: ClientState<{ G: GObject; ctx: Ctx }>) => {
 };
 matchClientOne.client.subscribe(updateGameState);
 
-watch(gameStateLoaded, () => {
+watch([gameStateLoaded, clerkUsername], () => {
   if (!gameStateLoaded.value) {
     return;
   }
