@@ -4,10 +4,10 @@ import type { Ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { LobbyClient } from 'boardgame.io/client';
 import Button from 'primevue/button';
+import { useUser } from '@clerk/vue';
 
 import LobbyMatch from '@/components/LobbyMatch.vue';
 import type { GameSetupData } from '@/game/Game';
-import { store } from '@/store';
 import { getServerURL } from '@/utils';
 import { useMatch } from '@/composables/useMatch';
 import type { EnhancedMatch } from '../../server/types';
@@ -17,6 +17,7 @@ import { type LobbyAPI } from 'boardgame.io';
 const matches: Ref<EnhancedMatch[]> = ref([]);
 const lastFetched = ref();
 const server = getServerURL();
+const { user } = useUser();
 
 const dateFormatter = new Intl.DateTimeFormat('en-US', {
   month: 'short',
@@ -76,7 +77,7 @@ const shouldHighlight = (match: EnhancedMatch) => {
   let yourTurn;
   if (activePlayers) {
     const playerIndex = Object.values(players).findIndex(
-      (player) => player.name === store.zugUsername,
+      (player) => player.name === user.value?.username,
     );
     yourTurn = activePlayers[playerIndex] === 'planning';
   }
@@ -88,14 +89,14 @@ const yourMatches: Ref<EnhancedMatch[]> = ref([]);
 const openMatches: Ref<EnhancedMatch[]> = ref([]);
 const remainingMatches: Ref<EnhancedMatch[]> = ref([]);
 
-watch(matches, () => {
+watch([matches, user], () => {
   const newYourMatches: EnhancedMatch[] = [];
   const newOpenMatches: EnhancedMatch[] = [];
   const newRemainingMatches: EnhancedMatch[] = [];
 
   matches.value.forEach((match) => {
     if (
-      match.players.some((p) => p.name && p.name === store.zugUsername) &&
+      match.players.some((p) => p.name && p.name === user.value?.username) &&
       newYourMatches.length < 6
     ) {
       newYourMatches.push(match);
