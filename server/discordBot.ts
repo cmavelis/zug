@@ -1,11 +1,26 @@
 require('dotenv/config');
-const { Client, Events, GatewayIntentBits } = require('discord.js');
+import { Client, Events, GatewayIntentBits } from 'discord.js';
 
-export const botClient = new Client({ intents: [GatewayIntentBits.Guilds] });
+export const getBotClient = async () => {
+  const botClient = new Client({ intents: [GatewayIntentBits.Guilds] });
 
-// We use 'c' for the event parameter to keep it separate from the already defined 'client'
-botClient.once(Events.ClientReady, (c: { user: { tag: any } }) => {
-  console.log(`Ready! Logged in as ${c.user.tag}`);
-});
+  // botClient.once(Events.ClientReady, (c: { user: { tag: any } }) => {
+  //   console.log(`Ready! Logged in as ${c.user.tag}`);
+  // });
 
-botClient.login(process.env.DISCORD_BOT_TOKEN);
+  await botClient.login(process.env.DISCORD_BOT_TOKEN);
+
+  return botClient;
+};
+
+interface DiscordUserMessage {
+  id: string;
+  message: string;
+}
+export const messageDiscordUser = async ({
+  id,
+  message,
+}: DiscordUserMessage) => {
+  const botClient = await getBotClient();
+  botClient.users.send(id, message).catch(console.error);
+};

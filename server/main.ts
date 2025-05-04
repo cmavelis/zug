@@ -11,6 +11,7 @@ import { removeOldMatches } from './db/cleanup';
 import { createClerkClient } from '@clerk/backend';
 import { verifyToken } from '@clerk/backend';
 import { JwtPayload } from 'jsonwebtoken';
+import { messageDiscordUser } from './discordBot';
 
 // TODO: figure out which process needs this to be commonJS syntax
 const { Server, Origins } = require('boardgame.io/server');
@@ -32,9 +33,6 @@ const clerkClient = createClerkClient({
 });
 
 dbInitialized.then(() => cron.schedule('0 0 0 * * *', removeOldMatches));
-
-// TODO: create uuids in my own db, link to clerk user
-//       save discord info as well?
 
 // TODO: re-enable
 // // notify players when it's their turn
@@ -119,7 +117,12 @@ const findOrRegisterClerkUser = async (clerkJwtPayload: JwtPayload) => {
       name,
       clerkId,
     });
-    console.log('registered user: ', user);
+    const message = `registered new user: ${name}!`;
+    await messageDiscordUser({
+      id: '141007914386194432', // me :)
+      message,
+    });
+    console.log(message);
   }
 
   return user;
