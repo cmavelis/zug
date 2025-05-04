@@ -18,9 +18,9 @@ export const User = sequelize.define('User', {
     primaryKey: true,
     defaultValue: DataTypes.UUIDV4,
   },
-  name: { type: DataTypes.TEXT, allowNull: false, unique: true },
-  clerkId: { type: DataTypes.UUID, allowNull: false, unique: true },
-  isGuest: { type: DataTypes.BOOLEAN, allowNull: false, defaultValue: true },
+  name: { type: DataTypes.STRING, allowNull: false, unique: true },
+  clerkId: { type: DataTypes.STRING, allowNull: false, unique: true },
+  isGuest: { type: DataTypes.BOOLEAN, allowNull: false, defaultValue: false },
 });
 
 export const UserMatch = sequelize.define('UserMatch', {

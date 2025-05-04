@@ -8,6 +8,9 @@ import { type EnhancedMatch } from './types';
 import { type LobbyAPI } from 'boardgame.io/dist/types/src/types';
 import { db, sequelize, User, Match, dbInitialized } from './db';
 import { removeOldMatches } from './db/cleanup';
+import { createClerkClient } from '@clerk/backend';
+import { verifyToken } from '@clerk/backend';
+import { JwtPayload } from 'jsonwebtoken';
 
 // TODO: figure out which process needs this to be commonJS syntax
 const { Server, Origins } = require('boardgame.io/server');
@@ -24,7 +27,14 @@ const makeMatchURL = ({ matchID }: { matchID: string }) => {
 const DAY_IN_MILLISECONDS = 1000 * 60 * 60 * 24;
 const POKE_TIMEOUT = DAY_IN_MILLISECONDS;
 
+const clerkClient = createClerkClient({
+  secretKey: process.env.CLERK_SECRET_KEY,
+});
+
 dbInitialized.then(() => cron.schedule('0 0 0 * * *', removeOldMatches));
+
+// TODO: create uuids in my own db, link to clerk user
+//       save discord info as well?
 
 // TODO: re-enable
 // // notify players when it's their turn
@@ -84,9 +94,35 @@ interface ZugToken extends ZugUser {
   iat: number; // 'instantiated at'
 }
 
-import { verifyToken } from '@clerk/backend';
 const verifyOptions = {
   secretKey: process.env.CLERK_SECRET_KEY,
+};
+
+const findUser = async (clerkId: string) => {
+  return await User.findOne({
+    where: { clerkId },
+  });
+};
+
+const findOrRegisterClerkUser = async (clerkJwtPayload: JwtPayload) => {
+  const clerkId = clerkJwtPayload.sub;
+
+  let user = await findUser(clerkId);
+
+  if (!user) {
+    const clerkUser = await clerkClient.users
+      .getUser(clerkId)
+      .catch(console.error);
+    if (!clerkUser) return null;
+    const { username: name } = clerkUser;
+    user = await User.create({
+      name,
+      clerkId,
+    });
+    console.log('registered user: ', user);
+  }
+
+  return user;
 };
 
 // Custom authentication handlers
@@ -95,7 +131,6 @@ const generateCredentials = async (ctx) => {
   const authHeader = ctx.request.headers.authorization;
   const token = authHeader.replace('Bearer ', '');
   const verifiedToken = await verifyToken(token, verifyOptions);
-  console.log('generating credentials', verifiedToken);
 
   // TODO: check for guest account if not clerk token
   if (!verifiedToken) {
@@ -103,16 +138,18 @@ const generateCredentials = async (ctx) => {
     throw new Error('Invalid authentication token');
   }
 
-  // TODO: return zug userID
-  return verifiedToken.sub;
+  const user = await findOrRegisterClerkUser(verifiedToken);
+  if (!user) {
+    return false;
+  }
+  return user.id;
 };
 
 const authenticateCredentials = async (credentials, playerMetadata) => {
   try {
     const token = await verifyToken(credentials, verifyOptions);
-    console.log('authenticating credentials', token);
-    // TODO: check against Users
-    return token.sub === playerMetadata.credentials;
+    const user = await findUser(token.sub);
+    return user.id === playerMetadata.credentials;
   } catch (error) {
     return false;
   }
