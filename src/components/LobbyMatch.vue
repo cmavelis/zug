@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { store } from '@/store';
 import type { EnhancedMatch } from '../../server/types';
 import Button from 'primevue/button';
+import { useUser } from '@clerk/vue';
 
 interface LobbyMatchProps {
   match: EnhancedMatch;
@@ -9,6 +9,8 @@ interface LobbyMatchProps {
   handleMatchNavigate: () => void;
   highlight?: boolean;
 }
+
+const { user } = useUser();
 
 const props = defineProps<LobbyMatchProps>();
 </script>
@@ -36,7 +38,7 @@ const props = defineProps<LobbyMatchProps>();
         ({{ props.match.score[i as 0 | 1] }})
         {{ player.name }}
         <button
-          v-if="player.name && player.name === store.zugUsername"
+          v-if="player.name && player.name === user?.username"
           @click="() => handleMatchNavigate()"
         >
           go to
@@ -46,7 +48,7 @@ const props = defineProps<LobbyMatchProps>();
     <div
       v-if="
         props.match.players.some((p) => !p.name) &&
-        props.match.players.every((p) => p.name !== store.zugUsername)
+        props.match.players.every((p) => p.name !== user?.username)
       "
     >
       <button @click="handleMatchJoin">join</button>
