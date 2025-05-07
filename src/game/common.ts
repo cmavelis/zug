@@ -84,10 +84,11 @@ export const stripSecrets = (
   G: GameState,
   playerID: string | null,
 ): GameState => {
-  // spectator ID is null
-  if (playerID === null) {
-    return G;
-  }
+  // TODO: re-implement spectators seeing pending orders here
+  // // spectator ID is null
+  // if (playerID === null) {
+  //   return G;
+  // }
   const playerNumber = Number(playerID);
   const orders: { [key: number]: Orders } = {};
   if ([0, 1].includes(playerNumber)) {
