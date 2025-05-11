@@ -136,7 +136,7 @@ watch([matches, user], () => {
         style="justify-self: end"
       />
       <h2>Matches</h2>
-      <div class="center-align">Last fetched: {{ lastFetched }}</div>
+      <div class="center-align">Last refreshed: {{ lastFetched }}</div>
     </div>
     <span>{{ joinStatus }}</span>
     <div class="divider">
