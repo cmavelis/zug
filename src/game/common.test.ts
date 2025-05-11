@@ -79,5 +79,5 @@ test('strip secrets, p 2', () => {
 test('strip secrets, spectator', () => {
   const G = makeTestGame();
   const stripped = stripSecrets(G, null);
-  expect(stripped.orders).toEqual({ 0: [], 1: [] });
+  expect(stripped.orders).toEqual({});
 });
