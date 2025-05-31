@@ -154,6 +154,7 @@ const authenticateCredentials = async (credentials, playerMetadata) => {
     const user = await findUser(token.sub);
     return user.id === playerMetadata.credentials;
   } catch (error) {
+    console.error(error, '\nError: credentials did not authenticate');
     return false;
   }
 };

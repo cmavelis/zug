@@ -169,9 +169,6 @@ const handlePieceClick = (id: number, e?: Event) => {
   const piece = getPiece(props.state, id);
   if (!piece) return;
 
-  // pieces now capture the click, not the cell
-  console.debug('piece click', id);
-
   // already piece selected
   if (typeof selectedPiece.value === 'number') {
     if (id === selectedPiece.value) {
