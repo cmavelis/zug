@@ -114,10 +114,13 @@ const clerkUsername = ref('');
 const loadClerk = async () => {
   const clerk = new Clerk(clerkPubKey);
   await clerk.load();
-  const token = await clerk.session?.getToken();
-  if (token) {
-    clerkToken.value = token;
-  }
+  clerk.addListener(async ({ session }) => {
+    console.log({ session });
+    const token = await session?.getToken();
+    if (token) {
+      clerkToken.value = token;
+    }
+  });
   const username = clerk?.session?.user.username;
   if (username) {
     clerkUsername.value = username;
