@@ -36,7 +36,24 @@ import { getServerURL } from '@/utils';
 import ButtonStepper from '@/components/ButtonStepper.vue';
 import { useMatchLink } from '@/composables/useMatchLink';
 import { BoardDisplay } from '@/components/BoardDisplay';
-import { Clerk } from '@clerk/clerk-js';
+import { useClerk } from '@clerk/vue';
+
+const clerk = useClerk();
+watch(clerk, (newClerk) => {
+  if (!newClerk) return;
+  newClerk.addListener(async ({ session }) => {
+    console.log({ session });
+    const token = await session?.getToken();
+    console.log({ token });
+    if (token) {
+      clerkToken.value = token;
+    }
+  });
+  const username = newClerk.session?.user.username;
+  if (username) {
+    clerkUsername.value = username;
+  }
+});
 
 const windowHasFocus = useWindowFocus();
 const toast = useToast();
@@ -107,25 +124,8 @@ if (typeof route.params.matchID === 'string') {
 }
 const { copyLink } = useMatchLink(matchID);
 
-const clerkPubKey = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
-
 const clerkToken = ref('');
 const clerkUsername = ref('');
-const loadClerk = async () => {
-  const clerk = new Clerk(clerkPubKey);
-  await clerk.load();
-  clerk.addListener(async ({ session }) => {
-    console.log({ session });
-    const token = await session?.getToken();
-    if (token) {
-      clerkToken.value = token;
-    }
-  });
-  const username = clerk?.session?.user.username;
-  if (username) {
-    clerkUsername.value = username;
-  }
-};
 
 /**
  * TODO: allow side-by-side clients in testing matches or while spectating (playerID=null)
@@ -134,7 +134,6 @@ const matchClientOne = new SimulChessClient(
   playerID.value === null ? playerID.value : String(playerID.value),
   matchID,
 );
-loadClerk();
 
 watch(playerID, () => {
   matchClientOne.client.updatePlayerID(
