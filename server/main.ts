@@ -243,12 +243,19 @@ interface MatchesContext extends Koa.Context {
 server.router.get(
   '/games/:name',
   async (ctx: MatchesContext, next: (ctx: Koa.Context) => Promise<void>) => {
+    const now = Date.now();
+    console.debug(
+      ctx.params.id,
+      now - Date.now(),
+      'ms: Start of games/:name request',
+    );
     const gameName = ctx.params.name;
     if (gameName !== 'zug') {
       await next(ctx);
       return;
     }
     await next(ctx);
+    console.debug(ctx.params.id, now - Date.now(), 'ms: awaited next(ctx)');
 
     // this list already filtered for unlisted matches
     const matchList = ctx.body.matches as EnhancedMatch[];
@@ -262,6 +269,7 @@ server.router.get(
       match.activePlayers = state.ctx.activePlayers;
     }
 
+    console.debug(ctx.params.id, now - Date.now(), 'ms: finishing');
     ctx.body = { matches: matchList };
   },
 );
