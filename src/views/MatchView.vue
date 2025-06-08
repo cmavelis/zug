@@ -38,22 +38,31 @@ import { useMatchLink } from '@/composables/useMatchLink';
 import { BoardDisplay } from '@/components/BoardDisplay';
 import { useClerk } from '@clerk/vue';
 
-const clerk = useClerk();
-watch(clerk, (newClerk) => {
-  if (!newClerk) return;
-  newClerk.addListener(async ({ session }) => {
-    console.log({ session });
-    const token = await session?.getToken();
-    console.log({ token });
-    if (token) {
-      clerkToken.value = token;
-    }
-  });
-  const username = newClerk.session?.user.username;
-  if (username) {
-    clerkUsername.value = username;
-  }
+// TODO: make matchToken
+const clerkToken = ref('');
+const clerkUsername = ref('');
+watch(clerkToken, () => {
+  matchClientOne.client.updateCredentials(clerkToken.value);
 });
+
+const clerk = useClerk();
+watch(
+  clerk,
+  (newClerk) => {
+    if (!newClerk) return;
+    newClerk.addListener(async ({ session }) => {
+      const token = await session?.getToken();
+      if (token) {
+        clerkToken.value = token;
+      }
+    });
+    const username = newClerk.session?.user.username;
+    if (username) {
+      clerkUsername.value = username;
+    }
+  },
+  { immediate: true },
+);
 
 const windowHasFocus = useWindowFocus();
 const toast = useToast();
@@ -124,9 +133,6 @@ if (typeof route.params.matchID === 'string') {
 }
 const { copyLink } = useMatchLink(matchID);
 
-const clerkToken = ref('');
-const clerkUsername = ref('');
-
 /**
  * TODO: allow side-by-side clients in testing matches or while spectating (playerID=null)
  */
@@ -139,10 +145,6 @@ watch(playerID, () => {
   matchClientOne.client.updatePlayerID(
     playerID.value === null ? playerID.value : String(playerID.value),
   );
-});
-
-watch(clerkToken, () => {
-  matchClientOne.client.updateCredentials(clerkToken.value);
 });
 
 onUnmounted(() => {
@@ -394,7 +396,8 @@ getNotificationSound(store.zugUsername).then((notificationSound) => {
 </script>
 
 <template>
-  <main>
+  <main v-if="!clerkToken">Loading...</main>
+  <main v-else>
     <div v-if="canJoin">
       <p>To join, first sign in</p>
       <p>Then click join:</p>
