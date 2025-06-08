@@ -302,6 +302,7 @@ const handleEndTurn = () => {
       'Cannot end turn yet. You must use all available actions. (zug)';
     return;
   }
+  endTurnMessage.value = '';
   if (endStage) endStage();
 };
 
@@ -532,6 +533,7 @@ onUnmounted(() => {
       </div>
     </div>
   </section>
+  <p v-if="endTurnMessage" class="info-message">{{ endTurnMessage }}</p>
 </template>
 
 <style scoped>
