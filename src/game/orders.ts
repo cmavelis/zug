@@ -125,6 +125,7 @@ function movePieces(G: GameState, moveArray: Move[]) {
 export function orderResolver({ G }: { G: GObject }) {
   const { cells, orders, pieces, score } = G;
 
+  // TODO: validate # of orders. see https://discord.com/channels/1123769624719265922/1123769625168072714/1379887672029483211
   let turnHistory: GameStateHistory[] = [];
   let orderPairs: (Order | null)[][];
 
