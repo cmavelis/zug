@@ -1,11 +1,14 @@
 import { PostgresStore } from 'bgio-postgres';
 import { DataTypes, Sequelize } from 'sequelize';
 
-export const sequelize = new Sequelize(process.env.DATABASE_URL as string, {
+const DATABASE_URL: string =
+  process.env.DATABASE_PRIVATE_URL || process.env.DATABASE_URL;
+
+export const sequelize = new Sequelize(DATABASE_URL, {
   dialect: 'postgres',
   logging: false,
 });
-export const db = new PostgresStore(process.env.DATABASE_URL as string, {
+export const db = new PostgresStore(DATABASE_URL, {
   dialect: 'postgres',
   logging: false,
 });
