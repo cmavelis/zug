@@ -436,12 +436,12 @@ getNotificationSound(store.zugUsername).then((notificationSound) => {
         <span>Waiting for opponent to finish turn...</span>
         <button @click="handlePoke">poke?</button>
       </span>
-      <p v-else-if="opponentWaiting" class="info-message">
-        Your opponent is waiting for you to finish...
-      </p>
       <span v-else-if="!winner && !lastTurnSeen" class="info-message">
         <Button @click="replayLastTurn()" label="GO!" />
       </span>
+      <p v-else-if="opponentWaiting" class="info-message">
+        Your opponent is waiting for you to finish...
+      </p>
       <p class="game-over" v-else-if="winner === 'tie'">It's a tie!</p>
       <p class="game-over" v-else-if="winner">{{ winner }} wins!</p>
     </div>
