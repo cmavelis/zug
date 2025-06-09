@@ -219,10 +219,10 @@ async function animateTurn(startTurn: number) {
   }
 }
 function replayLastTurn() {
+  matchClientOne.client.moves.markTurnSeen();
   setHistoryTurn(gameState.G.history.length);
   animateTurn(gameState.G.history.length);
   newTurnReady.value = false;
-  matchClientOne.client.moves.markTurnSeen();
 }
 
 const gameLastTurn = computed(() => {
