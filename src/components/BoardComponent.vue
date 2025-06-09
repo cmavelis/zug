@@ -494,7 +494,7 @@ onUnmounted(() => {
         :disableCommandMenu="!props.isActiveTurn"
       />
     </div>
-    <div class="actions-text" v-if="props.showOrders">
+    <div class="actions-text" v-if="props.showOrders && props.isActiveTurn">
       <Button
         size="small"
         severity="secondary"
