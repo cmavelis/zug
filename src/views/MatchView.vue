@@ -396,7 +396,7 @@ getNotificationSound(store.zugUsername).then((notificationSound) => {
 </script>
 
 <template>
-  <main v-if="!clerkToken">Loading...</main>
+  <main v-if="!clerk">Loading...</main>
   <main v-else>
     <div v-if="canJoin">
       <p>To join, first sign in</p>
