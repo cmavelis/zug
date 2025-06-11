@@ -407,6 +407,21 @@ onUnmounted(() => {
 
 <template>
   <section class="layout">
+    <div>
+      <Button
+        size="small"
+        severity="secondary"
+        @click="undoLastOrder()"
+        label="undo last action"
+      />
+      <Button
+        size="small"
+        :severity="canEndTurn ? 'primary' : 'secondary'"
+        @click="handleEndTurn"
+        :class="{ 'halo-shadow': canEndTurn }"
+        label="end turn"
+      />
+    </div>
     <div class="board-with-controls">
       <div class="order-button-group">
         <input
@@ -494,20 +509,7 @@ onUnmounted(() => {
         :disableCommandMenu="!props.isActiveTurn"
       />
     </div>
-    <div class="actions-text" v-if="props.showOrders && props.isActiveTurn">
-      <Button
-        size="small"
-        severity="secondary"
-        @click="undoLastOrder()"
-        label="undo last action"
-      />
-      <Button
-        size="small"
-        :severity="canEndTurn ? 'primary' : 'secondary'"
-        @click="handleEndTurn"
-        :class="{ 'halo-shadow': canEndTurn }"
-        label="end turn"
-      />
+    <div v-if="props.showOrders && props.isActiveTurn">
       <div v-if="store.isDebug">
         <p>
           piece:
@@ -539,7 +541,7 @@ onUnmounted(() => {
 <style scoped>
 .layout {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 1fr;
   gap: 0.2rem;
 }
 
@@ -548,18 +550,12 @@ onUnmounted(() => {
   display: grid;
   grid-template-columns: 1fr min-content 1fr;
   justify-content: center;
-  justify-self: end;
+  justify-self: center;
   gap: 8px;
   margin: 18px 0;
 }
 
 @media (max-width: 500px) {
-  .layout {
-    grid-template-columns: 1fr;
-  }
-  .board-with-controls {
-    justify-self: center;
-  }
 }
 
 .info-message {
