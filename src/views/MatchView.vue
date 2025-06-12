@@ -275,7 +275,7 @@ const boardState = computed(() => {
   return null;
 });
 const canJoin = computed(() => {
-  const openPlayerSlot = matchClientOne.client.matchData?.some(
+  const openPlayerSlot = matchData.value?.some(
     (player) => player.name === undefined,
   );
   return playerID.value === null && !gameLastTurn.value && openPlayerSlot;
@@ -399,9 +399,8 @@ getNotificationSound(store.zugUsername).then((notificationSound) => {
   <main v-if="!clerk">Loading...</main>
   <main v-else>
     <div v-if="canJoin">
-      <p>To join, first sign in</p>
-      <p>Then click join:</p>
-      <Button label="Join" @click="handleJoin"></Button>
+      <p v-if="!clerkToken">Sign in to join this game</p>
+      <Button v-else label="Join" @click="handleJoin"></Button>
       <p>{{ joinStatus }}</p>
     </div>
     <div class="player-info">
