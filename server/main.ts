@@ -34,50 +34,63 @@ const clerkClient = createClerkClient({
 
 dbInitialized.then(() => cron.schedule('0 0 0 * * *', removeOldMatches));
 
-// TODO: re-enable
-// // notify players when it's their turn
-// Match.beforeUpsert(async (created) => {
-//   const { id } = created;
-//   const oldMatch = await Match.findByPk(id);
-//   const oldActivePlayers = oldMatch?.state?.ctx.activePlayers;
-//   const newActivePlayers = created?.state?.ctx.activePlayers;
-//
-//   if (!(oldActivePlayers && newActivePlayers)) {
-//     return;
-//   }
-//
-//   for (const p of [0, 1]) {
-//     const oldPhase = oldActivePlayers[p];
-//     const newPhase = newActivePlayers[p];
-//     if (oldPhase === newPhase) {
-//       continue;
-//     }
-//     const player = oldMatch.players[p];
-//     if (!player.isConnected) {
-//       const otherPlayer = oldMatch.players[p === 0 ? 1 : 0];
-//       // send discord message
-//       User.findOne({ where: { name: player.name } })
-//         .then((user) => {
-//           if (!user) return;
-//           botClient.users
-//             .send(
-//               user.discordUser.id,
-//               `It's your turn against ${otherPlayer.name}: \n ${makeMatchURL({
-//                 matchID: created.id,
-//               })}`,
-//             )
-//
-//             .then(() =>
-//               console.debug(
-//                 `discord message sent to ${user.discordUser.username} ${user.discordUser.id}`,
-//               ),
-//             )
-//             .catch(console.error);
-//         })
-//         .catch(console.error);
-//     }
-//   }
-// });
+const getDiscordFromClerk = async (clerkUserId: string) => {
+  const clerkUser = await clerkClient.users.getUser(clerkUserId);
+  const discordAccount = clerkUser.externalAccounts.find(
+    (a) => a.provider === 'oauth_discord',
+  );
+
+  return discordAccount && discordAccount.externalId;
+};
+
+// notify players when it's their turn
+Match.beforeUpsert(async (created) => {
+  try {
+    const { id } = created;
+    const oldMatch = await Match.findByPk(id);
+    const oldActivePlayers = oldMatch?.state?.ctx.activePlayers;
+    const newActivePlayers = created?.state?.ctx.activePlayers;
+
+    if (!(oldActivePlayers && newActivePlayers)) {
+      return;
+    }
+
+    for (const p of [0, 1]) {
+      const oldPhase = oldActivePlayers[p];
+      const newPhase = newActivePlayers[p];
+      if (oldPhase === newPhase) {
+        continue;
+      }
+      const player = oldMatch.players[p];
+      if (!player.isConnected) {
+        const otherPlayer = oldMatch.players[p === 0 ? 1 : 0];
+        // send discord message
+        User.findOne({ where: { name: player.name } })
+          .then(async (user) => {
+            if (!user) return;
+            const discordId = await getDiscordFromClerk(user.clerkId);
+            messageDiscordUser({
+              id: discordId,
+              message: `It's your turn against ${
+                otherPlayer.name
+              }: \n ${makeMatchURL({
+                matchID: created.id,
+              })}`,
+            })
+              .then(() =>
+                console.debug(
+                  `discord message sent to ${user.discordUser.username} ${user.discordUser.id}`,
+                ),
+              )
+              .catch(console.error);
+          })
+          .catch(console.error);
+      }
+    }
+  } catch (err) {
+    console.error(err);
+  }
+});
 
 interface IBaseUser {
   name: string;
@@ -314,61 +327,60 @@ server.router.get(
   },
 );
 
-// server.router.post('/games/:name/:id/poke', koaBody(), async (ctx) => {
-//   const matchID = ctx.params.id;
-//   const playerID = ctx.request.body.playerID;
-//   if (typeof playerID === 'undefined' || playerID === null) {
-//     ctx.throw(400, 'playerID is required');
-//   }
-//
-//   const match = await Match.findByPk(matchID);
-//
-//   if (!match) {
-//     ctx.throw(404, 'Match ' + matchID + ' not found');
-//   }
-//
-//   if (!match.players[playerID]) {
-//     ctx.throw(404, 'Player ' + playerID + ' not found');
-//   }
-//   const playerUserName = match.players[playerID].name;
-//   if (!playerUserName) {
-//     ctx.throw(404, 'Player ' + playerID + ' not available');
-//   }
-//   const users = await match.getUsers({ where: { name: playerUserName } });
-//   const user = users[0];
-//
-//   if (!user) {
-//     ctx.throw(
-//       404,
-//       'User ' + playerUserName + ' not found associated with match',
-//     );
-//   }
-//
-//   const userMatch = user.UserMatch;
-//   if (!userMatch) {
-//     ctx.throw(404);
-//   }
-//   const { lastPoke } = userMatch;
-//   const lastPokeDate = new Date(lastPoke);
-//   const nowDate = new Date();
-//
-//   if (!lastPoke || nowDate - lastPokeDate > POKE_TIMEOUT) {
-//     botClient.users
-//       .send(
-//         user.discordUser.id,
-//         `Your opponent is reminding you to make a move! ${makeMatchURL({
-//           matchID,
-//         })}`,
-//       )
-//       .catch(console.error);
-//
-//     userMatch.lastPoke = sequelize.literal('CURRENT_TIMESTAMP');
-//     userMatch.save();
-//     ctx.status = 200;
-//   } else {
-//     ctx.body = { error: 'Cannot poke again yet' };
-//   }
-// });
+server.router.post('/games/:name/:id/poke', koaBody(), async (ctx) => {
+  const matchID = ctx.params.id;
+  const playerID = ctx.request.body.playerID;
+  if (typeof playerID === 'undefined' || playerID === null) {
+    ctx.throw(400, 'playerID is required');
+  }
+
+  const match = await Match.findByPk(matchID);
+
+  if (!match) {
+    ctx.throw(404, 'Match ' + matchID + ' not found');
+  }
+
+  if (!match.players[playerID]) {
+    ctx.throw(404, 'Player ' + playerID + ' not found');
+  }
+  const playerUserName = match.players[playerID].name;
+  if (!playerUserName) {
+    ctx.throw(404, 'Player ' + playerID + ' not available');
+  }
+  const users = await match.getUsers({ where: { name: playerUserName } });
+  const user = users[0];
+
+  if (!user) {
+    ctx.throw(
+      404,
+      'User ' + playerUserName + ' not found associated with match',
+    );
+  }
+
+  const userMatch = user.UserMatch;
+  if (!userMatch) {
+    ctx.throw(404);
+  }
+  const { lastPoke } = userMatch;
+  const lastPokeDate = new Date(lastPoke);
+  const nowDate = new Date();
+
+  if (!lastPoke || nowDate - lastPokeDate > POKE_TIMEOUT) {
+    const discordId = await getDiscordFromClerk(user.clerkId);
+    await messageDiscordUser({
+      id: discordId,
+      message: `Your opponent is reminding you to make a move! ${makeMatchURL({
+        matchID,
+      })}`,
+    });
+
+    userMatch.lastPoke = sequelize.literal('CURRENT_TIMESTAMP');
+    userMatch.save();
+    ctx.status = 200;
+  } else {
+    ctx.body = { error: 'Cannot poke again yet' };
+  }
+});
 
 server.run(Number(process.env.PORT) || 8000, () => {
   server.app.use(
