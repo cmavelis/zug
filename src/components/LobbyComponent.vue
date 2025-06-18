@@ -117,15 +117,15 @@ watch([matches, user], () => {
     <h1>Matches Lobby</h1>
     <h2>Create a match</h2>
     <span class="p-buttonset">
-      <Button @click="createMatch()" label="Standard"></Button>
+      <Button @click="createMatch()" label="Basic"></Button>
+      <Button
+        @click="createMatch({ config: LATEST_ZUG_CONFIG })"
+        label="Advanced"
+      ></Button>
       <Button
         @click="handleCustomClick"
         severity="secondary"
         label="Custom"
-      ></Button>
-      <Button
-        @click="createMatch({ config: LATEST_ZUG_CONFIG })"
-        label="Latest"
       ></Button>
     </span>
     <div class="matches-header">
