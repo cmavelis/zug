@@ -23,7 +23,7 @@ export const DEFAULT_ZUG_CONFIG: ZugConfig = {
   placePriorityAssignment: { beforeTurn: true },
 };
 
-export const LATEST_ZUG_CONFIG: ZugConfig = {
+export const ADVANCED_ZUG_CONFIG: ZugConfig = {
   ...DEFAULT_ZUG_CONFIG,
   piecePriorityOptions: [1, 2, 3, 4, 5, 6],
   piecePushRestrictions: { add: 2 },
