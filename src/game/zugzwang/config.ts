@@ -9,23 +9,24 @@ export interface ZugConfig {
     beforeTurn?: boolean;
     duringTurn?: boolean;
   };
-  useFairStartingBoard?: boolean;
+  useFairStartingBoard?: boolean | 'no-first-turn-score';
 }
 
 export const DEFAULT_ZUG_CONFIG: ZugConfig = {
   outOfBounds: 'turnEnd',
   priority: 'piece',
-  piecePriorityOptions: [1, 2, 3, 4, 5, 6],
+  piecePriorityOptions: [1, 2, 3, 4],
   piecePriorityDuplicates: false,
-  startingPiecePriorities: [2, 3, 4, 5],
+  startingPiecePriorities: [1, 2, 3, 4],
   piecePushRestrictions: null,
-  useFairStartingBoard: true,
+  useFairStartingBoard: 'no-first-turn-score',
+  placePriorityAssignment: { beforeTurn: true },
 };
 
-export const LATEST_ZUG_CONFIG: ZugConfig = {
+export const ADVANCED_ZUG_CONFIG: ZugConfig = {
   ...DEFAULT_ZUG_CONFIG,
+  piecePriorityOptions: [1, 2, 3, 4, 5, 6],
   piecePushRestrictions: { add: 2 },
-  placePriorityAssignment: { beforeTurn: true },
 };
 
 export interface PushRestrictionsConfig {
