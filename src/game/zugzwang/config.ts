@@ -9,7 +9,7 @@ export interface ZugConfig {
     beforeTurn?: boolean;
     duringTurn?: boolean;
   };
-  useFairStartingBoard?: boolean | 'no-turn-1-score';
+  useFairStartingBoard?: boolean | 'no-first-turn-score';
 }
 
 export const DEFAULT_ZUG_CONFIG: ZugConfig = {
@@ -19,7 +19,7 @@ export const DEFAULT_ZUG_CONFIG: ZugConfig = {
   piecePriorityDuplicates: false,
   startingPiecePriorities: [1, 2, 3, 4],
   piecePushRestrictions: null,
-  useFairStartingBoard: true,
+  useFairStartingBoard: 'no-first-turn-score',
   placePriorityAssignment: { beforeTurn: true },
 };
 

@@ -1,6 +1,6 @@
 import type { Game } from 'boardgame.io';
 import { INVALID_MOVE } from 'boardgame.io/core';
-import { isEqual, shuffle, random } from 'lodash';
+import { isEqual, shuffle, random, negate } from 'lodash';
 
 import fairBoards from './setup/fair-boards.json';
 import { createPiece, type Piece } from '@/game/pieces';
@@ -11,6 +11,10 @@ import { isValidOrder } from '@/game/zugzwang/validators';
 import type { ZugConfig as CommonGameConfig } from '@/game/zugzwang/config';
 import { stripSecrets } from '@/game/common';
 import { DEFAULT_ZUG_CONFIG } from '@/game/zugzwang/config';
+import {
+  getConditionalStartingBoard,
+  hasFirstTurnScore,
+} from '@/game/setup/util';
 
 export interface GameSetupData {
   config: Partial<CommonGameConfig>;
@@ -109,8 +113,18 @@ export const SimulChess: Game<GObject> = {
       } = setupData.config;
       let p1PiecePriorities: number[] = [];
       let p2PiecePriorities: number[] = [];
-      if (useFairStartingBoard === 'no-turn-1-score') {
-        // check for scores here
+      if (
+        useFairStartingBoard === 'no-first-turn-score' &&
+        piecePriorityOptions
+      ) {
+        p1PiecePriorities = getConditionalStartingBoard(
+          piecePriorityOptions,
+          negate(hasFirstTurnScore),
+        );
+        p2PiecePriorities = getConditionalStartingBoard(
+          piecePriorityOptions,
+          negate(hasFirstTurnScore),
+        );
       } else if (
         useFairStartingBoard && // NOTE: this option is only configured for 2345 start
         isEqual(piecePriorityOptions, DEFAULT_ZUG_CONFIG.piecePriorityOptions)
