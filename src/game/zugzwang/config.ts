@@ -9,7 +9,7 @@ export interface ZugConfig {
     beforeTurn?: boolean;
     duringTurn?: boolean;
   };
-  useFairStartingBoard?: boolean;
+  useFairStartingBoard?: boolean | 'no-turn-1-score';
 }
 
 export const DEFAULT_ZUG_CONFIG: ZugConfig = {

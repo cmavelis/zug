@@ -109,8 +109,10 @@ export const SimulChess: Game<GObject> = {
       } = setupData.config;
       let p1PiecePriorities: number[] = [];
       let p2PiecePriorities: number[] = [];
-      if (
-        useFairStartingBoard &&
+      if (useFairStartingBoard === 'no-turn-1-score') {
+        // check for scores here
+      } else if (
+        useFairStartingBoard && // NOTE: this option is only configured for 2345 start
         isEqual(piecePriorityOptions, DEFAULT_ZUG_CONFIG.piecePriorityOptions)
       ) {
         const startingBoard = fairBoards[random(0, fairBoards.length)];
