@@ -162,15 +162,25 @@ const generateCredentials = async (ctx) => {
 };
 
 const authenticateCredentials = async (credentials, playerMetadata) => {
+  const start = Date.now();
+  let tokenTime = 0;
+  let userTime = 0;
   try {
     const token = await verifyToken(credentials, verifyOptions);
+    tokenTime = Date.now() - start;
     const user = await findUser(token.sub);
+    userTime = Date.now() - start;
     return user.id === playerMetadata.credentials;
   } catch (error) {
     console.error(`Error: credentials did not authenticate:\n`, error, {
       playerMetadata,
     });
     return false;
+  } finally {
+    const duration = Date.now() - start;
+    console.debug(
+      `authenticateCredentials executed. verifyToken: ${tokenTime}ms, findUser: ${userTime}ms. Total ${duration}ms`,
+    );
   }
 };
 
