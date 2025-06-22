@@ -24,6 +24,7 @@ import {
 } from '@/game/zugzwang/validators';
 import { store } from '@/store';
 import type { MenuItem } from 'primevue/menuitem';
+import { validateTurnEnd } from '@/game/zugzwang/validators';
 
 const NUMBER_PIECES = 4;
 
@@ -70,9 +71,14 @@ const gamePhase = computed(() => {
     return 'end';
   }
 });
-const canEndTurn = computed(
-  () => actionsUsed.value.length === 4 && gamePhase.value === 'planning',
-);
+const canEndTurn = computed(() => {
+  if (gamePhase.value !== 'planning') {
+    return false;
+  }
+  
+  const validation = validateTurnEnd(props.playerID, props.state.orders, props.state.pieces);
+  return validation.canEndTurn;
+});
 const piecesWithoutActions = computed(() => {
   const idSet = new Set(
     props.state.pieces
@@ -296,14 +302,15 @@ const handleCellHover = (cellId: number) => {
 };
 
 const handleEndTurn = () => {
-  const { endStage } = props.client.events;
-  if (flatOrders.value.length < 4 && !store.isDebug) {
-    endTurnMessage.value =
-      'Cannot end turn yet. You must use all available actions. (zug)';
+  const validation = validateTurnEnd(props.playerID, props.state.orders, props.state.pieces);
+  
+  if (!validation.canEndTurn) {
+    endTurnMessage.value = 'All your pieces must take action';
     return;
   }
   endTurnMessage.value = '';
-  if (endStage) endStage();
+  
+  props.client.moves.endTurn();
 };
 
 const handleCancelAction = (pieceID: number) => {
@@ -413,12 +420,14 @@ onUnmounted(() => {
         severity="secondary"
         @click="undoLastOrder()"
         label="undo last action"
+        :disabled="!props.isActiveTurn"
       />
       <Button
         size="small"
         :severity="canEndTurn ? 'primary' : 'secondary'"
         @click="handleEndTurn"
         :class="{ 'halo-shadow': canEndTurn }"
+        :disabled="!props.isActiveTurn"
         label="end turn"
       />
     </div>
