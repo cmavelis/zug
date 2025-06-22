@@ -167,9 +167,9 @@ const authenticateCredentials = async (credentials, playerMetadata) => {
   let userTime = 0;
   try {
     const token = await verifyToken(credentials, verifyOptions);
-    tokenTime = Date.now() - start;
+    tokenTime = Date.now() - start
     const user = await findUser(token.sub);
-    userTime = Date.now() - tokenTime;
+    userTime = Date.now() - start - tokenTime;
     return user.id === playerMetadata.credentials;
   } catch (error) {
     console.error(`Error: credentials did not authenticate:\n`, error, {
