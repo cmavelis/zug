@@ -5,6 +5,7 @@ import type {
   MoveDiagonalOrder,
   MoveStraightOrder,
   Order,
+  Orders,
   OrderTypes,
   PlaceOrder,
 } from '@/game/orders';
@@ -223,4 +224,59 @@ export function getValidSquaresForOrder({
     });
   });
   return allCoords;
+}
+
+export interface TurnValidationResult {
+  canEndTurn: boolean;
+  errorMessage?: string;
+}
+
+export function validateTurnEnd(
+  playerID: number,
+  orders: { [playerID: number]: Orders },
+  pieces: Piece[],
+): TurnValidationResult {
+  const playerOrders = orders[playerID] || [];
+  
+  // Get the number of pieces the player currently has on the board
+  const currentPieces = pieces.filter(p => p.owner === playerID).length;
+
+  // Calculate how many move/push orders the player has
+  const moveOrders = playerOrders.filter(o => o.type !== 'place').length;
+  
+  // Total orders should equal the number of pieces they can control
+  const expectedTotalOrders = 4;
+  
+  // Check if they have the right number of total orders
+  if (playerOrders.length !== expectedTotalOrders) {
+    return {
+      canEndTurn: false,
+    };
+  }
+  
+  // Check if move orders don't exceed current pieces
+  if (moveOrders > currentPieces) {
+    return {
+      canEndTurn: false,
+    };
+  }
+  
+  // Check if all existing pieces have orders (if they have pieces)
+  if (currentPieces > 0) {
+    const orderedPieceIds = new Set(playerOrders.filter(o => o.type !== 'place').map(o => o.sourcePieceId));
+    const piecesWithoutOrders = pieces
+      .filter(p => p.owner === playerID)
+      .filter(p => !orderedPieceIds.has(p.id));
+    
+    if (piecesWithoutOrders.length > 0) {
+      return {
+        canEndTurn: false,
+        errorMessage: `Pieces ${piecesWithoutOrders.map(p => p.id).join(', ')} don't have actions`
+      };
+    }
+  }
+  
+  return {
+    canEndTurn: true
+  };
 }

@@ -8,6 +8,7 @@ import type { Order, Orders } from '@/game/orders';
 import { orderResolver } from '@/game/orders';
 import type { Coordinates } from '@/game/common';
 import { isValidOrder } from '@/game/zugzwang/validators';
+import { validateTurnEnd } from '@/game/zugzwang/validators';
 import type { ZugConfig as CommonGameConfig } from '@/game/zugzwang/config';
 import { stripSecrets } from '@/game/common';
 import { DEFAULT_ZUG_CONFIG } from '@/game/zugzwang/config';
@@ -206,7 +207,7 @@ export const SimulChess: Game<GObject> = {
 
               G.orders[playerNumber].push(order);
             },
-            // Prevents the move counting towards a player’s number of moves.
+            // Prevents the move counting towards a player's number of moves.
             noLimit: true,
           },
           removeLastOrder: {
@@ -232,6 +233,20 @@ export const SimulChess: Game<GObject> = {
               if (G.players) {
                 G.players[Number(playerID)].seenLatestTurn = true;
               }
+            },
+          },
+          endTurn: {
+            move: ({ G, playerID, events }: { G: GameState; playerID: string; events: any }) => {
+              const playerNumber = +playerID;
+              
+              const validation = validateTurnEnd(playerNumber, G.orders, G.pieces);
+              
+              if (!validation.canEndTurn) {
+                return INVALID_MOVE;
+              }
+              
+              // If validation passes, end the stage and move to resolution
+              events.endStage();
             },
           },
         },
