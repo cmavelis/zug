@@ -424,9 +424,9 @@ onUnmounted(() => {
       />
       <Button
         size="small"
-        :severity="canEndTurn ? 'primary' : 'secondary'"
+        :severity="canEndTurn && props.isActiveTurn ? 'primary' : 'secondary'"
         @click="handleEndTurn"
-        :class="{ 'halo-shadow': canEndTurn }"
+        :class="{ 'halo-shadow': canEndTurn && props.isActiveTurn }"
         :disabled="!props.isActiveTurn"
         label="end turn"
       />
