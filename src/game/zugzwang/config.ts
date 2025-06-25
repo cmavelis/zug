@@ -26,6 +26,8 @@ export const DEFAULT_ZUG_CONFIG: ZugConfig = {
 export const ADVANCED_ZUG_CONFIG: ZugConfig = {
   ...DEFAULT_ZUG_CONFIG,
   piecePriorityOptions: [1, 2, 3, 4, 5, 6],
+  startingPiecePriorities: [2, 3, 4, 5],
+  useFairStartingBoard: true,
   piecePushRestrictions: { add: 2 },
 };
 
