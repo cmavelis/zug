@@ -22,7 +22,7 @@ export const User = sequelize.define('User', {
     defaultValue: DataTypes.UUIDV4,
   },
   name: { type: DataTypes.STRING, allowNull: false, unique: true },
-  clerkId: { type: DataTypes.STRING, unique: true },
+  clerkId: { type: DataTypes.STRING, unique: true, allowNull: true },
   isGuest: { type: DataTypes.BOOLEAN, allowNull: false, defaultValue: false },
 });
 
@@ -46,7 +46,7 @@ export const UserMatch = sequelize.define('UserMatch', {
 Match.belongsToMany(User, { through: UserMatch });
 User.belongsToMany(Match, { through: UserMatch });
 export const dbInitialized = sequelize
-  .sync()
+  .sync({ alter: true })
   .then(() => {
     console.log('All models synced!');
     return true;
