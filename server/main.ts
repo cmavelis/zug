@@ -12,6 +12,7 @@ import { createClerkClient } from '@clerk/backend';
 import { verifyToken } from '@clerk/backend';
 import { JwtPayload } from 'jsonwebtoken';
 import { messageDiscordUser } from './discordBot';
+import { generateGuestUsername } from './guestUser';
 
 // TODO: figure out which process needs this to be commonJS syntax
 const { Server, Origins } = require('boardgame.io/server');
@@ -92,15 +93,6 @@ Match.beforeUpsert(async (created) => {
   }
 });
 
-interface IBaseUser {
-  name: string;
-  credentials: string;
-}
-
-interface IUser extends IBaseUser {
-  discord?: any;
-}
-
 interface ZugToken extends ZugUser {
   iat: number; // 'instantiated at'
 }
@@ -167,7 +159,7 @@ const authenticateCredentials = async (credentials, playerMetadata) => {
   let userTime = 0;
   try {
     const token = await verifyToken(credentials, verifyOptions);
-    tokenTime = Date.now() - start
+    tokenTime = Date.now() - start;
     const user = await findUser(token.sub);
     userTime = Date.now() - start - tokenTime;
     return user.id === playerMetadata.credentials;
@@ -202,31 +194,55 @@ const frontEndAppBuildPath = path.resolve(__dirname, '../dist');
 server.app.use(serve(frontEndAppBuildPath));
 
 server.router.post(
-  '/api/login',
+  '/api/guest/login',
   koaBody(),
   async (ctx: { body?: any; request?: any }) => {
-    const { request } = ctx;
-    const { username } = request.body;
+    // const { username } = request.body;
+    let username: string;
+    let usernameUnique = false;
+    while (!usernameUnique) {
+      username = generateGuestUsername();
+      const existingGuestUser = await User.findOne({
+        where: { name: username, isGuest: true },
+      });
 
-    const existingUser: IBaseUser = await TempUser.findOne({
-      where: { name: username },
+      if (!existingGuestUser) {
+        usernameUnique = true;
+      }
+    }
+    const newGuestUser = await User.create({
+      name: username,
+      isGuest: true,
     });
 
-    let credentials: string = randomUUID();
-    if (existingUser) {
-      credentials = existingUser.credentials;
-    } else {
-      await TempUser.create({ name: username, credentials });
-    }
-
     const tokenPayload = {
-      ...request.body,
-      credentials,
+      credentials: newGuestUser.id,
     };
 
     ctx.body = {
       authToken: encodeToken(tokenPayload),
       userID: username,
+    };
+  },
+);
+
+server.router.post(
+  '/api/guest/check',
+  koaBody(),
+  async (ctx: { body?: any; request?: any }) => {
+    const { token } = ctx.request.body;
+    const decodedToken = decodeToken(token);
+
+    const existingGuestUser = await User.findOne({
+      where: { id: decodedToken.credentials, isGuest: true },
+    });
+
+    let resp = 'bad';
+    if (existingGuestUser) {
+      resp = existingGuestUser.name;
+    }
+    ctx.body = {
+      resp,
     };
   },
 );

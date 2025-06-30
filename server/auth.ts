@@ -1,8 +1,6 @@
 const jwt = require('jsonwebtoken');
 
-import { type ZugUser } from '../src/utils/auth';
-
-export const encodeToken = (payload: ZugUser): string => {
+export const encodeToken = (payload: { credentials: string }): string => {
   return jwt.sign(payload, process.env.AUTH_SECRET);
 };
 
