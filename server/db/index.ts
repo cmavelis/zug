@@ -22,7 +22,7 @@ export const User = sequelize.define('User', {
     defaultValue: DataTypes.UUIDV4,
   },
   name: { type: DataTypes.STRING, allowNull: false, unique: true },
-  clerkId: { type: DataTypes.STRING, allowNull: false, unique: true },
+  clerkId: { type: DataTypes.STRING, unique: true },
   isGuest: { type: DataTypes.BOOLEAN, allowNull: false, defaultValue: false },
 });
 

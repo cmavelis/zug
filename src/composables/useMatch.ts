@@ -2,7 +2,7 @@ import { ref } from 'vue';
 import { type GameSetupData } from '@/game/Game';
 import type { LobbyClient } from 'boardgame.io/client';
 import router from '@/router';
-import { Clerk } from '@clerk/clerk-js';
+import { useClerkUser } from '@/composables/useClerkUser';
 
 const navigateToMatch = async (matchID: string) => {
   try {
@@ -17,31 +17,26 @@ const navigateToMatch = async (matchID: string) => {
   }
 };
 
-const clerkPubKey = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
-
 export const useMatch = (lobbyClient: LobbyClient) => {
+  const { clerkToken, clerkUsername } = useClerkUser();
   const joinStatus = ref('');
   const requestJoinMatch = async (
     matchID: string,
     setupData?: GameSetupData,
     navigateToMatch?: (matchID: string) => void,
   ) => {
-    const clerk = new Clerk(clerkPubKey);
-    await clerk.load();
-    if (!clerk.session) {
-      console.error('no clerk session');
+    if (!clerkToken) {
       joinStatus.value = 'failed';
       return;
     }
-    const token = await clerk.session.getToken();
     joinStatus.value = 'loading';
     const authHeader = setupData?.empty ? 'open' : 'error';
     try {
       const resp = await lobbyClient.joinMatch(
         'zug',
         matchID,
-        { playerName: clerk.session.user.username || 'error' },
-        { headers: { authorization: token || authHeader } },
+        { playerName: clerkUsername.value || 'error' },
+        { headers: { authorization: clerkToken.value || authHeader } },
       );
       if (resp.playerID) {
         joinStatus.value = 'success';

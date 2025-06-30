@@ -36,33 +36,14 @@ import { getServerURL } from '@/utils';
 import ButtonStepper from '@/components/ButtonStepper.vue';
 import { useMatchLink } from '@/composables/useMatchLink';
 import { BoardDisplay } from '@/components/BoardDisplay';
-import { useClerk } from '@clerk/vue';
+import { useClerkUser } from '@/composables/useClerkUser';
 
 // TODO: make matchToken
-const clerkToken = ref('');
-const clerkUsername = ref('');
+const { clerkToken, clerkUsername } = useClerkUser();
+
 watch(clerkToken, () => {
   matchClientOne.client.updateCredentials(clerkToken.value);
 });
-
-const clerk = useClerk();
-watch(
-  clerk,
-  (newClerk) => {
-    if (!newClerk) return;
-    newClerk.addListener(async ({ session }) => {
-      const token = await session?.getToken();
-      if (token) {
-        clerkToken.value = token;
-      }
-    });
-    const username = newClerk.session?.user.username;
-    if (username) {
-      clerkUsername.value = username;
-    }
-  },
-  { immediate: true },
-);
 
 const windowHasFocus = useWindowFocus();
 const toast = useToast();
@@ -396,7 +377,7 @@ getNotificationSound(store.zugUsername).then((notificationSound) => {
 </script>
 
 <template>
-  <main v-if="!clerk">Loading...</main>
+  <main v-if="!clerkToken">Loading...</main>
   <main v-else>
     <div v-if="canJoin">
       <p v-if="!clerkToken">Sign in to join this game</p>

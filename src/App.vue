@@ -4,11 +4,14 @@ import { SignedIn, SignedOut, SignInButton, UserButton } from '@clerk/vue';
 import Toast from 'primevue/toast';
 import { BOARD_PIXEL_SIZE } from '@/constants';
 import Logo from '@/assets/logo.svg';
+import { useClerkUser } from '@/composables/useClerkUser';
 
 const squareSize = BOARD_PIXEL_SIZE + 'px';
 const root = document.querySelector(':root');
 // @ts-expect-error
 root.style.setProperty('--square-size', squareSize);
+// initialize clerk composable
+useClerkUser();
 </script>
 
 <template>
