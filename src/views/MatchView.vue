@@ -202,11 +202,7 @@ function setHistoryTurn(turn: number) {
   historyTurn.value = turn;
 }
 function setHistoryLastTurn() {
-  if (typeof playerID.value !== 'number') {
-    setHistoryTurn(gameState.G.history.length);
-  } else {
-    setHistoryTurn(gameState.G.history.length + 1);
-  }
+  setHistoryTurn(gameState.G.history.length + 1);
   setHistoryStep(1);
 }
 
