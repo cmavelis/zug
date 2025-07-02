@@ -33,7 +33,7 @@ interface BoardProps {
   state: GameStateHistory;
   ctx: Ctx;
   config: ZugConfig;
-  playerID: number;
+  playerID: number | null; // null for spectator
   showOrders: boolean;
   isActiveTurn: boolean;
 }
@@ -45,7 +45,9 @@ const endTurnMessage = ref('');
 const pieceToPlace = ref(0);
 
 const props = defineProps<BoardProps>();
-const flatOrders = computed(() => props.state.orders[props.playerID] || []);
+const flatOrders = computed(() =>
+  props.playerID !== null ? props.state.orders[props.playerID] : [],
+);
 const allOrders = computed(() => {
   let orders: Order[] = [];
   for (let i of [0, 1]) {
@@ -75,8 +77,16 @@ const canEndTurn = computed(() => {
   if (gamePhase.value !== 'planning') {
     return false;
   }
-  
-  const validation = validateTurnEnd(props.playerID, props.state.orders, props.state.pieces);
+
+  if (props.playerID === null) {
+    return false;
+  }
+
+  const validation = validateTurnEnd(
+    props.playerID,
+    props.state.orders,
+    props.state.pieces,
+  );
   return validation.canEndTurn;
 });
 const piecesWithoutActions = computed(() => {
@@ -302,14 +312,21 @@ const handleCellHover = (cellId: number) => {
 };
 
 const handleEndTurn = () => {
-  const validation = validateTurnEnd(props.playerID, props.state.orders, props.state.pieces);
-  
+  if (props.playerID === null) {
+    return;
+  }
+  const validation = validateTurnEnd(
+    props.playerID,
+    props.state.orders,
+    props.state.pieces,
+  );
+
   if (!validation.canEndTurn) {
     endTurnMessage.value = 'All your pieces must take action';
     return;
   }
   endTurnMessage.value = '';
-  
+
   props.client.moves.endTurn();
 };
 
