@@ -541,31 +541,6 @@ onUnmounted(() => {
         :disableCommandMenu="!props.isActiveTurn"
       />
     </div>
-    <div v-if="props.showOrders && props.isActiveTurn">
-      <div v-if="store.isDebug">
-        <p>
-          piece:
-          {{
-            typeof selectedPiece === 'number'
-              ? String(selectedPiece)
-              : 'none selected'
-          }}
-        </p>
-        <p>action: {{ selectedAction || 'none selected' }}</p>
-
-        <p>ACTIONS</p>
-        <p v-if="endTurnMessage" class="info-message">{{ endTurnMessage }}</p>
-        <template
-          v-for="order in props.state.orders[props.playerID]"
-          :key="order.sourcePieceId"
-        >
-          <p>
-            piece {{ order.sourcePieceId }}: {{ order.type }} with vector
-            {{ order.toTarget }}
-          </p>
-        </template>
-      </div>
-    </div>
   </section>
   <p v-if="endTurnMessage" class="info-message">{{ endTurnMessage }}</p>
 </template>
