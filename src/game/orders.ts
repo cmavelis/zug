@@ -347,6 +347,17 @@ export function orderResolver({ G }: { G: GObject }) {
     }
   }
 
+  // check if a piece will move out of its current position with equal or higher priority
+  function willPieceMoveOut(pieceId: number, currentPriority: number): boolean {
+    const allOrders = [...orders[0], ...orders[1]];
+    const pieceOrder = allOrders.find(
+      (o) => o.sourcePieceId === pieceId && 
+             (o.type === 'move-straight' || o.type === 'move-diagonal') &&
+             o.priority <= currentPriority
+    );
+    return !!pieceOrder;
+  }
+
   // return array of "pushes" to be applied
   function applyMove(order: MoveStraightOrder | MoveDiagonalOrder): Move[] {
     const movedPiece = pieces.find((p) => p.id === order.sourcePieceId);
@@ -383,6 +394,10 @@ export function orderResolver({ G }: { G: GObject }) {
       const newPosition = addDisplacement(movedPiece.position, order.toTarget);
       const maybePiece = pieces.find((p) => isEqual(p.position, newPosition));
       if (maybePiece) {
+        // For diagonal moves, check if the blocking piece will move out
+        if (order.type === 'move-diagonal' && willPieceMoveOut(maybePiece.id, order.priority)) {
+          return [{ id: movedPiece.id, newPosition }];
+        }
         return [];
       }
       return [{ id: movedPiece.id, newPosition }];
