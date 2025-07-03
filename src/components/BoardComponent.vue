@@ -45,8 +45,10 @@ const endTurnMessage = ref('');
 const pieceToPlace = ref(0);
 
 const props = defineProps<BoardProps>();
-const flatOrders = computed(() =>
-  props.playerID !== null ? props.state.orders[props.playerID] : [],
+const flatOrders = computed((): Order[] =>
+  typeof props.playerID === 'number' && props.state.orders[props.playerID]
+    ? props.state.orders[props.playerID]
+    : [],
 );
 const allOrders = computed(() => {
   let orders: Order[] = [];
@@ -63,11 +65,12 @@ const actionsUsed = computed(() => flatOrders.value.map((order) => order.type));
 // # of pieces to place
 const piecesToPlace = computed(
   () =>
-    getNumberPiecesMissing(props.state, props.playerID) -
-    flatOrders.value.filter((order) => order.type === 'place').length,
+    (typeof props.playerID === 'number'
+      ? getNumberPiecesMissing(props.state, props.playerID)
+      : 0) - flatOrders.value.filter((order) => order.type === 'place').length,
 );
 const gamePhase = computed(() => {
-  if (props.ctx.activePlayers) {
+  if (props.ctx.activePlayers && typeof props.playerID === 'number') {
     return props.ctx.activePlayers[props.playerID] || '?';
   } else {
     return 'end';
@@ -90,6 +93,7 @@ const canEndTurn = computed(() => {
   return validation.canEndTurn;
 });
 const piecesWithoutActions = computed(() => {
+  if (typeof props.playerID !== 'number') return [];
   const idSet = new Set(
     props.state.pieces
       .filter((p) => p.owner === props.playerID)
@@ -107,7 +111,7 @@ const piecesToPlaceSorted = computed(() => {
 });
 
 const validSquares: Ref<number[]> = computed(() => {
-  if (selectedAction.value === 'place') {
+  if (selectedAction.value === 'place' && typeof props.playerID === 'number') {
     return getValidSquaresForOrder({
       playerID: props.playerID,
       board: props.config.board,
@@ -117,7 +121,8 @@ const validSquares: Ref<number[]> = computed(() => {
   if (
     selectionPhase.value === SELECTION_PHASES.targeting &&
     selectedAction.value &&
-    selectedPiece.value !== undefined
+    selectedPiece.value !== undefined &&
+    typeof props.playerID === 'number'
   ) {
     const piece = getPiece(props.state, selectedPiece.value);
     if (piece)
@@ -173,6 +178,7 @@ const selectionPhase = computed(() => {
 });
 
 const addOrder = (order: Omit<Order, 'owner'>) => {
+  if (typeof props.playerID !== 'number') return;
   props.client.moves.addOrder(order);
 };
 
@@ -312,7 +318,7 @@ const handleCellHover = (cellId: number) => {
 };
 
 const handleEndTurn = () => {
-  if (props.playerID === null) {
+  if (typeof props.playerID !== 'number') {
     return;
   }
   const validation = validateTurnEnd(
