@@ -33,7 +33,7 @@ interface BoardProps {
   state: GameStateHistory;
   ctx: Ctx;
   config: ZugConfig;
-  playerID: number;
+  playerID: number | null; // null for spectator
   showOrders: boolean;
   isActiveTurn: boolean;
 }
@@ -45,7 +45,11 @@ const endTurnMessage = ref('');
 const pieceToPlace = ref(0);
 
 const props = defineProps<BoardProps>();
-const flatOrders = computed(() => props.state.orders[props.playerID] || []);
+const flatOrders = computed((): Order[] =>
+  typeof props.playerID === 'number' && props.state.orders[props.playerID]
+    ? props.state.orders[props.playerID]
+    : [],
+);
 const allOrders = computed(() => {
   let orders: Order[] = [];
   for (let i of [0, 1]) {
@@ -61,11 +65,12 @@ const actionsUsed = computed(() => flatOrders.value.map((order) => order.type));
 // # of pieces to place
 const piecesToPlace = computed(
   () =>
-    getNumberPiecesMissing(props.state, props.playerID) -
-    flatOrders.value.filter((order) => order.type === 'place').length,
+    (typeof props.playerID === 'number'
+      ? getNumberPiecesMissing(props.state, props.playerID)
+      : 0) - flatOrders.value.filter((order) => order.type === 'place').length,
 );
 const gamePhase = computed(() => {
-  if (props.ctx.activePlayers) {
+  if (props.ctx.activePlayers && typeof props.playerID === 'number') {
     return props.ctx.activePlayers[props.playerID] || '?';
   } else {
     return 'end';
@@ -75,11 +80,20 @@ const canEndTurn = computed(() => {
   if (gamePhase.value !== 'planning') {
     return false;
   }
-  
-  const validation = validateTurnEnd(props.playerID, props.state.orders, props.state.pieces);
+
+  if (props.playerID === null) {
+    return false;
+  }
+
+  const validation = validateTurnEnd(
+    props.playerID,
+    props.state.orders,
+    props.state.pieces,
+  );
   return validation.canEndTurn;
 });
 const piecesWithoutActions = computed(() => {
+  if (typeof props.playerID !== 'number') return [];
   const idSet = new Set(
     props.state.pieces
       .filter((p) => p.owner === props.playerID)
@@ -97,7 +111,7 @@ const piecesToPlaceSorted = computed(() => {
 });
 
 const validSquares: Ref<number[]> = computed(() => {
-  if (selectedAction.value === 'place') {
+  if (selectedAction.value === 'place' && typeof props.playerID === 'number') {
     return getValidSquaresForOrder({
       playerID: props.playerID,
       board: props.config.board,
@@ -107,7 +121,8 @@ const validSquares: Ref<number[]> = computed(() => {
   if (
     selectionPhase.value === SELECTION_PHASES.targeting &&
     selectedAction.value &&
-    selectedPiece.value !== undefined
+    selectedPiece.value !== undefined &&
+    typeof props.playerID === 'number'
   ) {
     const piece = getPiece(props.state, selectedPiece.value);
     if (piece)
@@ -163,6 +178,7 @@ const selectionPhase = computed(() => {
 });
 
 const addOrder = (order: Omit<Order, 'owner'>) => {
+  if (typeof props.playerID !== 'number') return;
   props.client.moves.addOrder(order);
 };
 
@@ -302,14 +318,21 @@ const handleCellHover = (cellId: number) => {
 };
 
 const handleEndTurn = () => {
-  const validation = validateTurnEnd(props.playerID, props.state.orders, props.state.pieces);
-  
+  if (typeof props.playerID !== 'number') {
+    return;
+  }
+  const validation = validateTurnEnd(
+    props.playerID,
+    props.state.orders,
+    props.state.pieces,
+  );
+
   if (!validation.canEndTurn) {
     endTurnMessage.value = 'All your pieces must take action';
     return;
   }
   endTurnMessage.value = '';
-  
+
   props.client.moves.endTurn();
 };
 
@@ -517,31 +540,6 @@ onUnmounted(() => {
         :targetingHints="targetingHints"
         :disableCommandMenu="!props.isActiveTurn"
       />
-    </div>
-    <div v-if="props.showOrders && props.isActiveTurn">
-      <div v-if="store.isDebug">
-        <p>
-          piece:
-          {{
-            typeof selectedPiece === 'number'
-              ? String(selectedPiece)
-              : 'none selected'
-          }}
-        </p>
-        <p>action: {{ selectedAction || 'none selected' }}</p>
-
-        <p>ACTIONS</p>
-        <p v-if="endTurnMessage" class="info-message">{{ endTurnMessage }}</p>
-        <template
-          v-for="order in props.state.orders[props.playerID]"
-          :key="order.sourcePieceId"
-        >
-          <p>
-            piece {{ order.sourcePieceId }}: {{ order.type }} with vector
-            {{ order.toTarget }}
-          </p>
-        </template>
-      </div>
     </div>
   </section>
   <p v-if="endTurnMessage" class="info-message">{{ endTurnMessage }}</p>
