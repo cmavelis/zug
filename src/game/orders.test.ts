@@ -3,6 +3,7 @@ import {
   arrangeOrderPairs,
   canPushWithConfig,
   createOrderArrayCompareFn,
+  orderResolver,
 } from '@/game/orders';
 import { makeTestGame, makeTestOrder, makeTestPiece } from '@/game/test-utils';
 import { type PushRestrictionsConfig } from '@/game/zugzwang/config';
@@ -118,3 +119,176 @@ test.each([
     ).toBe(expected);
   },
 );
+
+test('diagonal move blocked when target space remains occupied', () => {
+  // Setup a game state with two pieces
+  // Piece 1 at (1,1) will try to move diagonally to (2,2)
+  // Piece 2 at (2,2) will NOT move (no order)
+  // The diagonal move should be blocked
+
+  const piece1 = makeTestPiece({
+    id: 1,
+    position: { x: 1, y: 1 },
+    owner: 0,
+    priority: 1,
+  });
+  const piece2 = makeTestPiece({
+    id: 2,
+    position: { x: 2, y: 2 },
+    owner: 1,
+    priority: 2,
+  });
+
+  // Initialize cells array to match pieces
+  const cells = new Array(16).fill(null); // 4x4 board
+  cells[5] = 1; // piece 1 at (1,1) -> index 5
+  cells[10] = 2; // piece 2 at (2,2) -> index 10
+
+  const diagonalMoveOrder = makeTestOrder({
+    type: 'move-diagonal',
+    sourcePieceId: 1,
+    toTarget: { x: 1, y: 1 }, // move from (1,1) to (2,2)
+    owner: 0,
+  });
+
+  const G = makeTestGame({
+    pieces: [piece1, piece2],
+    cells: cells,
+    orders: {
+      0: [diagonalMoveOrder],
+      1: [], // No orders for player 1, so piece 2 doesn't move
+    },
+  });
+
+  // Test that the orderResolver blocks the diagonal move
+  const resultG = orderResolver({ G });
+
+  // After resolution:
+  // - Piece 1 should remain at (1,1) because the move was blocked
+  // - Piece 2 should remain at (2,2)
+  const finalPiece1 = resultG.pieces.find((p) => p.id === 1);
+  const finalPiece2 = resultG.pieces.find((p) => p.id === 2);
+
+  expect(finalPiece1?.position).toEqual({ x: 1, y: 1 });
+  expect(finalPiece2?.position).toEqual({ x: 2, y: 2 });
+});
+
+test('diagonal move into space that piece is moving out of', () => {
+  // Setup a game state with two pieces
+  // Piece 1 at (1,1) will move diagonally to (2,2)
+  // Piece 2 at (2,2) will move straight to (2,1)
+  // Both moves should succeed because piece 2 moves out first
+
+  const piece1 = makeTestPiece({
+    id: 1,
+    position: { x: 1, y: 1 },
+    owner: 0,
+    priority: 3, // Higher priority so it moves second
+  });
+  const piece2 = makeTestPiece({
+    id: 2,
+    position: { x: 2, y: 2 },
+    owner: 1,
+    priority: 1, // Lower priority so it moves first
+  });
+
+  // Initialize cells array to match pieces
+  const cells = new Array(16).fill(null); // 4x4 board
+  cells[5] = 1; // piece 1 at (1,1) -> index 5
+  cells[10] = 2; // piece 2 at (2,2) -> index 10
+
+  const diagonalMoveOrder = makeTestOrder({
+    type: 'move-diagonal',
+    sourcePieceId: 1,
+    toTarget: { x: 1, y: 1 }, // move from (1,1) to (2,2)
+    owner: 0,
+  });
+
+  const straightMoveOrder = makeTestOrder({
+    type: 'move-straight',
+    sourcePieceId: 2,
+    toTarget: { x: 0, y: -1 }, // move from (2,2) to (2,1) - backward for owner 1
+    owner: 1,
+  });
+
+  const G = makeTestGame({
+    pieces: [piece1, piece2],
+    cells: cells,
+    orders: {
+      0: [diagonalMoveOrder],
+      1: [straightMoveOrder],
+    },
+  });
+
+  // Test that the orderResolver processes both moves successfully
+  const resultG = orderResolver({ G });
+
+  // After resolution:
+  // - Piece 1 should be at (2,2)
+  // - Piece 2 should be at (2,1)
+  const finalPiece1 = resultG.pieces.find((p) => p.id === 1);
+  const finalPiece2 = resultG.pieces.find((p) => p.id === 2);
+
+  expect(finalPiece1?.position).toEqual({ x: 2, y: 2 });
+  expect(finalPiece2?.position).toEqual({ x: 2, y: 1 });
+});
+
+test('diagonal move blocked when another piece moves into the same space', () => {
+  // Setup a game state with two pieces
+  // Piece 1 at (1,1) will try to move diagonally to (2,2) with priority 3
+  // Piece 2 at (3,3) will move diagonally to (2,2) with priority 1 (higher priority)
+  // Piece 1's move should be blocked because Piece 2 is moving INTO (2,2)
+
+  const piece1 = makeTestPiece({
+    id: 1,
+    position: { x: 1, y: 1 },
+    owner: 0,
+    priority: 3, // Lower priority so it moves second
+  });
+  const piece2 = makeTestPiece({
+    id: 2,
+    position: { x: 3, y: 3 },
+    owner: 1,
+    priority: 1, // Higher priority so it moves first
+  });
+
+  // Initialize cells array to match pieces
+  const cells = new Array(16).fill(null); // 4x4 board
+  cells[5] = 1; // piece 1 at (1,1) -> index 5
+  cells[15] = 2; // piece 2 at (3,3) -> index 15
+
+  const diagonalMoveOrder1 = makeTestOrder({
+    type: 'move-diagonal',
+    sourcePieceId: 1,
+    toTarget: { x: 1, y: 1 }, // move from (1,1) to (2,2)
+    owner: 0,
+  });
+
+  const diagonalMoveOrder2 = makeTestOrder({
+    type: 'move-diagonal',
+    sourcePieceId: 2,
+    toTarget: { x: -1, y: -1 }, // move from (3,3) to (2,2)
+    owner: 1,
+  });
+
+  const G = makeTestGame({
+    pieces: [piece1, piece2],
+    cells: cells,
+    orders: {
+      0: [diagonalMoveOrder1],
+      1: [diagonalMoveOrder2],
+    },
+  });
+
+  // Test that the orderResolver blocks piece 1's diagonal move
+  const resultG = orderResolver({ G });
+
+  // After resolution:
+  // - Piece 1 should remain at (1,1) because the move was blocked
+  // - Piece 2 should be at (2,2)
+  const finalPiece1 = resultG.pieces.find((p) => p.id === 1);
+  const finalPiece2 = resultG.pieces.find((p) => p.id === 2);
+
+  expect(finalPiece1?.position).toEqual({ x: 1, y: 1 });
+  expect(finalPiece2?.position).toEqual({ x: 2, y: 2 });
+});
