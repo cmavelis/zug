@@ -62,25 +62,6 @@ const svgOriginOffset = BOARD_PIXEL_SIZE;
     <div v-if="props.orderNumber">
       <p>Turn step: {{ props.orderNumber }}</p>
       <p>score: {{ props.state.G.score[0] }} - {{ props.state.G.score[1] }}</p>
-      <p>ACTIONS</p>
-      <template
-        v-for="event in props.state.G.events"
-        :key="event.sourcePieceId"
-      >
-        <p>piece {{ event.sourcePieceId }}: {{ event.type }}!</p>
-      </template>
-      <template v-for="playerID in [0, 1]" :key="playerID">
-        <p>Player {{ playerID + 1 }}</p>
-        <template
-          v-for="order in props.state.G.orders[playerID]"
-          :key="order.sourcePieceId"
-        >
-          <p>
-            piece {{ order.sourcePieceId }}: {{ order.type }} with vector
-            {{ order.toTarget || 'n/a' }}
-          </p>
-        </template>
-      </template>
     </div>
   </section>
 </template>
