@@ -62,6 +62,12 @@ const svgOriginOffset = BOARD_PIXEL_SIZE;
     <div v-if="props.orderNumber">
       <p>Turn step: {{ props.orderNumber }}</p>
       <p>score: {{ props.state.G.score[0] }} - {{ props.state.G.score[1] }}</p>
+      <template
+        v-for="event in props.state.G.events"
+        :key="event.sourcePieceId"
+      >
+        <p>piece {{ event.sourcePieceId }}: {{ event.type }}!</p>
+      </template>
     </div>
   </section>
 </template>
