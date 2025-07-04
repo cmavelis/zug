@@ -157,12 +157,11 @@ test('diagonal move blocked when target space remains occupied', () => {
     orders: {
       0: [diagonalMoveOrder],
       1: [] // No orders for player 1, so piece 2 doesn't move
-    },
-    history: []
+    }
   });
   
   // Test that the orderResolver blocks the diagonal move
-  const resultG = orderResolver({ G });
+  const resultG = orderResolver({ G: { ...G, history: [] } });
   
   // After resolution:
   // - Piece 1 should remain at (1,1) because the move was blocked
@@ -218,12 +217,11 @@ test('diagonal move into space that piece is moving out of', () => {
     orders: {
       0: [diagonalMoveOrder],
       1: [straightMoveOrder]
-    },
-    history: []
+    }
   });
   
   // Test that the orderResolver processes both moves successfully
-  const resultG = orderResolver({ G });
+  const resultG = orderResolver({ G: { ...G, history: [] } });
   
   // After resolution:
   // - Piece 1 should be at (2,2) 
@@ -279,12 +277,11 @@ test('diagonal move blocked when another piece moves into the same space', () =>
     orders: {
       0: [diagonalMoveOrder1],
       1: [diagonalMoveOrder2]
-    },
-    history: []
+    }
   });
   
   // Test that the orderResolver blocks piece 1's diagonal move
-  const resultG = orderResolver({ G });
+  const resultG = orderResolver({ G: { ...G, history: [] } });
   
   // After resolution:
   // - Piece 1 should remain at (1,1) because the move was blocked
