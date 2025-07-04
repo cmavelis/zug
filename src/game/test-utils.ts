@@ -15,7 +15,7 @@ export const makeTestGame = (partialG?: Partial<GameState>) => {
     orders: { 0: [], 1: [] },
     score: {},
   };
-  return { ...G, ...partialG };
+  return { ...G, history: [], ...partialG };
 };
 
 export const makeTestPiece = (partialPiece?: Partial<Piece>): Piece => {
