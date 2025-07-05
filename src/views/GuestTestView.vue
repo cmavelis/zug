@@ -69,14 +69,12 @@ async function checkGuest() {
   padding: 2rem;
   border: 1px solid #ccc;
   border-radius: 8px;
-  background: #fafafa;
 }
 button {
   margin-right: 1rem;
   margin-bottom: 1rem;
 }
 pre {
-  background: #eee;
   padding: 1rem;
   border-radius: 4px;
   overflow-x: auto;
