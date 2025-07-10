@@ -62,17 +62,8 @@ Match.beforeUpsert(async (created) => {
               if (!user) return;
               const discordId = await getDiscordFromClerk(user.clerkId);
               
-              let message = '';
-              if (newGameover.winner === -1) {
-                message = `Your match ended in a tie!`;
-              } else if (newGameover.winner === p) {
-                message = `Congratulations! You won your match!`;
-              } else {
-                const otherPlayer = created.players[p === 0 ? 1 : 0];
-                message = `Your match against ${otherPlayer.name} has ended. They won this time!`;
-              }
-              
-              message += ` ${makeMatchURL({ matchID: created.id })}`;
+              const otherPlayer = created.players[p === 0 ? 1 : 0];
+              const message = `Your match with ${otherPlayer.name} has finished. See how it ended: ${makeMatchURL({ matchID: created.id })}`;
               
               messageDiscordUser({
                 id: discordId,
