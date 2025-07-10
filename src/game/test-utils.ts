@@ -13,7 +13,7 @@ export const makeTestGame = (partialG?: Partial<GameState>) => {
     cells: [],
     pieces: [],
     orders: { 0: [], 1: [] },
-    score: {},
+    score: { 0: 0, 1: 0 },
   };
   return { ...G, history: [], ...partialG };
 };
