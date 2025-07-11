@@ -43,6 +43,27 @@ const getDiscordFromClerk = async (clerkUserId: string) => {
   return discordAccount && discordAccount.externalId;
 };
 
+// Helper function to send Discord notification to a player
+const notifyPlayer = async (playerName: string, message: string, logContext: string) => {
+  if (!playerName) return;
+  
+  try {
+    const user = await User.findOne({ where: { name: playerName } });
+    if (!user) return;
+    
+    const discordId = await getDiscordFromClerk(user.clerkId);
+    
+    await messageDiscordUser({
+      id: discordId,
+      message,
+    });
+    
+    console.debug(`${logContext} discord message sent to ${user.name}`);
+  } catch (error) {
+    console.error(error);
+  }
+};
+
 // notify players when it's their turn or when match ends
 Match.beforeUpsert(async (created) => {
   try {
@@ -56,28 +77,10 @@ Match.beforeUpsert(async (created) => {
       // Game has ended, notify all players
       for (const p of [0, 1]) {
         const player = created.players[p];
-        if (player && player.name) {
-          User.findOne({ where: { name: player.name } })
-            .then(async (user) => {
-              if (!user) return;
-              const discordId = await getDiscordFromClerk(user.clerkId);
-              
-              const otherPlayer = created.players[p === 0 ? 1 : 0];
-              const message = `Your match with ${otherPlayer.name} has finished. See how it ended: ${makeMatchURL({ matchID: created.id })}`;
-              
-              messageDiscordUser({
-                id: discordId,
-                message,
-              })
-                .then(() =>
-                  console.debug(
-                    `match end discord message sent to ${user.name}`,
-                  ),
-                )
-                .catch(console.error);
-            })
-            .catch(console.error);
-        }
+        const otherPlayer = created.players[p === 0 ? 1 : 0];
+        const message = `Your match with ${otherPlayer.name} has finished. See how it ended: ${makeMatchURL({ matchID: created.id })}`;
+        
+        notifyPlayer(player.name, message, 'match end');
       }
       return; // Don't check for turn changes when game has ended
     }
@@ -98,27 +101,9 @@ Match.beforeUpsert(async (created) => {
       const player = oldMatch.players[p];
       if (!player.isConnected) {
         const otherPlayer = oldMatch.players[p === 0 ? 1 : 0];
-        // send discord message
-        User.findOne({ where: { name: player.name } })
-          .then(async (user) => {
-            if (!user) return;
-            const discordId = await getDiscordFromClerk(user.clerkId);
-            messageDiscordUser({
-              id: discordId,
-              message: `It's your turn against ${
-                otherPlayer.name
-              }: \n ${makeMatchURL({
-                matchID: created.id,
-              })}`,
-            })
-              .then(() =>
-                console.debug(
-                  `discord message sent to ${user.discordUser.username} ${user.discordUser.id}`,
-                ),
-              )
-              .catch(console.error);
-          })
-          .catch(console.error);
+        const message = `It's your turn against ${otherPlayer.name}: \n ${makeMatchURL({ matchID: created.id })}`;
+        
+        notifyPlayer(player.name, message, 'turn change');
       }
     }
   } catch (err) {
