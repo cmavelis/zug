@@ -21,6 +21,15 @@ export const messageDiscordUser = async ({
   id,
   message,
 }: DiscordUserMessage) => {
+  if (!id) {
+    console.debug('Discord message not sent: no user ID provided');
+    return;
+  }
+  
   const botClient = await getBotClient();
-  botClient.users.send(id, message).catch(console.error);
+  try {
+    await botClient.users.send(id, message);
+  } catch (error) {
+    console.error(`Failed to send Discord message to user ${id}:`, error);
+  }
 };

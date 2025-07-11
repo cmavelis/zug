@@ -49,9 +49,16 @@ const notifyPlayer = async (playerName: string, message: string, logContext: str
   
   try {
     const user = await User.findOne({ where: { name: playerName } });
-    if (!user) return;
+    if (!user) {
+      console.debug(`${logContext} notification skipped: user ${playerName} not found`);
+      return;
+    }
     
     const discordId = await getDiscordFromClerk(user.clerkId);
+    if (!discordId) {
+      console.debug(`${logContext} notification skipped: user ${user.name} has no Discord account linked`);
+      return;
+    }
     
     await messageDiscordUser({
       id: discordId,
@@ -60,7 +67,7 @@ const notifyPlayer = async (playerName: string, message: string, logContext: str
     
     console.debug(`${logContext} discord message sent to ${user.name}`);
   } catch (error) {
-    console.error(error);
+    console.error(`${logContext} notification failed for ${playerName}:`, error);
   }
 };
 
@@ -396,12 +403,16 @@ server.router.post('/games/:name/:id/poke', koaBody(), async (ctx) => {
 
   if (!lastPoke || nowDate - lastPokeDate > POKE_TIMEOUT) {
     const discordId = await getDiscordFromClerk(user.clerkId);
-    await messageDiscordUser({
-      id: discordId,
-      message: `Your opponent is reminding you to make a move! ${makeMatchURL({
-        matchID,
-      })}`,
-    });
+    if (discordId) {
+      await messageDiscordUser({
+        id: discordId,
+        message: `Your opponent is reminding you to make a move! ${makeMatchURL({
+          matchID,
+        })}`,
+      });
+    } else {
+      console.debug(`Poke notification skipped: user ${user.name} has no Discord account linked`);
+    }
 
     userMatch.lastPoke = sequelize.literal('CURRENT_TIMESTAMP');
     userMatch.save();
