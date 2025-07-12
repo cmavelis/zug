@@ -94,8 +94,8 @@ Match.beforeUpsert(async (created) => {
     if (!oldGameover && newGameover) {
       // Game has ended, notify all players
       for (const p of [0, 1]) {
-        const player = created.players[p];
-        const otherPlayer = created.players[p === 0 ? 1 : 0];
+        const player = oldMatch.players[p];
+        const otherPlayer = oldMatch.players[p === 0 ? 1 : 0];
         const message = `Your match with ${
           otherPlayer.name
         } has finished. See how it ended: ${makeMatchURL({
@@ -128,6 +128,8 @@ Match.beforeUpsert(async (created) => {
         }: \n ${makeMatchURL({ matchID: created.id })}`;
 
         notifyPlayer(player.name, message, 'turn change');
+      } else {
+        console.debug(`player ${player.name} is connected, not notifying`);
       }
     }
   } catch (err) {
