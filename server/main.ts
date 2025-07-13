@@ -44,11 +44,70 @@ const getDiscordFromClerk = async (clerkUserId: string) => {
   return discordAccount && discordAccount.externalId;
 };
 
-// notify players when it's their turn
+// Helper function to send Discord notification to a player
+const notifyPlayer = async (
+  playerName: string,
+  message: string,
+  logContext: string,
+) => {
+  if (!playerName) return;
+
+  try {
+    const user = await User.findOne({ where: { name: playerName } });
+    if (!user) {
+      console.debug(
+        `${logContext} notification skipped: user ${playerName} not found`,
+      );
+      return;
+    }
+
+    const discordId = await getDiscordFromClerk(user.clerkId);
+    if (!discordId) {
+      console.debug(
+        `${logContext} notification skipped: user ${user.name} has no Discord account linked`,
+      );
+      return;
+    }
+
+    await messageDiscordUser({
+      id: discordId,
+      message,
+    });
+
+    console.debug(`${logContext} discord message sent to ${user.name}`);
+  } catch (error) {
+    console.error(
+      `${logContext} notification failed for ${playerName}:`,
+      error,
+    );
+  }
+};
+
+// notify players when it's their turn or when match ends
 Match.beforeUpsert(async (created) => {
   try {
     const { id } = created;
     const oldMatch = await Match.findByPk(id);
+    const oldGameover = oldMatch?.state?.ctx.gameover;
+    const newGameover = created?.state?.ctx.gameover;
+
+    // Check if game just ended
+    if (!oldGameover && newGameover) {
+      // Game has ended, notify all players
+      for (const p of [0, 1]) {
+        const player = oldMatch.players[p];
+        const otherPlayer = oldMatch.players[p === 0 ? 1 : 0];
+        const message = `Your match with ${
+          otherPlayer.name
+        } has finished. See how it ended: ${makeMatchURL({
+          matchID: created.id,
+        })}`;
+
+        notifyPlayer(player.name, message, 'match end');
+      }
+      return; // Don't check for turn changes when game has ended
+    }
+
     const oldActivePlayers = oldMatch?.state?.ctx.activePlayers;
     const newActivePlayers = created?.state?.ctx.activePlayers;
 
@@ -65,27 +124,13 @@ Match.beforeUpsert(async (created) => {
       const player = oldMatch.players[p];
       if (!player.isConnected) {
         const otherPlayer = oldMatch.players[p === 0 ? 1 : 0];
-        // send discord message
-        User.findOne({ where: { name: player.name } })
-          .then(async (user) => {
-            if (!user) return;
-            const discordId = await getDiscordFromClerk(user.clerkId);
-            messageDiscordUser({
-              id: discordId,
-              message: `It's your turn against ${
-                otherPlayer.name
-              }: \n ${makeMatchURL({
-                matchID: created.id,
-              })}`,
-            })
-              .then(() =>
-                console.debug(
-                  `discord message sent to ${user.discordUser.username} ${user.discordUser.id}`,
-                ),
-              )
-              .catch(console.error);
-          })
-          .catch(console.error);
+        const message = `It's your turn against ${
+          otherPlayer.name
+        }: \n ${makeMatchURL({ matchID: created.id })}`;
+
+        notifyPlayer(player.name, message, 'turn change');
+      } else {
+        console.debug(`player ${player.name} is connected, not notifying`);
       }
     }
   } catch (err) {
@@ -158,25 +203,15 @@ const generateCredentials = async (ctx) => {
 
 // TODO: authenticate using our own server-signed JWT, on a match-by-match basis
 const authenticateCredentials = async (credentials, playerMetadata) => {
-  const start = Date.now();
-  let tokenTime = 0;
-  let userTime = 0;
   try {
     const token = await verifyToken(credentials, verifyOptions);
-    tokenTime = Date.now() - start;
     const user = await findUser(token.sub);
-    userTime = Date.now() - start - tokenTime;
     return user.id === playerMetadata.credentials;
   } catch (error) {
     console.error(`Error: credentials did not authenticate:\n`, error, {
       playerMetadata,
     });
     return false;
-  } finally {
-    const duration = Date.now() - start;
-    console.debug(
-      `DEBUG: authenticateCredentials executed. verifyToken: ${tokenTime}ms, findUser: ${userTime}ms. Total ${duration}ms`,
-    );
   }
 };
 
@@ -399,12 +434,20 @@ server.router.post('/games/:name/:id/poke', koaBody(), async (ctx) => {
 
   if (!lastPoke || nowDate - lastPokeDate > POKE_TIMEOUT) {
     const discordId = await getDiscordFromClerk(user.clerkId);
-    await messageDiscordUser({
-      id: discordId,
-      message: `Your opponent is reminding you to make a move! ${makeMatchURL({
-        matchID,
-      })}`,
-    });
+    if (discordId) {
+      await messageDiscordUser({
+        id: discordId,
+        message: `Your opponent is reminding you to make a move! ${makeMatchURL(
+          {
+            matchID,
+          },
+        )}`,
+      });
+    } else {
+      console.debug(
+        `Poke notification skipped: user ${user.name} has no Discord account linked`,
+      );
+    }
 
     userMatch.lastPoke = sequelize.literal('CURRENT_TIMESTAMP');
     userMatch.save();
