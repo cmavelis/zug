@@ -133,7 +133,8 @@ const findOrRegisterClerkUser = async (clerkJwtPayload: JwtPayload) => {
   return user;
 };
 
-// Custom authentication handlers
+// (from docs) an optional function that returns player credentials to store in the game metadata and validate against.
+// If not specified, the uuid function will be used.
 const generateCredentials = async (ctx) => {
   // user sends clerk session token as auth header
   const authHeader = ctx.request.headers.authorization;
@@ -150,9 +151,12 @@ const generateCredentials = async (ctx) => {
   if (!user) {
     return false;
   }
-  return user.id;
+
+  // this will be the playerCredential passed to `join` api middleware
+  return randomUUID();
 };
 
+// TODO: authenticate using our own server-signed JWT, on a match-by-match basis
 const authenticateCredentials = async (credentials, playerMetadata) => {
   const start = Date.now();
   let tokenTime = 0;
@@ -262,6 +266,8 @@ server.router.post(
     await next(ctx);
 
     const body = ctx.body;
+    // body.playerCredentials is whatever generateCredentials returns
+    // TODO: add this credential to the userMatch when creating
     if (body.playerID) {
       const match = await Match.findByPk(matchID);
       const { players } = match;
