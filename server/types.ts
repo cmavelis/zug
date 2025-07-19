@@ -8,3 +8,7 @@ export interface EnhancedMatch extends LobbyAPI.Match {
   score: { 0: number; 1: number };
   turn: number;
 }
+
+export interface MatchTokenPayload {
+  credential: string;
+}

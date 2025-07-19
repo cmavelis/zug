@@ -201,12 +201,11 @@ const generateCredentials = async (ctx) => {
   return randomUUID();
 };
 
-// TODO: authenticate using our own server-signed JWT, on a match-by-match basis
-const authenticateCredentials = async (credentials, playerMetadata) => {
+const authenticateCredentials = async (token, playerMetadata) => {
   try {
-    const token = await verifyToken(credentials, verifyOptions);
-    const user = await findUser(token.sub);
-    return user.id === playerMetadata.credentials;
+    const decodedToken = decodeToken(token);
+    const { credential } = decodedToken;
+    return credential === playerMetadata.credentials;
   } catch (error) {
     console.error(`Error: credentials did not authenticate:\n`, error, {
       playerMetadata,
@@ -301,8 +300,8 @@ server.router.post(
     await next(ctx);
 
     const body = ctx.body;
-    // body.playerCredentials is whatever generateCredentials returns
-    // TODO: add this credential to the userMatch when creating
+    const token = encodeToken({ credential: body.playerCredentials });
+    ctx.response.body.playerCredentials = token;
     if (body.playerID) {
       const match = await Match.findByPk(matchID);
       const { players } = match;

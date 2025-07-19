@@ -31,7 +31,6 @@ import {
 } from '@/utils/titleAnimation';
 import MatchInvite from '@/components/MatchInvite.vue';
 import { useMatch } from '@/composables/useMatch';
-import { LobbyClient } from 'boardgame.io/client';
 import { getServerURL } from '@/utils';
 import ButtonStepper from '@/components/ButtonStepper.vue';
 import { useMatchLink } from '@/composables/useMatchLink';
@@ -41,17 +40,9 @@ import { useClerkUser } from '@/composables/useClerkUser';
 // TODO: make matchToken
 const { clerkToken, clerkUsername } = useClerkUser();
 
-watch(clerkToken, () => {
-  matchClientOne.client.updateCredentials(clerkToken.value);
-});
-
 const windowHasFocus = useWindowFocus();
 const toast = useToast();
 const { handleError } = useErrorHandler();
-
-const server = getServerURL();
-const lobbyClient = new LobbyClient({ server });
-const { joinStatus, requestJoinMatch } = useMatch(lobbyClient);
 
 watch(windowHasFocus, (newFocus) => {
   if (newFocus) {
@@ -113,6 +104,7 @@ if (typeof route.params.matchID === 'string') {
   matchID = route.params.matchID[0];
 }
 const { copyLink } = useMatchLink(matchID);
+const { joinStatus, requestJoinMatch, localMatchData } = useMatch(matchID);
 
 /**
  * TODO: allow side-by-side clients in testing matches or while spectating (playerID=null)
@@ -120,6 +112,7 @@ const { copyLink } = useMatchLink(matchID);
 const matchClientOne = new SimulChessClient(
   playerID.value === null ? playerID.value : String(playerID.value),
   matchID,
+  localMatchData?.token,
 );
 
 watch(playerID, () => {
@@ -257,6 +250,8 @@ const canJoin = computed(() => {
   );
   return playerID.value === null && !gameLastTurn.value && openPlayerSlot;
 });
+
+// TODO: this needs to set the credential in the client
 const handleJoin = () => {
   requestJoinMatch(matchID)
     .then((resp) => {

@@ -1,8 +1,10 @@
 import { ref } from 'vue';
 import { type GameSetupData } from '@/game/Game';
-import type { LobbyClient } from 'boardgame.io/client';
+import { LobbyClient } from 'boardgame.io/client';
+
 import router from '@/router';
 import { useClerkUser } from '@/composables/useClerkUser';
+import { getServerURL } from '@/utils';
 
 const navigateToMatch = async (matchID: string) => {
   try {
@@ -17,14 +19,35 @@ const navigateToMatch = async (matchID: string) => {
   }
 };
 
-export const useMatch = (lobbyClient: LobbyClient) => {
+export interface LocalStorageMatch {
+  token: string;
+}
+
+const setMatchData = (matchID: string, payload: LocalStorageMatch) => {
+  localStorage.setItem(matchID, JSON.stringify(payload));
+};
+
+const getMatchData = (matchID: string): LocalStorageMatch | null => {
+  const matchData = localStorage.getItem(matchID);
+  if (matchData) {
+    return JSON.parse(matchData);
+  }
+  return null;
+};
+
+const server = getServerURL();
+const lobbyClient = new LobbyClient({ server });
+
+export const useMatch = (matchID: string) => {
   const { clerkToken, clerkUsername } = useClerkUser();
+  const localMatchData = getMatchData(matchID);
   const joinStatus = ref('');
   const requestJoinMatch = async (
     matchID: string,
     setupData?: GameSetupData,
     navigateToMatch?: (matchID: string) => void,
   ) => {
+    // TODO: guests won't have a clerk token
     if (!clerkToken) {
       joinStatus.value = 'failed';
       return;
@@ -38,8 +61,10 @@ export const useMatch = (lobbyClient: LobbyClient) => {
         { playerName: clerkUsername.value || 'error' },
         { headers: { authorization: clerkToken.value || authHeader } },
       );
-      if (resp.playerID) {
+      const { playerCredentials } = resp;
+      if (playerCredentials) {
         joinStatus.value = 'success';
+        setMatchData(matchID, { token: playerCredentials });
         if (navigateToMatch) {
           navigateToMatch(matchID);
         }
@@ -53,5 +78,5 @@ export const useMatch = (lobbyClient: LobbyClient) => {
     }
   };
 
-  return { joinStatus, requestJoinMatch, navigateToMatch };
+  return { joinStatus, requestJoinMatch, navigateToMatch, localMatchData };
 };
