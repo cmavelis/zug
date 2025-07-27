@@ -251,7 +251,6 @@ const canJoin = computed(() => {
   return playerID.value === null && !gameLastTurn.value && openPlayerSlot;
 });
 
-// TODO: this needs to set the credential in the client
 const handleJoin = () => {
   requestJoinMatch(matchID)
     .then((resp) => {
