@@ -7,20 +7,6 @@ const clerkUsername = ref('');
 export function useClerkUser() {
   const clerk = useClerk();
 
-  onMounted(() => {
-    if (!clerk.value) return;
-    clerk.value.addListener(async ({ session }) => {
-      const token = await session?.getToken();
-      if (token) {
-        clerkToken.value = token;
-      }
-    });
-    const username = clerk.value.session?.user.username;
-    if (username) {
-      clerkUsername.value = username;
-    }
-  });
-
   watch(
     clerk,
     (newClerk) => {
