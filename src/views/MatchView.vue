@@ -112,7 +112,7 @@ const { joinStatus, requestJoinMatch, localMatchData } = useMatch(matchID);
 const matchClientOne = new SimulChessClient(
   playerID.value === null ? playerID.value : String(playerID.value),
   matchID,
-  localMatchData?.token,
+  localMatchData?.token ?? '',
 );
 
 watch(playerID, () => {
