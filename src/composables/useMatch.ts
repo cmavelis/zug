@@ -48,7 +48,7 @@ export const useMatch = (matchID: string) => {
     navigateToMatch?: (matchID: string) => void,
   ) => {
     // TODO: guests won't have a clerk token
-    if (!clerkToken) {
+    if (!clerkToken.value) {
       joinStatus.value = 'failed';
       return;
     }
