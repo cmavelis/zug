@@ -38,9 +38,9 @@ const getMatchData = (matchID: string): LocalStorageMatch | null => {
 const server = getServerURL();
 const lobbyClient = new LobbyClient({ server });
 
-export const useMatch = (matchID: string) => {
+export const useMatch = (matchID?: string) => {
   const { clerkToken, clerkUsername } = useClerkUser();
-  const localMatchData = getMatchData(matchID);
+  const localMatchData = matchID ? getMatchData(matchID) : null;
   const joinStatus = ref('');
   const requestJoinMatch = async (
     matchID: string,

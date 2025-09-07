@@ -57,16 +57,7 @@ const createMatch = async (
   await requestJoinMatch(createdMatch.matchID, setupData, navigateToMatch);
 };
 
-const { joinStatus, requestJoinMatch } = useMatch(lobbyClient);
-
-const navigateToMatch = (matchID: string) => {
-  router.push({
-    name: 'match',
-    params: {
-      matchID,
-    },
-  });
-};
+const { joinStatus, requestJoinMatch, navigateToMatch } = useMatch();
 
 const handleCustomClick = () => {
   router.push({
