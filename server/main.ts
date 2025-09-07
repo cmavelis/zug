@@ -12,6 +12,7 @@ import { createClerkClient } from '@clerk/backend';
 import { verifyToken } from '@clerk/backend';
 import { JwtPayload } from 'jsonwebtoken';
 import { messageDiscordUser } from './discordBot';
+import { generateGuestUsername } from './guestUser';
 
 // TODO: figure out which process needs this to be commonJS syntax
 const { Server, Origins } = require('boardgame.io/server');
@@ -137,15 +138,6 @@ Match.beforeUpsert(async (created) => {
   }
 });
 
-interface IBaseUser {
-  name: string;
-  credentials: string;
-}
-
-interface IUser extends IBaseUser {
-  discord?: any;
-}
-
 interface ZugToken extends ZugUser {
   iat: number; // 'instantiated at'
 }
@@ -186,7 +178,8 @@ const findOrRegisterClerkUser = async (clerkJwtPayload: JwtPayload) => {
   return user;
 };
 
-// Custom authentication handlers
+// (from docs) an optional function that returns player credentials to store in the game metadata and validate against.
+// If not specified, the uuid function will be used.
 const generateCredentials = async (ctx) => {
   // user sends clerk session token as auth header
   const authHeader = ctx.request.headers.authorization;
@@ -203,14 +196,16 @@ const generateCredentials = async (ctx) => {
   if (!user) {
     return false;
   }
-  return user.id;
+
+  // this will be the playerCredential passed to `join` api middleware
+  return randomUUID();
 };
 
-const authenticateCredentials = async (credentials, playerMetadata) => {
+const authenticateCredentials = async (token, playerMetadata) => {
   try {
-    const token = await verifyToken(credentials, verifyOptions);
-    const user = await findUser(token.sub);
-    return user.id === playerMetadata.credentials;
+    const decodedToken = decodeToken(token);
+    const { credential } = decodedToken;
+    return credential === playerMetadata.credentials;
   } catch (error) {
     console.error(`Error: credentials did not authenticate:\n`, error, {
       playerMetadata,
@@ -237,31 +232,55 @@ const frontEndAppBuildPath = path.resolve(__dirname, '../dist');
 server.app.use(serve(frontEndAppBuildPath));
 
 server.router.post(
-  '/api/login',
+  '/api/guest/login',
   koaBody(),
   async (ctx: { body?: any; request?: any }) => {
-    const { request } = ctx;
-    const { username } = request.body;
+    // const { username } = request.body;
+    let username: string;
+    let usernameUnique = false;
+    while (!usernameUnique) {
+      username = generateGuestUsername();
+      const existingGuestUser = await User.findOne({
+        where: { name: username, isGuest: true },
+      });
 
-    const existingUser: IBaseUser = await TempUser.findOne({
-      where: { name: username },
+      if (!existingGuestUser) {
+        usernameUnique = true;
+      }
+    }
+    const newGuestUser = await User.create({
+      name: username,
+      isGuest: true,
     });
 
-    let credentials: string = randomUUID();
-    if (existingUser) {
-      credentials = existingUser.credentials;
-    } else {
-      await TempUser.create({ name: username, credentials });
-    }
-
     const tokenPayload = {
-      ...request.body,
-      credentials,
+      credentials: newGuestUser.id,
     };
 
     ctx.body = {
       authToken: encodeToken(tokenPayload),
       userID: username,
+    };
+  },
+);
+
+server.router.post(
+  '/api/guest/check',
+  koaBody(),
+  async (ctx: { body?: any; request?: any }) => {
+    const { token } = ctx.request.body;
+    const decodedToken = decodeToken(token);
+
+    const existingGuestUser = await User.findOne({
+      where: { id: decodedToken.credentials, isGuest: true },
+    });
+
+    let resp = 'bad';
+    if (existingGuestUser) {
+      resp = existingGuestUser.name;
+    }
+    ctx.body = {
+      resp,
     };
   },
 );
@@ -281,6 +300,8 @@ server.router.post(
     await next(ctx);
 
     const body = ctx.body;
+    const token = encodeToken({ credential: body.playerCredentials });
+    ctx.response.body.playerCredentials = token;
     if (body.playerID) {
       const match = await Match.findByPk(matchID);
       const { players } = match;

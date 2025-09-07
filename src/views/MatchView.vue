@@ -31,46 +31,18 @@ import {
 } from '@/utils/titleAnimation';
 import MatchInvite from '@/components/MatchInvite.vue';
 import { useMatch } from '@/composables/useMatch';
-import { LobbyClient } from 'boardgame.io/client';
 import { getServerURL } from '@/utils';
 import ButtonStepper from '@/components/ButtonStepper.vue';
 import { useMatchLink } from '@/composables/useMatchLink';
 import { BoardDisplay } from '@/components/BoardDisplay';
-import { useClerk } from '@clerk/vue';
+import { useClerkUser } from '@/composables/useClerkUser';
 
 // TODO: make matchToken
-const clerkToken = ref('');
-const clerkUsername = ref('');
-watch(clerkToken, () => {
-  matchClientOne.client.updateCredentials(clerkToken.value);
-});
-
-const clerk = useClerk();
-watch(
-  clerk,
-  (newClerk) => {
-    if (!newClerk) return;
-    newClerk.addListener(async ({ session }) => {
-      const token = await session?.getToken();
-      if (token) {
-        clerkToken.value = token;
-      }
-    });
-    const username = newClerk.session?.user.username;
-    if (username) {
-      clerkUsername.value = username;
-    }
-  },
-  { immediate: true },
-);
+const { clerkToken, clerkUsername } = useClerkUser();
 
 const windowHasFocus = useWindowFocus();
 const toast = useToast();
 const { handleError } = useErrorHandler();
-
-const server = getServerURL();
-const lobbyClient = new LobbyClient({ server });
-const { joinStatus, requestJoinMatch } = useMatch(lobbyClient);
 
 watch(windowHasFocus, (newFocus) => {
   if (newFocus) {
@@ -132,6 +104,7 @@ if (typeof route.params.matchID === 'string') {
   matchID = route.params.matchID[0];
 }
 const { copyLink } = useMatchLink(matchID);
+const { joinStatus, requestJoinMatch, localMatchData } = useMatch(matchID);
 
 /**
  * TODO: allow side-by-side clients in testing matches or while spectating (playerID=null)
@@ -139,6 +112,7 @@ const { copyLink } = useMatchLink(matchID);
 const matchClientOne = new SimulChessClient(
   playerID.value === null ? playerID.value : String(playerID.value),
   matchID,
+  localMatchData?.token ?? '',
 );
 
 watch(playerID, () => {
@@ -276,6 +250,7 @@ const canJoin = computed(() => {
   );
   return playerID.value === null && !gameLastTurn.value && openPlayerSlot;
 });
+
 const handleJoin = () => {
   requestJoinMatch(matchID)
     .then((resp) => {
@@ -392,7 +367,7 @@ getNotificationSound(store.zugUsername).then((notificationSound) => {
 </script>
 
 <template>
-  <main v-if="!clerk">Loading...</main>
+  <main v-if="!clerkToken">Loading...</main>
   <main v-else>
     <div v-if="canJoin">
       <p v-if="!clerkToken">Sign in to join this game</p>
