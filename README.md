@@ -29,6 +29,18 @@ npm run build && npm run server:dev
 npm run test:unit
 ```
 
+### Run End-to-End Tests with Cypress
+
+Interactive mode:
+```sh
+npm run cy:open
+```
+
+Headless mode (starts dev server automatically):
+```sh
+npm run test:e2e
+```
+
 ### Run in prod
 
 ```sh
