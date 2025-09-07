@@ -6,7 +6,7 @@ import router from '@/router';
 import { useClerkUser } from '@/composables/useClerkUser';
 import { getServerURL } from '@/utils';
 
-const navigateToMatch = async (matchID: string) => {
+export const navigateToMatch = async (matchID: string) => {
   try {
     return await router.push({
       name: 'match',

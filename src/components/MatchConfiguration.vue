@@ -19,7 +19,7 @@ import {
   type ZugConfig,
 } from '@/game/zugzwang/config';
 import { getServerURL } from '@/utils';
-import { useMatch } from '@/composables/useMatch';
+import { navigateToMatch } from '@/composables/useMatch';
 import type { GameSetupData } from '@/game/Game';
 
 // input: "1,2,3,4"
@@ -93,7 +93,6 @@ const ruleSet = computed<ZugConfig>(() => {
 const server = getServerURL();
 
 const lobbyClient = new LobbyClient({ server });
-const { navigateToMatch } = useMatch(lobbyClient);
 const createMatch = async () => {
   try {
     const setupData: GameSetupData = { config: ruleSet.value };
