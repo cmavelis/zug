@@ -251,6 +251,11 @@ server.router.post(
     const newGuestUser = await User.create({
       name: username,
       isGuest: true,
+    }).catch((error) => {
+      if (error.name === 'SequelizeUniqueConstraintError') {
+        throw new Error(`Username ${username} already exists`);
+      }
+      throw new Error(`Failed to create guest user: ${error.message}`);
     });
 
     const tokenPayload = {

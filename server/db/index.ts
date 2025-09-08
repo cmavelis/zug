@@ -46,7 +46,7 @@ export const UserMatch = sequelize.define('UserMatch', {
 Match.belongsToMany(User, { through: UserMatch });
 User.belongsToMany(Match, { through: UserMatch });
 export const dbInitialized = sequelize
-  .sync({ alter: true })
+  .sync()
   .then(() => {
     console.log('All models synced!');
     return true;
