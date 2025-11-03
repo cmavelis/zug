@@ -184,17 +184,22 @@ const generateCredentials = async (ctx) => {
   // user sends clerk session token as auth header
   const authHeader = ctx.request.headers.authorization;
   const token = authHeader.replace('Bearer ', '');
-  const verifiedToken = await verifyToken(token, verifyOptions);
-
-  // TODO: check for guest account if not clerk token
-  if (!verifiedToken) {
-    ctx.status = 401;
-    throw new Error('Invalid authentication token');
+  console.log('verifying token', token);
+  let user;
+  try {
+    const verifiedToken = await verifyToken(token, verifyOptions).catch();
+    user = await findOrRegisterClerkUser(verifiedToken);
+  } catch (error) {
+    console.log(`did error ${error}, use guest token`);
+    const decoded = decodeToken(authHeader);
+    console.log({ decoded });
+    user = await User.findByPk(decoded.credential);
+    console.log({ user });
   }
 
-  const user = await findOrRegisterClerkUser(verifiedToken);
   if (!user) {
-    return false;
+    ctx.status = 401;
+    throw new Error('Invalid authentication token');
   }
 
   // this will be the playerCredential passed to `join` api middleware
@@ -259,7 +264,7 @@ server.router.post(
     });
 
     const tokenPayload = {
-      credentials: newGuestUser.id,
+      credential: newGuestUser.id,
     };
 
     ctx.body = {
@@ -277,7 +282,7 @@ server.router.post(
     const decodedToken = decodeToken(token);
 
     const existingGuestUser = await User.findOne({
-      where: { id: decodedToken.credentials, isGuest: true },
+      where: { id: decodedToken.credential, isGuest: true },
     });
 
     let resp = 'bad';

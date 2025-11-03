@@ -1,8 +1,11 @@
 <script setup lang="ts">
 import { ref } from 'vue';
+import { useUser } from '@/composables/useUser';
 
-const authToken = ref('');
-const userID = ref('');
+const { guestData, setGuestData } = useUser();
+
+const authToken = ref(guestData?.token);
+const userID = ref(guestData?.id);
 const result = ref('');
 
 async function loginGuest() {
@@ -16,6 +19,7 @@ async function loginGuest() {
       body: JSON.stringify({}),
     });
     const data = await res.json();
+    setGuestData({ id: data.userID, token: data.authToken });
     authToken.value = data.authToken;
     userID.value = data.userID;
     result.value = JSON.stringify(data, null, 2);

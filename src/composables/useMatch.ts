@@ -5,6 +5,7 @@ import { LobbyClient } from 'boardgame.io/client';
 import router from '@/router';
 import { useClerkUser } from '@/composables/useClerkUser';
 import { getServerURL } from '@/utils';
+import { useUser } from '@/composables/useUser';
 
 export const navigateToMatch = async (matchID: string) => {
   try {
@@ -40,6 +41,8 @@ const lobbyClient = new LobbyClient({ server });
 
 export const useMatch = (matchID?: string) => {
   const { clerkToken, clerkUsername } = useClerkUser();
+
+  const { guestData } = useUser();
   const localMatchData = matchID ? getMatchData(matchID) : null;
   const joinStatus = ref('');
   const requestJoinMatch = async (
@@ -47,19 +50,24 @@ export const useMatch = (matchID?: string) => {
     setupData?: GameSetupData,
     navigateToMatch?: (matchID: string) => void,
   ) => {
-    // TODO: guests won't have a clerk token
-    if (!clerkToken.value) {
-      joinStatus.value = 'failed';
-      return;
+    let authHeader = setupData?.empty ? 'open' : 'error';
+    let playerName = 'error';
+    if (clerkToken.value) {
+      console.log('using clerkToken', clerkToken.value);
+      playerName = clerkUsername.value;
+      authHeader = clerkToken.value;
+    } else if (guestData?.token) {
+      console.log('using guestData', guestData);
+      playerName = guestData.id;
+      authHeader = guestData.token;
     }
     joinStatus.value = 'loading';
-    const authHeader = setupData?.empty ? 'open' : 'error';
     try {
       const resp = await lobbyClient.joinMatch(
         'zug',
         matchID,
-        { playerName: clerkUsername.value || 'error' },
-        { headers: { authorization: clerkToken.value || authHeader } },
+        { playerName },
+        { headers: { authorization: authHeader } },
       );
       const { playerCredentials } = resp;
       if (playerCredentials) {
