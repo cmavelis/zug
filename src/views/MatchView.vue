@@ -36,9 +36,12 @@ import ButtonStepper from '@/components/ButtonStepper.vue';
 import { useMatchLink } from '@/composables/useMatchLink';
 import { BoardDisplay } from '@/components/BoardDisplay';
 import { useClerkUser } from '@/composables/useClerkUser';
+import { useUser } from '@/composables/useUser';
 
-// TODO: make matchToken
-const { clerkToken, clerkUsername } = useClerkUser();
+// TODO: consolidate user composables
+const { clerkUsername } = useClerkUser();
+const { guestData } = useUser();
+const userName = computed(() => clerkUsername.value || guestData?.id || null);
 
 const windowHasFocus = useWindowFocus();
 const toast = useToast();
@@ -150,7 +153,7 @@ watch([gameStateLoaded, clerkUsername], () => {
   if (!playerIDDefault) {
     // determine player # from user, set automatically
     const joinedPlayerID = matchClientOne.client.matchData?.findIndex(
-      (player) => player.name && player.name === clerkUsername.value,
+      (player) => player.name && player.name === userName.value,
     );
     if (joinedPlayerID !== undefined && joinedPlayerID >= 0) {
       playerID.value = joinedPlayerID;
@@ -367,10 +370,10 @@ getNotificationSound(store.zugUsername).then((notificationSound) => {
 </script>
 
 <template>
-  <main v-if="!clerkToken">Loading...</main>
+  <main v-if="!localMatchData?.token">Loading...</main>
   <main v-else>
     <div v-if="canJoin">
-      <p v-if="!clerkToken">Sign in to join this game</p>
+      <p v-if="!localMatchData?.token">Sign in to join this game</p>
       <Button v-else label="Join" @click="handleJoin"></Button>
       <p>{{ joinStatus }}</p>
     </div>
