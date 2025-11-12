@@ -1,11 +1,20 @@
 describe('guest login', () => {
-  it('can log in as guest', () => {
+  beforeEach(() => {
     cy.visit('/guest');
     cy.contains('Login as Guest').click();
     cy.getBySel('guest-username').invoke('text').as('guestUsername');
   });
+  it('can start a match as guest', () => {
+    // start new match
+    cy.visit(`/`);
+    cy.contains('Basic').click();
 
-  it('can play as guest', () => {
+    // redirected
+    cy.url().should('include', '/match/');
+    cy.get('@guestUsername');
+  });
+
+  it('can make a move as guest', () => {
     // start new match
     cy.visit(`/`);
     cy.contains('Basic').click();
@@ -15,6 +24,6 @@ describe('guest login', () => {
     cy.get('@guestUsername');
 
     // make some moves
-    cy.get('.player-one-piece').click();
+    cy.get('div[data-zug-piece-id="0"]').click();
   });
 });
