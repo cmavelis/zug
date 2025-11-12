@@ -1,4 +1,5 @@
-import { ref } from 'vue';
+import { computed, ref } from 'vue';
+import { useClerkUser } from '@/composables/useClerkUser';
 
 export interface LocalStorageGuest {
   id: string;
@@ -9,6 +10,8 @@ const guestKey = 'zug-guest-user';
 
 export const useUser = () => {
   const guestData = ref(getGuestData());
+  const { clerkUsername } = useClerkUser();
+
   const createNewGuest = async () => {
     const res = await fetch('/api/guest/login', {
       method: 'POST',
@@ -21,7 +24,10 @@ export const useUser = () => {
     setGuestData(formattedData);
     return formattedData;
   };
-  return { guestData, setGuestData, createNewGuest };
+
+  const userName = computed(() => clerkUsername.value || guestData.value?.id);
+
+  return { guestData, setGuestData, createNewGuest, userName };
 };
 const setGuestData = (payload: LocalStorageGuest) => {
   localStorage.setItem(guestKey, JSON.stringify(payload));

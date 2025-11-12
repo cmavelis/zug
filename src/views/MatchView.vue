@@ -38,12 +38,8 @@ import { BoardDisplay } from '@/components/BoardDisplay';
 import { useClerkUser } from '@/composables/useClerkUser';
 import { useUser } from '@/composables/useUser';
 
-// TODO: consolidate user composables
 const { clerkUsername } = useClerkUser();
-const { guestData } = useUser();
-const userName = computed(
-  () => clerkUsername.value || guestData.value?.id || null,
-);
+const { userName } = useUser();
 
 const windowHasFocus = useWindowFocus();
 const toast = useToast();
