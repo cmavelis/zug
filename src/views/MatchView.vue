@@ -146,7 +146,7 @@ const updateGameState = (state: ClientState<{ G: GObject; ctx: Ctx }>) => {
 };
 matchClientOne.client.subscribe(updateGameState);
 
-watch([gameStateLoaded, clerkUsername], () => {
+watch([gameStateLoaded, userName], () => {
   if (!gameStateLoaded.value) {
     return;
   }
@@ -370,11 +370,13 @@ getNotificationSound(store.zugUsername).then((notificationSound) => {
 </script>
 
 <template>
-  <main v-if="!localMatchData?.token">Loading...</main>
+  <main v-if="!userName">Loading...</main>
   <main v-else>
     <div v-if="canJoin">
-      <p v-if="!localMatchData?.token">Sign in to join this game</p>
-      <Button v-else label="Join" @click="handleJoin"></Button>
+      <Button
+        :label="`Join${userName ? ' as guest' : ''}`"
+        @click="handleJoin"
+      ></Button>
       <p>{{ joinStatus }}</p>
     </div>
     <div class="player-info">
