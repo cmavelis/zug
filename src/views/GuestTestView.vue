@@ -4,8 +4,8 @@ import { useUser } from '@/composables/useUser';
 
 const { guestData, setGuestData } = useUser();
 
-const authToken = ref(guestData?.token);
-const userID = ref(guestData?.id);
+const authToken = ref(guestData.value?.token);
+const userID = ref(guestData.value?.id);
 const result = ref('');
 
 async function loginGuest() {

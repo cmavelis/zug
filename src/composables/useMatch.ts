@@ -42,7 +42,7 @@ const lobbyClient = new LobbyClient({ server });
 export const useMatch = (matchID?: string) => {
   const { clerkToken, clerkUsername } = useClerkUser();
 
-  const { guestData } = useUser();
+  const { guestData, createNewGuest } = useUser();
   const localMatchData = matchID ? getMatchData(matchID) : null;
   const joinStatus = ref('');
   const requestJoinMatch = async (
@@ -56,10 +56,15 @@ export const useMatch = (matchID?: string) => {
       console.log('using clerkToken', clerkToken.value);
       playerName = clerkUsername.value;
       authHeader = clerkToken.value;
-    } else if (guestData?.token) {
-      console.log('using guestData', guestData);
-      playerName = guestData.id;
-      authHeader = guestData.token;
+    } else if (guestData.value?.token) {
+      console.log('using existing guest', guestData);
+      playerName = guestData.value.id;
+      authHeader = guestData.value.token;
+    } else {
+      console.log('using new guest', guestData);
+      const newGuest = await createNewGuest();
+      playerName = newGuest.id;
+      authHeader = newGuest.token;
     }
     joinStatus.value = 'loading';
     try {

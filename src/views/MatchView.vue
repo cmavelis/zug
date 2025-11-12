@@ -41,7 +41,9 @@ import { useUser } from '@/composables/useUser';
 // TODO: consolidate user composables
 const { clerkUsername } = useClerkUser();
 const { guestData } = useUser();
-const userName = computed(() => clerkUsername.value || guestData?.id || null);
+const userName = computed(
+  () => clerkUsername.value || guestData.value?.id || null,
+);
 
 const windowHasFocus = useWindowFocus();
 const toast = useToast();
@@ -370,11 +372,11 @@ getNotificationSound(store.zugUsername).then((notificationSound) => {
 </script>
 
 <template>
-  <main v-if="!userName">Loading...</main>
+  <main v-if="!gameStateLoaded">Loading...</main>
   <main v-else>
     <div v-if="canJoin">
       <Button
-        :label="`Join${userName ? ' as guest' : ''}`"
+        :label="`Join${clerkUsername ? '' : ' as guest'}`"
         @click="handleJoin"
       ></Button>
       <p>{{ joinStatus }}</p>
