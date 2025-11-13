@@ -13,7 +13,7 @@ const root = document.querySelector(':root');
 root.style.setProperty('--square-size', squareSize);
 // initialize clerk composable
 useClerkUser();
-const { guestData } = useUser();
+const { userName } = useUser();
 </script>
 
 <template>
@@ -24,7 +24,7 @@ const { guestData } = useUser();
         <RouterLink to="/"><Logo class="logo"></Logo></RouterLink>
         <RouterLink to="/how-to-play">How To Play</RouterLink>
         <RouterLink to="/about">About</RouterLink>
-        <span v-if="guestData">{{ guestData.id }}</span>
+        <span v-if="userName">{{ userName }}</span>
 
         <div>
           <SignedOut>
