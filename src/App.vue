@@ -5,6 +5,7 @@ import Toast from 'primevue/toast';
 import { BOARD_PIXEL_SIZE } from '@/constants';
 import Logo from '@/assets/logo.svg';
 import { useClerkUser } from '@/composables/useClerkUser';
+import { useUser } from '@/composables/useUser';
 
 const squareSize = BOARD_PIXEL_SIZE + 'px';
 const root = document.querySelector(':root');
@@ -12,6 +13,7 @@ const root = document.querySelector(':root');
 root.style.setProperty('--square-size', squareSize);
 // initialize clerk composable
 useClerkUser();
+const { guestData } = useUser();
 </script>
 
 <template>
@@ -22,6 +24,7 @@ useClerkUser();
         <RouterLink to="/"><Logo class="logo"></Logo></RouterLink>
         <RouterLink to="/how-to-play">How To Play</RouterLink>
         <RouterLink to="/about">About</RouterLink>
+        <span v-if="guestData">{{ guestData.id }}</span>
 
         <div>
           <SignedOut>
