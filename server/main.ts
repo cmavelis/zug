@@ -3,13 +3,11 @@ import { randomUUID } from 'crypto';
 import * as Koa from 'koa';
 
 import { decodeToken, encodeToken } from './auth';
-import { type ZugUser } from '../src/utils/auth';
 import { type EnhancedMatch } from './types';
 import { type LobbyAPI } from 'boardgame.io/dist/types/src/types';
-import { db, sequelize, User, Match, dbInitialized } from './db';
+import { db, dbInitialized, Match, sequelize, User } from './db';
 import { removeOldMatches } from './db/cleanup';
-import { createClerkClient } from '@clerk/backend';
-import { verifyToken } from '@clerk/backend';
+import { createClerkClient, verifyToken } from '@clerk/backend';
 import { JwtPayload } from 'jsonwebtoken';
 import { messageDiscordUser } from './discordBot';
 import { generateGuestUsername } from './guestUser';
@@ -137,10 +135,6 @@ Match.beforeUpsert(async (created) => {
     console.error(err);
   }
 });
-
-interface ZugToken extends ZugUser {
-  iat: number; // 'instantiated at'
-}
 
 const verifyOptions = {
   secretKey: process.env.CLERK_SECRET_KEY,
@@ -310,8 +304,9 @@ server.router.post(
     await next(ctx);
 
     const body = ctx.body;
-    const token = encodeToken({ credential: body.playerCredentials });
-    ctx.response.body.playerCredentials = token;
+    ctx.response.body.playerCredentials = encodeToken({
+      credential: body.playerCredentials,
+    });
     if (body.playerID) {
       const match = await Match.findByPk(matchID);
       const { players } = match;

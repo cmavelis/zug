@@ -50,8 +50,8 @@ export const useMatch = (matchID?: string) => {
     setupData?: GameSetupData,
     navigateToMatch?: (matchID: string) => void,
   ) => {
-    let authHeader = setupData?.empty ? 'open' : 'error';
-    let playerName = 'error';
+    let authHeader;
+    let playerName;
     if (clerkToken.value) {
       console.log('using clerkToken', clerkToken.value);
       playerName = clerkUsername.value;
