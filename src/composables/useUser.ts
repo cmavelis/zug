@@ -18,7 +18,25 @@ export const useUser = () => {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({}),
     });
-    const data = await res.json();
+
+    let data: unknown;
+    try {
+      data = await res.json();
+    } catch {
+      throw new Error(`Failed to parse guest response (${res.status})`);
+    }
+
+    if (!res.ok) {
+      const message = hasErrorMessage(data)
+        ? data.message
+        : `Failed to create guest (${res.status})`;
+      throw new Error(message);
+    }
+
+    if (!isGuestResponse(data)) {
+      throw new Error('Invalid guest data received from server');
+    }
+
     const formattedData = { id: data.userID, token: data.authToken };
     guestData.value = formattedData;
     setGuestData(formattedData);
@@ -39,4 +57,29 @@ const getGuestData = (): LocalStorageGuest | null => {
     return JSON.parse(data);
   }
   return null;
+};
+
+const isGuestResponse = (
+  payload: unknown,
+): payload is { userID: string; authToken: string } => {
+  if (
+    typeof payload !== 'object' ||
+    payload === null ||
+    !('userID' in payload) ||
+    !('authToken' in payload)
+  ) {
+    return false;
+  }
+
+  const { userID, authToken } = payload as Record<string, unknown>;
+  return typeof userID === 'string' && typeof authToken === 'string';
+};
+
+const hasErrorMessage = (payload: unknown): payload is { message: string } => {
+  return (
+    typeof payload === 'object' &&
+    payload !== null &&
+    'message' in payload &&
+    typeof (payload as { message: unknown }).message === 'string'
+  );
 };
