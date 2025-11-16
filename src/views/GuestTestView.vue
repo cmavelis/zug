@@ -1,30 +1,11 @@
-<template>
-  <div class="guest-test-view">
-    <h1>Guest User API Test</h1>
-    <button @click="loginGuest">Login as Guest</button>
-    <button @click="checkGuest" :disabled="!authToken">
-      Check Guest Token
-    </button>
-    <div v-if="result">
-      <h2>Result</h2>
-      <pre>{{ result }}</pre>
-    </div>
-    <div v-if="authToken">
-      <h3>Auth Token</h3>
-      <pre>{{ authToken }}</pre>
-    </div>
-    <div v-if="userID">
-      <h3>Guest Username</h3>
-      <pre>{{ userID }}</pre>
-    </div>
-  </div>
-</template>
-
 <script setup lang="ts">
 import { ref } from 'vue';
+import { useUser } from '@/composables/useUser';
 
-const authToken = ref('');
-const userID = ref('');
+const { guestData, setGuestData } = useUser();
+
+const authToken = ref(guestData.value?.token);
+const userID = ref(guestData.value?.id);
 const result = ref('');
 
 async function loginGuest() {
@@ -38,6 +19,7 @@ async function loginGuest() {
       body: JSON.stringify({}),
     });
     const data = await res.json();
+    setGuestData({ id: data.userID, token: data.authToken });
     authToken.value = data.authToken;
     userID.value = data.userID;
     result.value = JSON.stringify(data, null, 2);
@@ -61,6 +43,28 @@ async function checkGuest() {
   }
 }
 </script>
+
+<template>
+  <div class="guest-test-view">
+    <h1>Guest User API Test</h1>
+    <button @click="loginGuest">Login as Guest</button>
+    <button @click="checkGuest" :disabled="!authToken">
+      Check Guest Token
+    </button>
+    <div v-if="result">
+      <h2>Result</h2>
+      <pre>{{ result }}</pre>
+    </div>
+    <div v-if="authToken">
+      <h3>Auth Token</h3>
+      <pre>{{ authToken }}</pre>
+    </div>
+    <div v-if="userID">
+      <h3>Guest Username</h3>
+      <pre data-test="guest-username">{{ userID }}</pre>
+    </div>
+  </div>
+</template>
 
 <style scoped>
 .guest-test-view {

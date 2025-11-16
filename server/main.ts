@@ -3,13 +3,11 @@ import { randomUUID } from 'crypto';
 import * as Koa from 'koa';
 
 import { decodeToken, encodeToken } from './auth';
-import { type ZugUser } from '../src/utils/auth';
 import { type EnhancedMatch } from './types';
 import { type LobbyAPI } from 'boardgame.io/dist/types/src/types';
-import { db, sequelize, User, Match, dbInitialized } from './db';
+import { db, dbInitialized, Match, sequelize, User } from './db';
 import { removeOldMatches } from './db/cleanup';
-import { createClerkClient } from '@clerk/backend';
-import { verifyToken } from '@clerk/backend';
+import { createClerkClient, verifyToken } from '@clerk/backend';
 import { JwtPayload } from 'jsonwebtoken';
 import { messageDiscordUser } from './discordBot';
 import { generateGuestUsername } from './guestUser';
@@ -138,10 +136,6 @@ Match.beforeUpsert(async (created) => {
   }
 });
 
-interface ZugToken extends ZugUser {
-  iat: number; // 'instantiated at'
-}
-
 const verifyOptions = {
   secretKey: process.env.CLERK_SECRET_KEY,
 };
@@ -184,17 +178,22 @@ const generateCredentials = async (ctx) => {
   // user sends clerk session token as auth header
   const authHeader = ctx.request.headers.authorization;
   const token = authHeader.replace('Bearer ', '');
-  const verifiedToken = await verifyToken(token, verifyOptions);
-
-  // TODO: check for guest account if not clerk token
-  if (!verifiedToken) {
-    ctx.status = 401;
-    throw new Error('Invalid authentication token');
+  console.log('verifying token', token);
+  let user;
+  try {
+    const verifiedToken = await verifyToken(token, verifyOptions).catch();
+    user = await findOrRegisterClerkUser(verifiedToken);
+  } catch (error) {
+    console.log(`did error ${error}, use guest token`);
+    const decoded = decodeToken(authHeader);
+    console.log({ decoded });
+    user = await User.findByPk(decoded.credential);
+    console.log({ user });
   }
 
-  const user = await findOrRegisterClerkUser(verifiedToken);
   if (!user) {
-    return false;
+    ctx.status = 401;
+    throw new Error('Invalid authentication token');
   }
 
   // this will be the playerCredential passed to `join` api middleware
@@ -251,10 +250,15 @@ server.router.post(
     const newGuestUser = await User.create({
       name: username,
       isGuest: true,
+    }).catch((error) => {
+      if (error.name === 'SequelizeUniqueConstraintError') {
+        throw new Error(`Username ${username} already exists`);
+      }
+      throw new Error(`Failed to create guest user: ${error.message}`);
     });
 
     const tokenPayload = {
-      credentials: newGuestUser.id,
+      credential: newGuestUser.id,
     };
 
     ctx.body = {
@@ -272,7 +276,7 @@ server.router.post(
     const decodedToken = decodeToken(token);
 
     const existingGuestUser = await User.findOne({
-      where: { id: decodedToken.credentials, isGuest: true },
+      where: { id: decodedToken.credential, isGuest: true },
     });
 
     let resp = 'bad';
@@ -300,8 +304,9 @@ server.router.post(
     await next(ctx);
 
     const body = ctx.body;
-    const token = encodeToken({ credential: body.playerCredentials });
-    ctx.response.body.playerCredentials = token;
+    ctx.response.body.playerCredentials = encodeToken({
+      credential: body.playerCredentials,
+    });
     if (body.playerID) {
       const match = await Match.findByPk(matchID);
       const { players } = match;

@@ -15,7 +15,10 @@
     "lint": "eslint . --ext .vue,.js,.jsx,.cjs,.mjs,.ts,.tsx,.cts,.mts --fix --ignore-path .gitignore",
     "server:dev": "nodemon server/main.ts --watch server/main.ts --watch src/",
     "server:prod": "ts-node server/main.ts",
-    "start": "npm run server:prod"
+    "start": "npm run server:prod",
+    "cy:open": "cypress open --e2e",
+    "cy:run": "cypress run --e2e",
+    "test:e2e": "start-server-and-test dev http://localhost:5173 cy:run"
   },
   "dependencies": {
     "@clerk/backend": "^1.25.2",
@@ -62,11 +65,13 @@
     "@vue/eslint-config-typescript": "^12.0.0",
     "@vue/test-utils": "^2.4.3",
     "@vue/tsconfig": "^0.4.0",
+    "cypress": "^13.13.0",
     "eslint": "^8.52.0",
     "eslint-plugin-vue": "^9.18.0",
     "jsdom": "^20.0.1",
     "npm-run-all": "^4.1.5",
     "prettier": "^3.0.3",
+    "start-server-and-test": "^2.0.3",
     "tsconfig-paths": "^4.1.1",
     "typescript": "^5.2.2",
     "vite": "^5.0.10",
