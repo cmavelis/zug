@@ -229,15 +229,6 @@ button {
   align-items: center;
 }
 
-.place-order-indicator {
-  height: 18px;
-  width: 18px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
 .position-above {
   top: -40px;
 }
