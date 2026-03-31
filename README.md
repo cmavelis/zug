@@ -23,6 +23,12 @@ npm run dev
 npm run build && npm run server:dev
 ```
 
+Or this, if working on UI:
+
+```sh
+npm run server:prod & npm run dev 
+```
+
 ### Run Unit Tests with [Vitest](https://vitest.dev/)
 
 ```sh

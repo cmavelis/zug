@@ -25,6 +25,7 @@ import {
 import { store } from '@/store';
 import type { MenuItem } from 'primevue/menuitem';
 import { validateTurnEnd } from '@/game/zugzwang/validators';
+import { iconClasses } from '@/utils/iconClasses';
 
 const NUMBER_PIECES = 4;
 
@@ -540,6 +541,21 @@ onUnmounted(() => {
         :targetingHints="targetingHints"
         :disableCommandMenu="!props.isActiveTurn"
       />
+      <div class="order-button-group">
+        <Button
+          v-for="iconClass in iconClasses"
+          v-bind:key="iconClass"
+          text
+          style="width: 4rem; padding-right: 0.25rem"
+        >
+          <template #icon>
+            <div class="order-cancel-button">
+              <span :class="iconClass" />
+              <span class="place-order-indicator"></span>
+            </div>
+          </template>
+        </Button>
+      </div>
     </div>
   </section>
   <p v-if="endTurnMessage" class="info-message">{{ endTurnMessage }}</p>
@@ -575,6 +591,17 @@ onUnmounted(() => {
   gap: 4px;
   flex-direction: column;
   justify-content: center;
+}
+
+.order-cancel-button {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* keep: make custom icons and prime defaults same size */
+.pi {
+  padding: 4px;
 }
 
 .place-button-group {
