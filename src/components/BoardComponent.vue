@@ -352,48 +352,52 @@ const createCancelMenuItem = (pieceID: number) => {
 
 const actionMenuPerPiece = ref();
 
-watch(actionsUsed, () =>
-  setTimeout(() => {
-    const actionMenuItems: MenuItem[] = [
-      {
-        label: 'Move straight',
-        icon: 'pi pi-arrow-up',
-        command: () => selectAction('move-straight'),
-        disabled: actionsUsed.value.includes('move-straight'),
-      },
-      {
-        label: 'Push straight',
-        icon: 'zi zi-arrow-up-flat',
-        command: () => selectAction('push-straight'),
-        disabled: actionsUsed.value.includes('push-straight'),
-      },
-      {
-        label: 'Move diagonal',
-        icon: 'pi pi-arrow-up-right',
-        command: () => selectAction('move-diagonal'),
-        disabled: actionsUsed.value.includes('move-diagonal'),
-      },
+watch(
+  actionsUsed,
+  () => {
+    setTimeout(() => {
+      const actionMenuItems: MenuItem[] = [
+        {
+          label: 'Move straight',
+          icon: 'pi pi-arrow-up',
+          command: () => selectAction('move-straight'),
+          disabled: actionsUsed.value.includes('move-straight'),
+        },
+        {
+          label: 'Push straight',
+          icon: 'zi zi-arrow-up-flat',
+          command: () => selectAction('push-straight'),
+          disabled: actionsUsed.value.includes('push-straight'),
+        },
+        {
+          label: 'Move diagonal',
+          icon: 'pi pi-arrow-up-right',
+          command: () => selectAction('move-diagonal'),
+          disabled: actionsUsed.value.includes('move-diagonal'),
+        },
 
-      {
-        label: 'Push diagonal',
-        icon: 'zi zi-arrow-up-right-flat',
-        command: () => selectAction('push-diagonal'),
-        disabled: actionsUsed.value.includes('push-diagonal'),
-      },
-      // { label: 'Place', icon: 'pi pi-download', disabled: true },
-    ].reverse();
+        {
+          label: 'Push diagonal',
+          icon: 'zi zi-arrow-up-right-flat',
+          command: () => selectAction('push-diagonal'),
+          disabled: actionsUsed.value.includes('push-diagonal'),
+        },
+        // { label: 'Place', icon: 'pi pi-download', disabled: true },
+      ].reverse();
 
-    const actionMenuFiltered = { ...Array(8).fill(actionMenuItems) };
+      const actionMenuFiltered = { ...Array(8).fill(actionMenuItems) };
 
-    // add "cancel" items for pieces that have an action already
-    for (let i in Array(8).fill(1)) {
-      if (flatOrders.value.find((order) => order.sourcePieceId === +i)) {
-        actionMenuFiltered[i] = [createCancelMenuItem(+i)];
+      // add "cancel" items for pieces that have an action already
+      for (let i in Array(8).fill(1)) {
+        if (flatOrders.value.find((order) => order.sourcePieceId === +i)) {
+          actionMenuFiltered[i] = [createCancelMenuItem(+i)];
+        }
       }
-    }
 
-    actionMenuPerPiece.value = actionMenuFiltered;
-  }, 200),
+      actionMenuPerPiece.value = actionMenuFiltered;
+    }, 200);
+  },
+  { immediate: true },
 );
 
 const selectAction = (action: OrderTypes) => {
