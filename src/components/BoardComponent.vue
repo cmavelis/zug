@@ -561,7 +561,9 @@ onUnmounted(() => {
                 const pieceId = flatOrders.find(
                   (o) => o.type === key,
                 )?.sourcePieceId;
-                return pieceId && getPiece(props.state, pieceId)?.priority;
+                return typeof pieceId === 'number'
+                  ? getPiece(props.state, pieceId)?.priority
+                  : '';
               })()
             }}</span
           >
