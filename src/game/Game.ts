@@ -236,15 +236,27 @@ export const SimulChess: Game<GObject> = {
             },
           },
           endTurn: {
-            move: ({ G, playerID, events }: { G: GameState; playerID: string; events: any }) => {
+            move: ({
+              G,
+              playerID,
+              events,
+            }: {
+              G: GameState;
+              playerID: string;
+              events: any;
+            }) => {
               const playerNumber = +playerID;
-              
-              const validation = validateTurnEnd(playerNumber, G.orders, G.pieces);
-              
+
+              const validation = validateTurnEnd(
+                playerNumber,
+                G.orders,
+                G.pieces,
+              );
+
               if (!validation.canEndTurn) {
                 return INVALID_MOVE;
               }
-              
+
               // If validation passes, end the stage and move to resolution
               events.endStage();
             },
