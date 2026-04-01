@@ -25,7 +25,7 @@ import {
 import { store } from '@/store';
 import type { MenuItem } from 'primevue/menuitem';
 import { validateTurnEnd } from '@/game/zugzwang/validators';
-import { iconClasses, iconClassesMap } from '@/utils/iconClasses';
+import { iconClassesMap } from '@/utils/iconClasses';
 
 const NUMBER_PIECES = 4;
 
@@ -554,11 +554,20 @@ onUnmounted(() => {
               <span
                 :class="{
                   'place-order-indicator': true,
-                  'player-one-piece': props.playerID === 0, // add condition from below
-                  'player-two-piece': props.playerID === 1,
+                  'player-one-piece':
+                    flatOrders.find((o) => o.type === key) &&
+                    props.playerID === 0, // add condition from below
+                  'player-two-piece':
+                    flatOrders.find((o) => o.type === key) &&
+                    props.playerID === 1,
                 }"
                 >{{
-                  flatOrders.find((o) => o.type === key)?.sourcePieceId
+                  (function () {
+                    const pieceId = flatOrders.find(
+                      (o) => o.type === key,
+                    )?.sourcePieceId;
+                    return pieceId && getPiece(props.state, pieceId)?.priority;
+                  })()
                 }}</span
               >
             </div>
