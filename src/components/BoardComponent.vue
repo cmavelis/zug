@@ -25,7 +25,7 @@ import {
 import { store } from '@/store';
 import type { MenuItem } from 'primevue/menuitem';
 import { validateTurnEnd } from '@/game/zugzwang/validators';
-import { iconClasses } from '@/utils/iconClasses';
+import { iconClasses, iconClassesMap } from '@/utils/iconClasses';
 
 const NUMBER_PIECES = 4;
 
@@ -543,7 +543,7 @@ onUnmounted(() => {
       />
       <div class="order-button-group">
         <Button
-          v-for="iconClass in iconClasses"
+          v-for="(iconClass, key) in iconClassesMap"
           v-bind:key="iconClass"
           text
           style="width: 4rem; padding-right: 0.25rem"
@@ -551,7 +551,16 @@ onUnmounted(() => {
           <template #icon>
             <div class="order-cancel-button">
               <span :class="iconClass" />
-              <span class="place-order-indicator"></span>
+              <span
+                :class="{
+                  'place-order-indicator': true,
+                  'player-one-piece': props.playerID === 0, // add condition from below
+                  'player-two-piece': props.playerID === 1,
+                }"
+                >{{
+                  flatOrders.find((o) => o.type === key)?.sourcePieceId
+                }}</span
+              >
             </div>
           </template>
         </Button>

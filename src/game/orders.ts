@@ -34,6 +34,13 @@ export interface OrderBase {
   priority: number;
 }
 
+export const ORDER_ENUM: { [key: string]: OrderTypes } = {
+  moveStraight: 'move-straight',
+  pushStraight: 'push-straight',
+  moveDiagonal: 'move-diagonal',
+  pushDiagonal: 'push-diagonal',
+};
+
 export const ORDER_PRIORITIES = {
   // defend: 1,
   'move-straight': 1,
@@ -127,7 +134,7 @@ export function orderResolver({ G }: { G: GObject }) {
 
   // Capture original piece positions at the start of the turn
   const originalPiecePositions = new Map<number, Coordinates>();
-  pieces.forEach(piece => {
+  pieces.forEach((piece) => {
     originalPiecePositions.set(piece.id, { ...piece.position });
   });
 
@@ -354,25 +361,30 @@ export function orderResolver({ G }: { G: GObject }) {
   }
 
   // check if a piece will move out of a specific position with equal or higher priority
-  function willPieceMoveOutOfPosition(pieceId: number, targetPosition: Coordinates, currentPriority: number): boolean {
+  function willPieceMoveOutOfPosition(
+    pieceId: number,
+    targetPosition: Coordinates,
+    currentPriority: number,
+  ): boolean {
     const piece = pieces.find((p) => p.id === pieceId);
     if (!piece) {
       return false;
     }
-    
+
     // Only check if the piece was ORIGINALLY at the target position (not if it moved there during this turn)
     const originalPosition = originalPiecePositions.get(pieceId);
     if (!originalPosition || !isEqual(originalPosition, targetPosition)) {
       return false;
     }
-    
+
     const allOrders = [...orders[0], ...orders[1]];
     const pieceOrder = allOrders.find(
-      (o) => o.sourcePieceId === pieceId && 
-             (o.type === 'move-straight' || o.type === 'move-diagonal') &&
-             o.priority <= currentPriority
+      (o) =>
+        o.sourcePieceId === pieceId &&
+        (o.type === 'move-straight' || o.type === 'move-diagonal') &&
+        o.priority <= currentPriority,
     );
-    
+
     // If the piece has a move order with equal or higher priority, it will move out
     return !!pieceOrder;
   }
@@ -414,7 +426,10 @@ export function orderResolver({ G }: { G: GObject }) {
       const maybePiece = pieces.find((p) => isEqual(p.position, newPosition));
       if (maybePiece) {
         // For diagonal moves, check if the blocking piece will move out of this specific position
-        if (order.type === 'move-diagonal' && willPieceMoveOutOfPosition(maybePiece.id, newPosition, order.priority)) {
+        if (
+          order.type === 'move-diagonal' &&
+          willPieceMoveOutOfPosition(maybePiece.id, newPosition, order.priority)
+        ) {
           return [{ id: movedPiece.id, newPosition }];
         }
         return [];
