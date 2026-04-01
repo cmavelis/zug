@@ -49,18 +49,30 @@
   --color-player-two: var(--vermilion);
 }
 
-.player-one-piece {
+.player-one-piece, .player-one-piece.place-order-indicator {
   background-color: var(--color-player-one);
   border-color: var(--color-player-one);
   color: black;
   font-weight: bold;
 }
 
-.player-two-piece {
+.player-two-piece, .player-two-piece.place-order-indicator {
   background-color: var(--color-player-two);
   border-color: var(--color-player-two);
   color: black;
   font-weight: bold;
+}
+
+/* small circle to represent a piece */
+.place-order-indicator {
+  background-color: var(--color-text);
+  border-color: var(--color-text);
+  height: 18px;
+  width: 18px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 html {

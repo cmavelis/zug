@@ -25,6 +25,7 @@ import {
 import { store } from '@/store';
 import type { MenuItem } from 'primevue/menuitem';
 import { validateTurnEnd } from '@/game/zugzwang/validators';
+import { iconClassesMap } from '@/utils/iconClasses';
 
 const NUMBER_PIECES = 4;
 
@@ -540,6 +541,32 @@ onUnmounted(() => {
         :targetingHints="targetingHints"
         :disableCommandMenu="!props.isActiveTurn"
       />
+      <div class="order-button-group">
+        <div
+          v-for="(iconClass, key) in iconClassesMap"
+          v-bind:key="iconClass"
+          class="order-cancel-button"
+        >
+          <span :class="iconClass" />
+          <span
+            :class="{
+              'place-order-indicator': true,
+              'player-one-piece':
+                flatOrders.find((o) => o.type === key) && props.playerID === 0, // add condition from below
+              'player-two-piece':
+                flatOrders.find((o) => o.type === key) && props.playerID === 1,
+            }"
+            >{{
+              (function () {
+                const pieceId = flatOrders.find(
+                  (o) => o.type === key,
+                )?.sourcePieceId;
+                return pieceId && getPiece(props.state, pieceId)?.priority;
+              })()
+            }}</span
+          >
+        </div>
+      </div>
     </div>
   </section>
   <p v-if="endTurnMessage" class="info-message">{{ endTurnMessage }}</p>
@@ -572,9 +599,20 @@ onUnmounted(() => {
 
 .order-button-group {
   display: flex;
-  gap: 4px;
+  gap: 0.75rem;
   flex-direction: column;
   justify-content: center;
+}
+
+.order-cancel-button {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* keep: make custom icons and prime defaults same size */
+.pi {
+  padding: 4px;
 }
 
 .place-button-group {
