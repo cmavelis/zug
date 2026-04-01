@@ -542,37 +542,30 @@ onUnmounted(() => {
         :disableCommandMenu="!props.isActiveTurn"
       />
       <div class="order-button-group">
-        <Button
+        <div
           v-for="(iconClass, key) in iconClassesMap"
           v-bind:key="iconClass"
-          text
-          style="width: 4rem; padding-right: 0.25rem"
+          class="order-cancel-button"
         >
-          <template #icon>
-            <div class="order-cancel-button">
-              <span :class="iconClass" />
-              <span
-                :class="{
-                  'place-order-indicator': true,
-                  'player-one-piece':
-                    flatOrders.find((o) => o.type === key) &&
-                    props.playerID === 0, // add condition from below
-                  'player-two-piece':
-                    flatOrders.find((o) => o.type === key) &&
-                    props.playerID === 1,
-                }"
-                >{{
-                  (function () {
-                    const pieceId = flatOrders.find(
-                      (o) => o.type === key,
-                    )?.sourcePieceId;
-                    return pieceId && getPiece(props.state, pieceId)?.priority;
-                  })()
-                }}</span
-              >
-            </div>
-          </template>
-        </Button>
+          <span :class="iconClass" />
+          <span
+            :class="{
+              'place-order-indicator': true,
+              'player-one-piece':
+                flatOrders.find((o) => o.type === key) && props.playerID === 0, // add condition from below
+              'player-two-piece':
+                flatOrders.find((o) => o.type === key) && props.playerID === 1,
+            }"
+            >{{
+              (function () {
+                const pieceId = flatOrders.find(
+                  (o) => o.type === key,
+                )?.sourcePieceId;
+                return pieceId && getPiece(props.state, pieceId)?.priority;
+              })()
+            }}</span
+          >
+        </div>
       </div>
     </div>
   </section>
@@ -606,7 +599,7 @@ onUnmounted(() => {
 
 .order-button-group {
   display: flex;
-  gap: 4px;
+  gap: 0.75rem;
   flex-direction: column;
   justify-content: center;
 }
