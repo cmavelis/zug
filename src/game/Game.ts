@@ -144,7 +144,8 @@ export const SimulChess: Game<GObject> = {
                 playerNumber,
                 G.orders,
                 G.pieces,
-                G.config.expectedNumberOrders,
+                G.config?.expectedNumberOrders &&
+                  G.config?.expectedNumberOrders[playerNumber],
               );
 
               if (!validation.canEndTurn) {
