@@ -235,7 +235,7 @@ export function validateTurnEnd(
   playerID: number,
   orders: { [playerID: number]: Orders },
   pieces: Piece[],
-  expectedTotalOrders: number = 4,
+  expectedTotalOrders: { [i: number]: number } = { 0: 4, 1: 4 },
 ): TurnValidationResult {
   const playerOrders = orders[playerID] || [];
 
@@ -246,7 +246,7 @@ export function validateTurnEnd(
   const moveOrders = playerOrders.filter((o) => o.type !== 'place').length;
 
   // Check if they have the right number of total orders
-  if (playerOrders.length < expectedTotalOrders) {
+  if (playerOrders.length < expectedTotalOrders[playerID]) {
     return {
       canEndTurn: false,
     };

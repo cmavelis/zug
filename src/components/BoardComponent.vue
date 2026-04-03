@@ -90,6 +90,7 @@ const canEndTurn = computed(() => {
     props.playerID,
     props.state.orders,
     props.state.pieces,
+    props.config.expectedNumberOrders,
   );
   return validation.canEndTurn;
 });
@@ -326,6 +327,7 @@ const handleEndTurn = () => {
     props.playerID,
     props.state.orders,
     props.state.pieces,
+    props.config.expectedNumberOrders,
   );
 
   if (!validation.canEndTurn) {
