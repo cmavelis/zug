@@ -1,0 +1,75 @@
+import { Client } from 'boardgame.io/client';
+import { SimulChess } from '@/game/Game';
+import { Local } from 'boardgame.io/multiplayer';
+import {
+  computed,
+  onUnmounted,
+  type Ref,
+  ref,
+  shallowReactive,
+  watch,
+} from 'vue';
+import type { GObject } from '@/game/Game';
+import type { Ctx, FilteredMetadata } from 'boardgame.io';
+import type { ClientState } from 'boardgame.io/dist/types/src/client/client';
+
+export const createLocalClient = (playerID?: string) =>
+  Client({
+    game: SimulChess,
+    multiplayer: Local(),
+    playerID,
+    debug: true,
+  });
+
+// mostly duplicate code for connecting to bgio game client
+interface ReactiveGameState {
+  G: GObject;
+  ctx: Ctx;
+}
+
+export const useZugClient = (playerIDString: '0' | '1') => {
+  const playerIDDefault = Number(playerIDString);
+
+  const playerID = ref<number | null>(playerIDDefault);
+  const isPlayerSelected = computed(() => {
+    return playerID.value === 0 || playerID.value === 1;
+  });
+  const tutorialClient = createLocalClient(playerIDString);
+  tutorialClient.start();
+
+  watch(playerID, () => {
+    tutorialClient.updatePlayerID(
+      playerID.value === null ? playerID.value : String(playerID.value),
+    );
+  });
+  onUnmounted(() => {
+    tutorialClient.stop();
+  });
+  const gameState: ReactiveGameState = shallowReactive({
+    G: {} as GObject,
+    ctx: {} as Ctx,
+  });
+  const gameStateLoaded = ref(false);
+  const matchData: Ref<FilteredMetadata | undefined> = ref(undefined);
+  const updateGameState = (state: ClientState<{ G: GObject; ctx: Ctx }>) => {
+    matchData.value = tutorialClient.matchData;
+
+    if (state) {
+      gameStateLoaded.value = true;
+      gameState.G = state.G as unknown as GObject;
+      gameState.ctx = state.ctx;
+    } else {
+      console.warn('A null game state update was received');
+    }
+  };
+  tutorialClient.subscribe(updateGameState);
+
+  const isActiveTurn = true;
+  return {
+    client: tutorialClient,
+    gameState,
+    playerID: playerID,
+    showOrders: isPlayerSelected,
+    isActiveTurn: isActiveTurn,
+  };
+};

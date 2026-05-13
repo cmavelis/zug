@@ -45,7 +45,7 @@ export const gameSetup = (
     return initialGame;
   }
   if (hostname === 'localhost' && port === '5173') {
-    [0, 1, 2].forEach((x) =>
+    [0, 1, 2, 3].forEach((x) =>
       createPiece({
         G: initialGame,
         pieceToCreate: { owner: 0, position: { x, y: 0 } },
