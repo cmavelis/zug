@@ -1,7 +1,7 @@
 export interface ZugConfig {
   outOfBounds: OutOfBoundsMode;
   priority: PriorityMode;
-  piecePriorityOptions: number[];
+  piecePriorityOptions: number[]; // NOTE: implies number of pieces each player should have
   piecePriorityDuplicates: boolean;
   startingPiecePriorities: number[];
   piecePushRestrictions: PushRestrictionsConfig | null;

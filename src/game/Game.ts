@@ -14,6 +14,10 @@ import { gameSetup } from '@/game/zugzwang/gameSetup';
 export interface GameSetupData {
   config: Partial<CommonGameConfig>;
   empty?: boolean;
+  initialState?: {
+    boardNotation?: string;
+    orderNotation?: string; // only works in conjunction with custom board setup
+  };
 }
 
 export interface ZugConfig extends CommonGameConfig {
@@ -47,7 +51,9 @@ export type GObject = {
   history: GameStateHistory[][];
 } & GameState;
 
-export const SimulChess: Game<GObject> = {
+export type ZugGameObject = Game<GObject>;
+
+export const SimulChess: ZugGameObject = {
   name: 'zug',
   setup: gameSetup,
 
@@ -205,3 +211,5 @@ export const SimulChess: Game<GObject> = {
     }
   },
 };
+
+export const zugGameDefinition = SimulChess;

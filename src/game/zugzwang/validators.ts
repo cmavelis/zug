@@ -1,4 +1,4 @@
-/** for zugzwang game
+/** move validators for zugzwang game
  */
 import type { Piece } from '@/game/pieces';
 import type {
