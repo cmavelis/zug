@@ -1,9 +1,10 @@
 <script setup lang="ts">
 import BoardComponent from '@/components/BoardComponent.vue';
 import { useZugClient } from '@/composables/useZugClient';
+import { oneMoveTutorial } from '@/game/zugzwang/tutorialGames';
 
-const boardStateOne = useZugClient('0');
-const boardStateTwo = useZugClient('1');
+const boardStateOne = useZugClient('0', oneMoveTutorial);
+const boardStateTwo = useZugClient('1', oneMoveTutorial);
 </script>
 
 <template>

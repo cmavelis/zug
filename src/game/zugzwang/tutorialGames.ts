@@ -11,9 +11,9 @@ export const oneMoveTutorial: ZugGameObject = {
   setup: (argOne, setupData: GameSetupData) => {
     const mergedSetupData: GameSetupData = {
       ...setupData,
-      config: {
-        ...setupData.config,
-      },
+      // config: {// TODO: this is crashing for some reason
+      //   ...setupData.config,
+      // },
       initialState: {
         boardNotation: zb`
          |--|a1|--|--|

@@ -6,7 +6,11 @@ import {
 } from '@/game/setup/util';
 import { isEqual, negate, random, shuffle } from 'lodash';
 import fairBoards from '@/game/setup/fair-boards.json';
-import type { GameSetupData } from '@/game/Game';
+import type { GameSetupData, GObject } from '@/game/Game';
+import {
+  getPiecesFromNotation,
+  validateNotation,
+} from '@/game/zugzwang/boardNotation';
 
 let hostname: any;
 let port: any;
@@ -23,7 +27,7 @@ if (typeof window !== 'undefined' && window?.location) {
 export const gameSetup = (
   _: any,
   setupData: GameSetupData = { config: {} },
-) => {
+): GObject => {
   const board = { x: 4, y: 4 };
   const initialGame = {
     config: {
@@ -41,9 +45,34 @@ export const gameSetup = (
     ),
   };
 
+  // use custom starting board
+  const { boardNotation } = setupData.initialState || {};
+  if (boardNotation) {
+    // validate string format
+    if (!validateNotation(boardNotation)) {
+      throw new Error('Could not set up game. Invalid boardNotation');
+    }
+
+    // convert into state data
+    const piecesToCreate = getPiecesFromNotation(boardNotation);
+    piecesToCreate.forEach((piece) =>
+      createPiece({
+        G: initialGame,
+        pieceToCreate: piece,
+      }),
+    );
+    // TODO: add initial order support
+    // return initialGame + new state
+    return initialGame;
+  }
+
+  // start with empty board
   if (setupData?.empty || empty) {
     return initialGame;
   }
+
+  // create standard game according to setup data
+  // TODO: remove localhost condition, have tutorial setup now
   if (hostname === 'localhost' && port === '5173') {
     [0, 1, 2, 3].forEach((x) =>
       createPiece({

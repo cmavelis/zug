@@ -1,5 +1,5 @@
 import { Client } from 'boardgame.io/client';
-import { SimulChess } from '@/game/Game';
+import { SimulChess, type ZugGameObject } from '@/game/Game';
 import { Local } from 'boardgame.io/multiplayer';
 import {
   computed,
@@ -13,9 +13,15 @@ import type { GObject } from '@/game/Game';
 import type { Ctx, FilteredMetadata } from 'boardgame.io';
 import type { ClientState } from 'boardgame.io/dist/types/src/client/client';
 
-export const createLocalClient = (playerID?: string) =>
+// TODO: create a custom game definition
+//    - use custom setup and endIf conditions
+//   pass this game in the Client init
+//   step 2: make a game that has no turn-end validation
+//    - config.expectedNumberOrders = 1
+//    - G.config.piecePriorityOptions.length
+export const createLocalClient = (playerID?: string, game?: ZugGameObject) =>
   Client({
-    game: SimulChess,
+    game: game || SimulChess,
     multiplayer: Local(),
     playerID,
     debug: true,
@@ -27,14 +33,17 @@ interface ReactiveGameState {
   ctx: Ctx;
 }
 
-export const useZugClient = (playerIDString: '0' | '1') => {
+export const useZugClient = (
+  playerIDString: '0' | '1',
+  game?: ZugGameObject,
+) => {
   const playerIDDefault = Number(playerIDString);
 
   const playerID = ref<number | null>(playerIDDefault);
   const isPlayerSelected = computed(() => {
     return playerID.value === 0 || playerID.value === 1;
   });
-  const tutorialClient = createLocalClient(playerIDString);
+  const tutorialClient = createLocalClient(playerIDString, game);
   tutorialClient.start();
 
   watch(playerID, () => {
