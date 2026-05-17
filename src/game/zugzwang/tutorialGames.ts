@@ -8,12 +8,17 @@ import { zb } from '@/game/zugzwang/boardNotation';
 
 export const oneMoveTutorial: ZugGameObject = {
   ...zugGameDefinition,
-  setup: (argOne, setupData: GameSetupData) => {
+  setup: (argOne, setupData?: GameSetupData) => {
     const mergedSetupData: GameSetupData = {
       ...setupData,
-      // config: {// TODO: this is crashing for some reason
-      //   ...setupData.config,
-      // },
+      config: {
+        ...setupData?.config,
+        piecePriorityOptions: [1],
+        expectedNumberOrders: {
+          0: 1,
+          1: 0,
+        },
+      },
       initialState: {
         boardNotation: zb`
          |--|a1|--|--|
