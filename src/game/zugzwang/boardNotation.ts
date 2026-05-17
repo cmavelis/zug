@@ -10,6 +10,7 @@
  * |b1|b3|b4|b2|
  * `
  */
+import type { PieceToCreate } from '@/game/pieces';
 
 // Simple tagged template literal fn to remove newlines and extra spaces. Stands for "zug board"
 export const zb = (strings: TemplateStringsArray, ...values: string[]) =>
@@ -24,6 +25,10 @@ const splitRows = (boardString: string) => {
 
 const splitColumns = (boardRowString: string) => {
   return boardRowString.split('|').filter(Boolean);
+};
+
+const cellHasPiece = (cell: string) => {
+  return cell !== '--';
 };
 
 export const validateNotation = (boardString: string) => {
@@ -55,4 +60,28 @@ export const validateNotation = (boardString: string) => {
   } catch (e) {
     return false;
   }
+};
+
+export const getPiecesFromNotation = (boardString: string): PieceToCreate[] => {
+  const rows = splitRows(boardString);
+  const cellsArray = rows.map(splitColumns);
+  const pieces: PieceToCreate[] = [];
+
+  cellsArray.forEach((row, r) =>
+    row.forEach((cell, c) => {
+      if (!cellHasPiece(cell)) {
+        return;
+      }
+      const playerId = cell[0];
+      const owner = playerId === 'a' ? 0 : 1;
+      const priority = Number(cell[1]);
+
+      pieces.push({
+        position: { x: c, y: r },
+        owner,
+        priority,
+      });
+    }),
+  );
+  return pieces;
 };
