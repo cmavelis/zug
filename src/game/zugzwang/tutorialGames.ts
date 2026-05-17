@@ -16,10 +16,10 @@ export const oneMoveTutorial: ZugGameObject = {
       },
       initialState: {
         boardNotation: zb`
-         |--|--|--|--|
-         |--|--|--|--|
-         |--|--|--|--|
          |--|a1|--|--|
+         |--|--|--|--|
+         |--|--|--|--|
+         |--|--|--|--|
         `,
         //  TODO:  add initial orders
         // orderNotation: '',
