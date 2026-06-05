@@ -2,9 +2,21 @@
 import BoardComponent from '@/components/BoardComponent.vue';
 import { useZugClient } from '@/composables/useZugClient';
 import { oneMoveTutorial } from '@/game/zugzwang/tutorialGames';
+import { watch } from 'vue';
 
 const boardStateOne = useZugClient('0', oneMoveTutorial);
 const boardStateTwo = useZugClient('1', oneMoveTutorial);
+
+// automatically end turn for empty player 2 slot
+watch(boardStateOne.gameState, (gameState) => {
+  const { ctx } = gameState;
+  if (!ctx.activePlayers) {
+    return;
+  }
+  if (ctx.activePlayers[1] == 'planning') {
+    boardStateTwo.client.moves.endTurn();
+  }
+});
 </script>
 
 <template>
@@ -16,15 +28,6 @@ const boardStateTwo = useZugClient('1', oneMoveTutorial);
     :playerID="boardStateOne.playerID.value"
     :showOrders="boardStateOne.showOrders.value"
     :isActiveTurn="boardStateOne.isActiveTurn"
-  />
-  <BoardComponent
-    :client="boardStateTwo.client"
-    :state="boardStateTwo.gameState.G"
-    :ctx="boardStateTwo.gameState.ctx"
-    :config="boardStateTwo.gameState.G.config"
-    :playerID="boardStateTwo.playerID.value"
-    :showOrders="boardStateTwo.showOrders.value"
-    :isActiveTurn="boardStateTwo.isActiveTurn"
   />
 </template>
 
