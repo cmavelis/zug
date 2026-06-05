@@ -10,8 +10,10 @@ export interface ZugConfig {
     duringTurn?: boolean;
   };
   useFairStartingBoard?: boolean | 'no-first-turn-score';
-  expectedNumberOrders?: {
-    // optional for backward compatibility
+  expectedNumberOrders: {
+    [i: number]: number;
+  };
+  expectedNumberPieces: {
     [i: number]: number;
   };
 }
@@ -26,6 +28,10 @@ export const DEFAULT_ZUG_CONFIG: ZugConfig = {
   useFairStartingBoard: 'no-first-turn-score',
   placePriorityAssignment: { beforeTurn: true },
   expectedNumberOrders: {
+    0: 4,
+    1: 4,
+  },
+  expectedNumberPieces: {
     0: 4,
     1: 4,
   },

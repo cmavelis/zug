@@ -633,16 +633,13 @@ export function orderResolver({ G }: { G: GObject }) {
 
   // assigned priority placement
   if (G.config.placePriorityAssignment) {
-    const { beforeTurn, duringTurn } = G.config.placePriorityAssignment;
     G.piecesToPlace = {};
     for (const p of [0, 1]) {
       const numberCurrentPieces = getPieces({
         G,
         playerID: p as 0 | 1,
       }).length;
-      const maxPiecesPerPlayer = duringTurn
-        ? G.config.piecePriorityOptions.length
-        : 4;
+      const maxPiecesPerPlayer = G.config.expectedNumberPieces[p];
       G.piecesToPlace[p] = Array(maxPiecesPerPlayer - numberCurrentPieces)
         .fill(1)
         .reduce((accumulator: number[]) => {

@@ -18,6 +18,10 @@ export const oneMoveTutorial: ZugGameObject = {
           0: 1,
           1: 0,
         },
+        expectedNumberPieces: {
+          0: 1,
+          1: 0,
+        },
       },
       initialState: {
         boardNotation: zb`
