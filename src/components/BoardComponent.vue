@@ -585,6 +585,7 @@ onUnmounted(() => {
   display: grid;
   grid-template-columns: 1fr;
   gap: 0.2rem;
+  text-align: center;
 }
 
 .board-with-controls {
