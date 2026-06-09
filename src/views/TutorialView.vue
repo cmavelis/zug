@@ -20,15 +20,27 @@ watch(boardStateOne.gameState, (gameState) => {
 </script>
 
 <template>
-  <BoardComponent
-    :client="boardStateOne.client"
-    :state="boardStateOne.gameState.G"
-    :ctx="boardStateOne.gameState.ctx"
-    :config="boardStateOne.gameState.G.config"
-    :playerID="boardStateOne.playerID.value"
-    :showOrders="boardStateOne.showOrders.value"
-    :isActiveTurn="boardStateOne.isActiveTurn"
-  />
+  <section class="layout">
+    <p>
+      This one-move tutorial will show you how to complete your turn in zug.
+    </p>
+    <p>Click your piece, then choose an available action.</p>
+    <p>Click end turn</p>
+    <BoardComponent
+      :client="boardStateOne.client"
+      :state="boardStateOne.gameState.G"
+      :ctx="boardStateOne.gameState.ctx"
+      :config="boardStateOne.gameState.G.config"
+      :playerID="boardStateOne.playerID.value"
+      :showOrders="boardStateOne.showOrders.value"
+      :isActiveTurn="boardStateOne.isActiveTurn"
+    />
+  </section>
 </template>
 
-<style scoped></style>
+<style scoped>
+p {
+  margin: 0 auto;
+  max-width: 800px;
+}
+</style>
