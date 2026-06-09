@@ -51,14 +51,6 @@ watch(windowHasFocus, (newFocus) => {
   }
 });
 
-onMounted(() => {
-  window.addEventListener('keydown', keyListener);
-});
-
-onUnmounted(() => {
-  window.removeEventListener('keydown', keyListener);
-});
-
 interface ReactiveGameState {
   G: GObject;
   ctx: Ctx;
@@ -78,24 +70,6 @@ const playerID = ref<number | null>(playerIDDefault);
 const isPlayerSelected = computed(() => {
   return playerID.value === 0 || playerID.value === 1;
 });
-const keyListener = (event: KeyboardEvent) => {
-  // @ts-expect-error tagName DNE
-  if (event?.target?.tagName?.toLowerCase() === 'input') {
-    return;
-  }
-  switch (event.key) {
-    case '1': {
-      if (store.isDebug) playerID.value = 0;
-      break;
-    }
-    case '2': {
-      if (store.isDebug) playerID.value = 1;
-      break;
-    }
-    default:
-      break;
-  }
-};
 
 let matchID: string;
 
