@@ -639,7 +639,10 @@ export function orderResolver({ G }: { G: GObject }) {
         G,
         playerID: p as 0 | 1,
       }).length;
-      const maxPiecesPerPlayer = G.config.expectedNumberPieces[p];
+      // assume this property is optional to keep old games playable (2026-06-22)
+      const maxPiecesPerPlayer = G.config.expectedNumberPieces
+        ? G.config.expectedNumberPieces[p]
+        : 4;
       G.piecesToPlace[p] = Array(maxPiecesPerPlayer - numberCurrentPieces)
         .fill(1)
         .reduce((accumulator: number[]) => {
