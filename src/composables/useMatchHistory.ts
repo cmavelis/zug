@@ -1,8 +1,20 @@
 import { computed, ref } from 'vue';
 import { isEqual } from 'lodash';
 import type { GObject } from '@/game/Game';
+import type { SimulChessClient } from '@/game/App';
+import type { ReactiveGameState } from '@/views/MatchView.vue';
 
-export function useMatchHistory({ gameState, route, matchClientOne }) {
+interface MatchHistoryProps {
+  gameState: ReactiveGameState;
+  route: any;
+  matchClientOne: SimulChessClient;
+}
+
+export function useMatchHistory({
+  gameState,
+  route,
+  matchClientOne,
+}: MatchHistoryProps) {
   const historyTurn = ref<number>(
     route.query.turn ? Number(route.query.turn) : 1,
   );

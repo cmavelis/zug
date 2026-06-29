@@ -52,7 +52,7 @@ watch(windowHasFocus, (newFocus) => {
   }
 });
 
-interface ReactiveGameState {
+export interface ReactiveGameState {
   G: GObject;
   ctx: Ctx;
 }
@@ -148,6 +148,7 @@ watch([gameStateLoaded, userName], () => {
       playerID.value = joinedPlayerID;
     }
   }
+  // if not deeplink, update the history to last turn
   if (!route.query.turn) {
     setHistoryLastTurn();
   }
