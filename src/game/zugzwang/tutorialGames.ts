@@ -42,3 +42,40 @@ export const oneMoveTutorial: ZugGameObject = {
     }
   },
 };
+
+export const oneMoveScoringTutorial: ZugGameObject = {
+  ...zugGameDefinition,
+  setup: (argOne, setupData?: GameSetupData) => {
+    const mergedSetupData: GameSetupData = {
+      ...setupData,
+      config: {
+        ...setupData?.config,
+        piecePriorityOptions: [1, 2],
+        expectedNumberOrders: {
+          0: 2,
+          1: 0,
+        },
+        expectedNumberPieces: {
+          0: 2,
+          1: 0,
+        },
+      },
+      initialState: {
+        boardNotation: zb`
+         |--|a1|--|--|
+         |--|a2|--|--|
+         |--|--|--|--|
+         |--|--|--|--|
+        `,
+        //  TODO:  add initial orders
+        // orderNotation: '',
+      },
+    };
+    return gameSetup(argOne, mergedSetupData);
+  },
+  endIf: ({ ctx }) => {
+    if (ctx.turn > 1) {
+      return { winner: 0 };
+    }
+  },
+};
