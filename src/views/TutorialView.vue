@@ -2,7 +2,7 @@
 import BoardComponent from '@/components/BoardComponent.vue';
 import { useZugClient } from '@/composables/useZugClient';
 import { oneMoveTutorial } from '@/game/zugzwang/tutorialGames';
-import { watch } from 'vue';
+import { computed, watch } from 'vue';
 
 const boardStateOne = useZugClient('0', oneMoveTutorial);
 const boardStateTwo = useZugClient('1', oneMoveTutorial);
@@ -17,6 +17,11 @@ watch(boardStateOne.gameState, (gameState) => {
     boardStateTwo.client.moves.endTurn();
   }
 });
+
+const gameOver = computed(() => boardStateOne.gameState.ctx.gameover);
+const isActiveTurn = computed(
+  () => boardStateOne.isActiveTurn && !gameOver.value,
+);
 </script>
 
 <template>
@@ -25,7 +30,9 @@ watch(boardStateOne.gameState, (gameState) => {
       This one-move tutorial will show you how to complete your turn in zug.
     </p>
     <p>Click your piece, then choose an available action.</p>
-    <p>Click end turn</p>
+    <p>Click end turn to see the result</p>
+    <p v-if="gameOver">Good. Move on to the next step</p>
+    <br v-else />
     <BoardComponent
       :client="boardStateOne.client"
       :state="boardStateOne.gameState.G"
@@ -33,7 +40,7 @@ watch(boardStateOne.gameState, (gameState) => {
       :config="boardStateOne.gameState.G.config"
       :playerID="boardStateOne.playerID.value"
       :showOrders="boardStateOne.showOrders.value"
-      :isActiveTurn="boardStateOne.isActiveTurn"
+      :isActiveTurn="isActiveTurn"
     />
   </section>
 </template>
