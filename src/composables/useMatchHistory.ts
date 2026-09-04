@@ -6,7 +6,7 @@ import type { ReactiveGameState } from '@/views/MatchView.vue';
 
 interface MatchHistoryProps {
   gameState: ReactiveGameState;
-  route: any;
+  route?: any;
   matchClientOne: SimulChessClient;
 }
 
@@ -16,7 +16,7 @@ export function useMatchHistory({
   matchClientOne,
 }: MatchHistoryProps) {
   const historyTurn = ref<number>(
-    route.query.turn ? Number(route.query.turn) : 1,
+    route?.query?.turn ? Number(route.query.turn) : 1,
   );
   function incrementHistoryTurn() {
     historyTurn.value++;
@@ -58,7 +58,9 @@ export function useMatchHistory({
     }
     return null;
   });
-  const historyTurnStep = ref(route.query.step ? Number(route.query.step) : 1);
+  const historyTurnStep = ref(
+    route?.query?.step ? Number(route.query.step) : 1,
+  );
   function incrementHistoryStep() {
     if (gameLastTurn.value && historyTurnStep.value < gameLastTurn.value.length)
       historyTurnStep.value++;
