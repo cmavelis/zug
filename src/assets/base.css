@@ -79,6 +79,11 @@ html {
   font-size: 14px;
 }
 
+p {
+  font-size: 1.15rem;
+  font-weight: 500;
+}
+
 body {
   min-height: 100vh;
   color: var(--color-text);
