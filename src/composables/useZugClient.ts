@@ -60,7 +60,7 @@ export const useZugClient = (
   });
   const gameStateLoaded = ref(false);
   const matchData: Ref<FilteredMetadata | undefined> = ref(undefined);
-  const updateGameState = (state: ClientState<{ G: GObject; ctx: Ctx }>) => {
+  const updateGameState = (state: ClientState<GObject>) => {
     matchData.value = tutorialClient.matchData;
 
     if (state) {

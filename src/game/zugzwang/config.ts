@@ -50,11 +50,6 @@ export interface PushRestrictionsConfig {
   add?: number;
 }
 
-/**
- * @deprecated
- * use DEFAULT_ZUG_CONFIG.piecePriorityOptions directly instead
- */
-export const PIECE_PRIORITIES_LIST = DEFAULT_ZUG_CONFIG.piecePriorityOptions;
 export const PIECE_PRIORITY_DUPLICATES =
   DEFAULT_ZUG_CONFIG.piecePriorityDuplicates;
 

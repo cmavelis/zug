@@ -14,9 +14,9 @@ import {
   OUT_OF_BOUNDS_MODES,
   PRIORITY_MODES,
   PIECE_PRIORITY_DUPLICATES,
-  PIECE_PRIORITIES_LIST,
   PUSH_ONLY_LOWER_NUMBERS,
   type ZugConfig,
+  DEFAULT_ZUG_CONFIG,
 } from '@/game/zugzwang/config';
 import { getServerURL } from '@/utils';
 import { navigateToMatch } from '@/composables/useMatch';
@@ -50,7 +50,9 @@ const priorityOptions = Object.values(PRIORITY_MODES);
 const obRule = ref(OUT_OF_BOUNDS_MODES.turnEnd);
 const obOptions = Object.values(OUT_OF_BOUNDS_MODES);
 
-const maxPiecePriority = ref(PIECE_PRIORITIES_LIST.slice(-1)[0]);
+const maxPiecePriority = ref(
+  DEFAULT_ZUG_CONFIG.piecePriorityOptions.slice(-1)[0],
+);
 const piecePriorityDuplicates = ref(PIECE_PRIORITY_DUPLICATES);
 const pieceOnlyPushLowerNumbers = ref(PUSH_ONLY_LOWER_NUMBERS);
 const pushRestrictionMultiply = ref(1);
@@ -65,6 +67,7 @@ const placeActionOptions = [
 
 const ruleSet = computed<ZugConfig>(() => {
   return {
+    ...DEFAULT_ZUG_CONFIG,
     priority: priorityRule.value,
     outOfBounds: obRule.value,
     piecePriorityOptions: Array(maxPiecePriority.value)

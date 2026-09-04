@@ -50,7 +50,7 @@ const { boardState, isActiveTurn, replayLastTurn } = useMatchHistory({
       :disabled="!gameOver"
     />
     <Button
-      @click="router.go()"
+      @click="router.go(0)"
       label="Reset tutorial"
       :disabled="!gameOver"
       severity="secondary"
