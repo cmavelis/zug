@@ -44,6 +44,16 @@ const router = createRouter({
       name: 'guest-test',
       component: () => import('../views/GuestTestView.vue'),
     },
+    {
+      path: '/tutorial',
+      name: 'tutorial',
+      component: () => import('../views/TutorialView.vue'),
+    },
+    {
+      path: '/tutorial/2',
+      name: 'tutorial-2',
+      component: () => import('../views/TutorialTwoView.vue'),
+    },
   ],
 });
 

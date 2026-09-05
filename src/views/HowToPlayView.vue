@@ -51,6 +51,7 @@ const placeActionSquares = getValidSquaresForOrder({
 <template>
   <main class="about">
     <h1>How To Play</h1>
+    <RouterLink to="/tutorial/2">Try a tutorial! (Work in progress)</RouterLink>
     <h2>Basics</h2>
     <section class="text">
       <p>
@@ -96,12 +97,14 @@ const placeActionSquares = getValidSquaresForOrder({
       </p>
       <div class="grid">
         <template v-for="order in orderNames" :key="order">
-          <p>{{ order }}</p>
-          <BoardDisplay
-            :pieces="pieces"
-            :board="board"
-            :orders="ordersDict[order]"
-          />
+          <div class="grid-left">
+            <p>{{ order }}</p>
+            <BoardDisplay
+              :pieces="pieces"
+              :board="board"
+              :orders="ordersDict[order]"
+            />
+          </div>
           <div>
             <p>priority: {{ ORDER_PRIORITIES[order] }}</p>
             <p v-if="order === 'move-straight'">
@@ -117,13 +120,15 @@ const placeActionSquares = getValidSquaresForOrder({
             </p>
           </div>
         </template>
-        <p>place</p>
-        <BoardDisplay
-          :pieces="[]"
-          :orders="[]"
-          :board="{ x: 4, y: 4 }"
-          :highlighted-cells="placeActionSquares"
-        />
+        <div class="grid-left">
+          <p>place</p>
+          <BoardDisplay
+            :pieces="[]"
+            :orders="[]"
+            :board="{ x: 4, y: 4 }"
+            :highlighted-cells="placeActionSquares"
+          />
+        </div>
         <div>
           <p>priority: {{ ORDER_PRIORITIES.place }}</p>
           <p>
@@ -144,8 +149,13 @@ strong {
 }
 .grid {
   display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
+  grid-template-columns: 1fr 1fr;
   row-gap: 1rem;
+}
+.grid-left {
+  display: grid;
+  align-items: center;
+  justify-content: center;
 }
 .text {
   max-width: 800px;

@@ -37,6 +37,7 @@ import { useMatchLink } from '@/composables/useMatchLink';
 import { BoardDisplay } from '@/components/BoardDisplay';
 import { useClerkUser } from '@/composables/useClerkUser';
 import { useUser } from '@/composables/useUser';
+import { useMatchHistory } from '@/composables/useMatchHistory';
 
 const { clerkUsername } = useClerkUser();
 const { userName } = useUser();
@@ -51,15 +52,7 @@ watch(windowHasFocus, (newFocus) => {
   }
 });
 
-onMounted(() => {
-  window.addEventListener('keydown', keyListener);
-});
-
-onUnmounted(() => {
-  window.removeEventListener('keydown', keyListener);
-});
-
-interface ReactiveGameState {
+export interface ReactiveGameState {
   G: GObject;
   ctx: Ctx;
 }
@@ -78,24 +71,6 @@ const playerID = ref<number | null>(playerIDDefault);
 const isPlayerSelected = computed(() => {
   return playerID.value === 0 || playerID.value === 1;
 });
-const keyListener = (event: KeyboardEvent) => {
-  // @ts-expect-error tagName DNE
-  if (event?.target?.tagName?.toLowerCase() === 'input') {
-    return;
-  }
-  switch (event.key) {
-    case '1': {
-      if (store.isDebug) playerID.value = 0;
-      break;
-    }
-    case '2': {
-      if (store.isDebug) playerID.value = 1;
-      break;
-    }
-    default:
-      break;
-  }
-};
 
 let matchID: string;
 
@@ -144,6 +119,22 @@ const updateGameState = (state: ClientState<{ G: GObject; ctx: Ctx }>) => {
 };
 matchClientOne.client.subscribe(updateGameState);
 
+const {
+  boardState,
+  gameLastTurn,
+  isActiveTurn,
+  historyTurn,
+  historyTurnStep,
+  animateTurn,
+  incrementHistoryStep,
+  incrementHistoryTurn,
+  decrementHistoryStep,
+  decrementHistoryTurn,
+  setHistoryStep,
+  setHistoryLastTurn,
+  replayLastTurn,
+} = useMatchHistory({ gameState, route, matchClientOne });
+
 watch([gameStateLoaded, userName], () => {
   if (!gameStateLoaded.value) {
     return;
@@ -157,94 +148,12 @@ watch([gameStateLoaded, userName], () => {
       playerID.value = joinedPlayerID;
     }
   }
+  // if not deeplink, update the history to last turn
   if (!route.query.turn) {
     setHistoryLastTurn();
   }
 });
 
-const historyTurn = ref<number>(
-  route.query.turn ? Number(route.query.turn) : 1,
-);
-function incrementHistoryTurn() {
-  historyTurn.value++;
-  setHistoryStep(1);
-}
-function decrementHistoryTurn() {
-  historyTurn.value--;
-  setHistoryStep(1);
-}
-function setHistoryTurn(turn: number) {
-  historyTurn.value = turn;
-}
-function setHistoryLastTurn() {
-  setHistoryTurn(gameState.G.history.length + 1);
-  setHistoryStep(1);
-}
-
-const sleep = (delay: number) =>
-  new Promise((resolve) => setTimeout(resolve, delay));
-async function animateTurn(startTurn: number) {
-  while (historyTurn.value === startTurn) {
-    await sleep(800);
-    incrementHistoryStep();
-  }
-}
-function replayLastTurn() {
-  matchClientOne.client.moves.markTurnSeen();
-  setHistoryTurn(gameState.G.history.length);
-  animateTurn(gameState.G.history.length);
-  newTurnReady.value = false;
-}
-
-const gameLastTurn = computed(() => {
-  if (isEqual(gameState.G, {})) {
-    return null;
-  }
-  const { history } = gameState.G as GObject;
-  if (history.length > 0) {
-    return history[historyTurn.value - 1];
-  }
-  return null;
-});
-const historyTurnStep = ref(route.query.step ? Number(route.query.step) : 1);
-function incrementHistoryStep() {
-  if (gameLastTurn.value && historyTurnStep.value < gameLastTurn.value.length)
-    historyTurnStep.value++;
-  else if (
-    gameLastTurn.value &&
-    historyTurnStep.value >= gameLastTurn.value.length &&
-    historyTurn.value <= gameState.G.history.length
-  ) {
-    historyTurn.value++;
-    historyTurnStep.value = 1;
-  }
-}
-function decrementHistoryStep() {
-  if (historyTurnStep.value > 1) historyTurnStep.value--;
-  else if (historyTurnStep.value === 1 && historyTurn.value > 1) {
-    historyTurn.value--;
-    historyTurnStep.value = gameState.G.history[historyTurn.value - 1].length;
-  }
-}
-function setHistoryStep(value: number) {
-  historyTurnStep.value = value;
-}
-
-const isActiveTurn = computed(() => {
-  const { history } = gameState.G as GObject;
-
-  return history && historyTurn.value > history.length;
-});
-
-const boardState = computed(() => {
-  if (isActiveTurn.value) {
-    return gameState.G;
-  }
-  if (gameLastTurn.value) {
-    return gameLastTurn.value[historyTurnStep.value - 1];
-  }
-  return null;
-});
 const canJoin = computed(() => {
   const openPlayerSlot = matchData.value?.some(
     (player) => player.name === undefined,
@@ -300,18 +209,6 @@ const handlePoke = async () => {
     handleError(e, 'Could not find a way to poke your opponent.');
   }
 };
-
-const newTurnReady = ref(false);
-
-// new turn watcher
-watch(
-  () => gameState.G.history,
-  async (newHistory, oldHistory) => {
-    if (newHistory && oldHistory && newHistory?.length !== oldHistory?.length) {
-      newTurnReady.value = true;
-    }
-  },
-);
 
 const gamePhase = computed(() => {
   if (playerID.value === null) {

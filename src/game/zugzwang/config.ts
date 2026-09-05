@@ -1,7 +1,7 @@
 export interface ZugConfig {
   outOfBounds: OutOfBoundsMode;
   priority: PriorityMode;
-  piecePriorityOptions: number[];
+  piecePriorityOptions: number[]; // NOTE: implies number of pieces each player should have
   piecePriorityDuplicates: boolean;
   startingPiecePriorities: number[];
   piecePushRestrictions: PushRestrictionsConfig | null;
@@ -10,6 +10,12 @@ export interface ZugConfig {
     duringTurn?: boolean;
   };
   useFairStartingBoard?: boolean | 'no-first-turn-score';
+  expectedNumberOrders: {
+    [i: number]: number;
+  };
+  expectedNumberPieces: {
+    [i: number]: number;
+  };
 }
 
 export const DEFAULT_ZUG_CONFIG: ZugConfig = {
@@ -21,6 +27,14 @@ export const DEFAULT_ZUG_CONFIG: ZugConfig = {
   piecePushRestrictions: null,
   useFairStartingBoard: 'no-first-turn-score',
   placePriorityAssignment: { beforeTurn: true },
+  expectedNumberOrders: {
+    0: 4,
+    1: 4,
+  },
+  expectedNumberPieces: {
+    0: 4,
+    1: 4,
+  },
 };
 
 export const ADVANCED_ZUG_CONFIG: ZugConfig = {
@@ -36,11 +50,6 @@ export interface PushRestrictionsConfig {
   add?: number;
 }
 
-/**
- * @deprecated
- * use DEFAULT_ZUG_CONFIG.piecePriorityOptions directly instead
- */
-export const PIECE_PRIORITIES_LIST = DEFAULT_ZUG_CONFIG.piecePriorityOptions;
 export const PIECE_PRIORITY_DUPLICATES =
   DEFAULT_ZUG_CONFIG.piecePriorityDuplicates;
 

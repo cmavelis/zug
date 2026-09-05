@@ -1,9 +1,7 @@
 import type { Game } from 'boardgame.io';
 import { INVALID_MOVE } from 'boardgame.io/core';
-import { isEqual, shuffle, random, negate } from 'lodash';
 
-import fairBoards from './setup/fair-boards.json';
-import { createPiece, type Piece } from '@/game/pieces';
+import { type Piece } from '@/game/pieces';
 import type { Order, Orders } from '@/game/orders';
 import { orderResolver } from '@/game/orders';
 import type { Coordinates } from '@/game/common';
@@ -11,15 +9,15 @@ import { isValidOrder } from '@/game/zugzwang/validators';
 import { validateTurnEnd } from '@/game/zugzwang/validators';
 import type { ZugConfig as CommonGameConfig } from '@/game/zugzwang/config';
 import { stripSecrets } from '@/game/common';
-import { DEFAULT_ZUG_CONFIG } from '@/game/zugzwang/config';
-import {
-  getConditionalStartingBoard,
-  hasFirstTurnScore,
-} from '@/game/setup/util';
+import { gameSetup } from '@/game/zugzwang/gameSetup';
 
 export interface GameSetupData {
   config: Partial<CommonGameConfig>;
   empty?: boolean;
+  initialState?: {
+    boardNotation?: string;
+    orderNotation?: string; // only works in conjunction with custom board setup
+  };
 }
 
 export interface ZugConfig extends CommonGameConfig {
@@ -53,110 +51,11 @@ export type GObject = {
   history: GameStateHistory[][];
 } & GameState;
 
-let hostname: any;
-let port: any;
-let empty = false;
-if (typeof window !== 'undefined' && window?.location) {
-  hostname = window.location.hostname;
-  port = window.location.port;
+export type ZugGameObject = Game<GObject>;
 
-  const queryString = window.location.search; // Returns:'?q=123'
-  const params = new URLSearchParams(queryString);
-  empty = Boolean(params.get('empty'));
-}
-
-export const SimulChess: Game<GObject> = {
+export const SimulChess: ZugGameObject = {
   name: 'zug',
-  setup: (_, setupData: GameSetupData = { config: {} }) => {
-    const board = { x: 4, y: 4 };
-    const initialGame = {
-      config: {
-        board,
-        ...DEFAULT_ZUG_CONFIG,
-        ...setupData.config,
-      },
-      cells: Array(board.x * board.y).fill(null),
-      pieces: [],
-      orders: { 0: [], 1: [] },
-      history: [],
-      score: { 0: 0, 1: 0 },
-      players: Object.fromEntries(
-        [0, 1].map((i) => [i, { seenLatestTurn: true }]),
-      ),
-    };
-
-    if (setupData?.empty || empty) {
-      return initialGame;
-    }
-    if (hostname === 'localhost' && port === '5173') {
-      [0, 1, 2].forEach((x) =>
-        createPiece({
-          G: initialGame,
-          pieceToCreate: { owner: 0, position: { x, y: 0 } },
-        }),
-      );
-
-      [0, 1, 2].forEach((x) =>
-        createPiece({
-          G: initialGame,
-          pieceToCreate: { owner: 1, position: { x, y: 2 } },
-        }),
-      );
-      createPiece({
-        G: initialGame,
-        pieceToCreate: { owner: 1, position: { x: 3, y: 3 } },
-      });
-    } else {
-      const {
-        startingPiecePriorities,
-        useFairStartingBoard,
-        piecePriorityOptions,
-      } = setupData.config;
-      let p1PiecePriorities: number[] = [];
-      let p2PiecePriorities: number[] = [];
-      if (
-        useFairStartingBoard === 'no-first-turn-score' &&
-        piecePriorityOptions
-      ) {
-        p1PiecePriorities = getConditionalStartingBoard(
-          piecePriorityOptions,
-          negate(hasFirstTurnScore),
-        );
-        p2PiecePriorities = getConditionalStartingBoard(
-          piecePriorityOptions,
-          negate(hasFirstTurnScore),
-        );
-      } else if (
-        useFairStartingBoard && // NOTE: this option is only configured for 2345 start
-        isEqual(piecePriorityOptions, DEFAULT_ZUG_CONFIG.piecePriorityOptions)
-      ) {
-        const startingBoard = fairBoards[random(0, fairBoards.length)];
-        p1PiecePriorities = startingBoard[0];
-        p2PiecePriorities = startingBoard[1];
-      } else {
-        p1PiecePriorities = shuffle(startingPiecePriorities);
-        p2PiecePriorities = shuffle(startingPiecePriorities);
-      }
-
-      [0, 1, 2, 3].forEach((x, i) =>
-        createPiece({
-          G: initialGame,
-          pieceToCreate: { owner: 0, position: { x, y: 0 } },
-          forcedPriority: p1PiecePriorities[i],
-        }),
-      );
-
-      [0, 1, 2, 3].forEach((x, i) =>
-        createPiece({
-          G: initialGame,
-          pieceToCreate: { owner: 1, position: { x, y: 3 } },
-          forcedPriority: p2PiecePriorities[i],
-        }),
-      );
-    }
-
-    return initialGame;
-  },
+  setup: gameSetup,
 
   // `playerID` could also be null or undefined for spectators.
   playerView: ({ G, playerID }) => {
@@ -236,15 +135,28 @@ export const SimulChess: Game<GObject> = {
             },
           },
           endTurn: {
-            move: ({ G, playerID, events }: { G: GameState; playerID: string; events: any }) => {
+            move: ({
+              G,
+              playerID,
+              events,
+            }: {
+              G: GameState;
+              playerID: string;
+              events: any;
+            }) => {
               const playerNumber = +playerID;
-              
-              const validation = validateTurnEnd(playerNumber, G.orders, G.pieces);
-              
+
+              const validation = validateTurnEnd(
+                playerNumber,
+                G.orders,
+                G.pieces,
+                G.config?.expectedNumberOrders,
+              );
+
               if (!validation.canEndTurn) {
                 return INVALID_MOVE;
               }
-              
+
               // If validation passes, end the stage and move to resolution
               events.endStage();
             },
@@ -299,3 +211,5 @@ export const SimulChess: Game<GObject> = {
     }
   },
 };
+
+export const zugGameDefinition = SimulChess;
