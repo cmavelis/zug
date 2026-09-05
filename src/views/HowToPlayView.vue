@@ -51,6 +51,7 @@ const placeActionSquares = getValidSquaresForOrder({
 <template>
   <main class="about">
     <h1>How To Play</h1>
+    <RouterLink to="/tutorial/2">Try a tutorial! (Work in progress)</RouterLink>
     <h2>Basics</h2>
     <section class="text">
       <p>
