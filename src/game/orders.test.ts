@@ -183,13 +183,13 @@ test('diagonal move into space that piece is moving out of', () => {
     id: 1,
     position: { x: 1, y: 1 },
     owner: 0,
-    priority: 3, // Higher priority so it moves second
+    priority: 3, // moves second
   });
   const piece2 = makeTestPiece({
     id: 2,
     position: { x: 2, y: 2 },
     owner: 1,
-    priority: 1, // Lower priority so it moves first
+    priority: 1, // moves first
   });
 
   // Initialize cells array to match pieces
@@ -277,6 +277,64 @@ test('diagonal move blocked when another piece moves into the same space', () =>
     orders: {
       0: [diagonalMoveOrder1],
       1: [diagonalMoveOrder2],
+    },
+  });
+
+  // Test that the orderResolver blocks piece 1's diagonal move
+  const resultG = orderResolver({ G });
+
+  // After resolution:
+  // - Piece 1 should remain at (1,1) because the move was blocked
+  // - Piece 2 should be at (2,2)
+  const finalPiece1 = resultG.pieces.find((p) => p.id === 1);
+  const finalPiece2 = resultG.pieces.find((p) => p.id === 2);
+
+  expect(finalPiece1?.position).toEqual({ x: 1, y: 1 });
+  expect(finalPiece2?.position).toEqual({ x: 2, y: 2 });
+});
+
+test('diagonal move blocked when another piece has not left target space', () => {
+  // Piece 1 at (1,1) will try to move diagonally to (2,2) with priority 3
+  // Piece 2 at (2,2) will already be in (2,2) but planning to move out
+
+  const piece1 = makeTestPiece({
+    id: 1,
+    position: { x: 1, y: 1 },
+    owner: 0,
+    priority: 3, // Lower priority so it moves second
+  });
+  const piece2 = makeTestPiece({
+    id: 2,
+    position: { x: 2, y: 2 },
+    owner: 1,
+    priority: 4,
+  });
+
+  // Initialize cells array to match pieces
+  const cells = new Array(16).fill(null); // 4x4 board
+  cells[5] = 1; // piece 1 at (1,1) -> index 5
+  cells[10] = 2; // piece 2 at (2,2) -> index 10
+
+  const diagonalMoveOrder1 = makeTestOrder({
+    type: 'move-diagonal',
+    sourcePieceId: 1,
+    toTarget: { x: 1, y: 1 }, // move from (1,1) to (2,2)
+    owner: 0,
+  });
+
+  const order2 = makeTestOrder({
+    type: 'move-straight',
+    sourcePieceId: 2,
+    toTarget: { x: 0, y: -1 },
+    owner: 1,
+  });
+
+  const G = makeTestGame({
+    pieces: [piece1, piece2],
+    cells: cells,
+    orders: {
+      0: [diagonalMoveOrder1],
+      1: [order2],
     },
   });
 
