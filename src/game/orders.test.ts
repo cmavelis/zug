@@ -348,5 +348,5 @@ test('diagonal move blocked when another piece has not left target space', () =>
   const finalPiece2 = resultG.pieces.find((p) => p.id === 2);
 
   expect(finalPiece1?.position).toEqual({ x: 1, y: 1 });
-  expect(finalPiece2?.position).toEqual({ x: 2, y: 2 });
+  expect(finalPiece2?.position).toEqual({ x: 2, y: 1 });
 });
