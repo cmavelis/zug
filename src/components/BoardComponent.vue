@@ -447,22 +447,14 @@ onUnmounted(() => {
     <div>
       <Button
         size="small"
-        severity="secondary"
-        @click="undoLastOrder()"
-        label="undo last action"
-        :disabled="!props.isActiveTurn"
-      />
-      <Button
-        size="small"
-        :severity="canEndTurn && props.isActiveTurn ? 'primary' : 'secondary'"
         @click="handleEndTurn"
         :class="{ 'halo-shadow': canEndTurn && props.isActiveTurn }"
-        :disabled="!props.isActiveTurn"
-        label="end turn"
+        :disabled="!canEndTurn"
+        label="END TURN"
       />
     </div>
     <div class="board-with-controls">
-      <div class="order-button-group">
+      <div class="order-button-group place-section">
         <input
           v-if="store.isDebug"
           v-model.number="pieceToPlace"
@@ -492,7 +484,7 @@ onUnmounted(() => {
               @click="handlePlaceButtonClick(piecePriority)"
             />
           </div>
-          <label>place</label>
+          <div class="placement-text">PLACEMENT</div>
           <div class="place-button-group">
             <PlaceButton
               v-for="piecePriority in piecesToPlaceSorted[1]"
@@ -574,6 +566,16 @@ onUnmounted(() => {
             }}</span
           >
         </div>
+        <Button
+          icon="pi pi-undo"
+          size="small"
+          outlined
+          @click="undoLastOrder()"
+          :disabled="!props.isActiveTurn"
+          :pt="{
+            icon: { style: 'font-size: 1.2rem' },
+          }"
+        />
       </div>
     </div>
   </section>
@@ -611,6 +613,9 @@ onUnmounted(() => {
   gap: 0.75rem;
   flex-direction: column;
   justify-content: center;
+  align-items: flex-end;
+  width: 70px;
+  padding: 0.25rem;
 }
 
 .order-cancel-button {
@@ -622,6 +627,21 @@ onUnmounted(() => {
 /* keep: make custom icons and prime defaults same size */
 .pi {
   padding: 4px;
+}
+
+.place-section {
+  background-color: rgba(255, 255, 255, 0.05);
+  height: 100%;
+  border-radius: 0.2rem;
+}
+
+.placement-text {
+  font-size: 1.75rem;
+  font-weight: bold;
+  opacity: 0.3;
+  writing-mode: sideways-lr;
+  align-self: flex-start;
+  line-height: 100%;
 }
 
 .place-button-group {
