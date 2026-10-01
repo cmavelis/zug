@@ -24,7 +24,7 @@ export const createLocalClient = (playerID?: string, game?: ZugGameObject) =>
     game: game || SimulChess,
     multiplayer: Local(),
     playerID,
-    debug: true,
+    debug: false,
   });
 
 // mostly duplicate code for connecting to bgio game client

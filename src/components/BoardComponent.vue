@@ -454,7 +454,7 @@ onUnmounted(() => {
       />
     </div>
     <div class="board-with-controls">
-      <div class="order-button-group place-section">
+      <div class="order-button-group">
         <input
           v-if="store.isDebug"
           v-model.number="pieceToPlace"
@@ -484,7 +484,7 @@ onUnmounted(() => {
               @click="handlePlaceButtonClick(piecePriority)"
             />
           </div>
-          <div class="placement-text">PLACEMENT</div>
+          <span class="pi pi-download" />
           <div class="place-button-group">
             <PlaceButton
               v-for="piecePriority in piecesToPlaceSorted[1]"
@@ -613,35 +613,23 @@ onUnmounted(() => {
   gap: 0.75rem;
   flex-direction: column;
   justify-content: center;
-  align-items: flex-end;
-  width: 70px;
+  align-items: center;
   padding: 0.25rem;
+  background-color: rgba(255, 255, 255, 0.05);
+  height: 100%;
+  border-radius: 0.25rem;
 }
 
 .order-cancel-button {
   display: flex;
   align-items: center;
   gap: 4px;
+  padding-right: 4px;
 }
 
 /* keep: make custom icons and prime defaults same size */
 .pi {
   padding: 4px;
-}
-
-.place-section {
-  background-color: rgba(255, 255, 255, 0.05);
-  height: 100%;
-  border-radius: 0.2rem;
-}
-
-.placement-text {
-  font-size: 1.75rem;
-  font-weight: bold;
-  opacity: 0.3;
-  writing-mode: sideways-lr;
-  align-self: flex-start;
-  line-height: 100%;
 }
 
 .place-button-group {

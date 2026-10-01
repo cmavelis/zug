@@ -71,7 +71,7 @@ const { boardState, isActiveTurn, replayLastTurn } = useMatchHistory({
 <style scoped>
 p {
   margin: 0 auto;
-  max-width: 800px;
+  max-width: min(80vw, 800px);
 }
 .layout {
   text-align: center;
