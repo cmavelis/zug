@@ -12,8 +12,8 @@ import { useRoute } from 'vue-router';
 
 import type { ClientState } from 'boardgame.io/dist/types/src/client/client';
 import type { Ctx, FilteredMetadata } from 'boardgame.io/dist/types/src/types';
-import { isEqual } from 'lodash';
 import Button from 'primevue/button';
+import ToggleButton from 'primevue/togglebutton';
 import { useToast } from '@/composables/useToast';
 import { useErrorHandler } from '@/composables/useErrorHandler';
 import axios from 'axios';
@@ -246,6 +246,8 @@ const lastTurnSeen = computed(() => {
   return true;
 });
 
+const extras = ref(false);
+
 // "your turn" sound
 getNotificationSound(store.zugUsername).then((notificationSound) => {
   const audio = new Audio(notificationSound);
@@ -332,7 +334,17 @@ getNotificationSound(store.zugUsername).then((notificationSound) => {
       :isActiveTurn="isActiveTurn"
     />
 
-    <div>
+    <div class="flex justify-center items-center">
+      <ToggleButton
+        v-model="extras"
+        size="small"
+        onLabel="Hide extras"
+        offLabel="Show extras"
+        inputId="extras"
+      />
+    </div>
+
+    <div v-if="extras">
       <div style="margin: 4px 0">
         <Button
           icon="pi pi-link"
@@ -412,7 +424,7 @@ getNotificationSound(store.zugUsername).then((notificationSound) => {
         </span>
       </div>
     </div>
-    <div v-if="gameState.G.config" class="match-settings">
+    <div v-if="extras && gameState.G.config" class="match-settings">
       <p>match settings</p>
       <!--prettier-ignore-->
       <pre>{{JSON.stringify(gameState.G.config, null, 2).trim()}}</pre>
