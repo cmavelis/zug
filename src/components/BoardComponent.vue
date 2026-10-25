@@ -461,7 +461,7 @@ onUnmounted(() => {
           type="number"
         />
         <template v-if="props.config.placePriorityAssignment">
-          <div class="place-button-group">
+          <div v-if="props.playerID == 0" class="place-button-group">
             <PlaceButton
               v-for="piecePriority in piecesToPlaceSorted[0]"
               :key="piecePriority"
@@ -484,8 +484,16 @@ onUnmounted(() => {
               @click="handlePlaceButtonClick(piecePriority)"
             />
           </div>
+          <div v-else class="place-button-group-opponent">
+            <span
+              v-for="piecePriority in piecesToPlaceSorted[0]"
+              :key="piecePriority"
+              class="place-order-indicator player-one-piece"
+              >{{ piecePriority }}</span
+            >
+          </div>
           <span class="pi pi-download" />
-          <div class="place-button-group">
+          <div v-if="props.playerID == 1" class="place-button-group">
             <PlaceButton
               v-for="piecePriority in piecesToPlaceSorted[1]"
               :key="piecePriority"
@@ -507,6 +515,14 @@ onUnmounted(() => {
               class="player-two-piece"
               @click="handlePlaceButtonClick(piecePriority)"
             />
+          </div>
+          <div v-else class="place-button-group-opponent">
+            <span
+              v-for="piecePriority in piecesToPlaceSorted[1]"
+              :key="piecePriority"
+              class="place-order-indicator player-two-piece"
+              >{{ piecePriority }}</span
+            >
           </div>
         </template>
         <Button
@@ -645,6 +661,13 @@ onUnmounted(() => {
   width: min-content;
   padding: 8px;
   gap: 4px;
+}
+
+.place-button-group-opponent {
+  display: grid;
+  grid-auto-flow: row;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 2px;
 }
 
 :deep(.p-button .p-badge) {
