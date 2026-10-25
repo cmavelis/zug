@@ -664,9 +664,12 @@ onUnmounted(() => {
 }
 
 .place-button-group-opponent {
+  height: 100%;
   display: grid;
   grid-auto-flow: row;
   grid-template-columns: repeat(2, 1fr);
+  grid-template-rows: repeat(2, min-content);
+  align-content: center;
   gap: 2px;
 }
 
