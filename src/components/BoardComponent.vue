@@ -447,18 +447,10 @@ onUnmounted(() => {
     <div>
       <Button
         size="small"
-        severity="secondary"
-        @click="undoLastOrder()"
-        label="undo last action"
-        :disabled="!props.isActiveTurn"
-      />
-      <Button
-        size="small"
-        :severity="canEndTurn && props.isActiveTurn ? 'primary' : 'secondary'"
         @click="handleEndTurn"
         :class="{ 'halo-shadow': canEndTurn && props.isActiveTurn }"
-        :disabled="!props.isActiveTurn"
-        label="end turn"
+        :disabled="!(props.isActiveTurn && canEndTurn)"
+        label="END TURN"
       />
     </div>
     <div class="board-with-controls">
@@ -469,7 +461,7 @@ onUnmounted(() => {
           type="number"
         />
         <template v-if="props.config.placePriorityAssignment">
-          <div class="place-button-group">
+          <div v-if="props.playerID == 0" class="place-button-group">
             <PlaceButton
               v-for="piecePriority in piecesToPlaceSorted[0]"
               :key="piecePriority"
@@ -492,8 +484,16 @@ onUnmounted(() => {
               @click="handlePlaceButtonClick(piecePriority)"
             />
           </div>
-          <label>place</label>
-          <div class="place-button-group">
+          <div v-else class="place-button-group-opponent">
+            <span
+              v-for="piecePriority in piecesToPlaceSorted[0]"
+              :key="piecePriority"
+              class="place-order-indicator player-one-piece"
+              >{{ piecePriority }}</span
+            >
+          </div>
+          <span class="pi pi-download" />
+          <div v-if="props.playerID == 1" class="place-button-group">
             <PlaceButton
               v-for="piecePriority in piecesToPlaceSorted[1]"
               :key="piecePriority"
@@ -515,6 +515,14 @@ onUnmounted(() => {
               class="player-two-piece"
               @click="handlePlaceButtonClick(piecePriority)"
             />
+          </div>
+          <div v-else class="place-button-group-opponent">
+            <span
+              v-for="piecePriority in piecesToPlaceSorted[1]"
+              :key="piecePriority"
+              class="place-order-indicator player-two-piece"
+              >{{ piecePriority }}</span
+            >
           </div>
         </template>
         <Button
@@ -574,6 +582,16 @@ onUnmounted(() => {
             }}</span
           >
         </div>
+        <Button
+          icon="pi pi-undo"
+          size="small"
+          outlined
+          @click="undoLastOrder()"
+          :disabled="!props.isActiveTurn"
+          :pt="{
+            icon: { style: 'font-size: 1.2rem' },
+          }"
+        />
       </div>
     </div>
   </section>
@@ -611,12 +629,18 @@ onUnmounted(() => {
   gap: 0.75rem;
   flex-direction: column;
   justify-content: center;
+  align-items: center;
+  padding: 0.25rem;
+  background-color: rgba(255, 255, 255, 0.05);
+  height: 100%;
+  border-radius: 0.25rem;
 }
 
 .order-cancel-button {
   display: flex;
   align-items: center;
   gap: 4px;
+  padding-right: 4px;
 }
 
 /* keep: make custom icons and prime defaults same size */
@@ -637,6 +661,14 @@ onUnmounted(() => {
   width: min-content;
   padding: 8px;
   gap: 4px;
+}
+
+.place-button-group-opponent {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 2px;
 }
 
 :deep(.p-button .p-badge) {

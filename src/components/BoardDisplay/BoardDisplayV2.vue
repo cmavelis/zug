@@ -194,7 +194,7 @@ button {
   display: grid;
   grid-template-columns: repeat(var(--cols, 4), var(--square-size, 50px));
   grid-template-rows: repeat(var(--rows, 4), var(--square-size, 50px));
-  border: 1px solid blanchedalmond;
+  border: 1px solid transparent;
   width: fit-content;
   height: fit-content;
 }
@@ -204,7 +204,8 @@ button {
 }
 
 .board-square {
-  border: 1px solid blanchedalmond;
+  margin: 1px;
+  background-color: rgba(255, 255, 255, 0.1);
   z-index: 2; /*want this above the order overlay for hover events */
   display: flex;
   justify-content: center;
