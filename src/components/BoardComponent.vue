@@ -449,7 +449,7 @@ onUnmounted(() => {
         size="small"
         @click="handleEndTurn"
         :class="{ 'halo-shadow': canEndTurn && props.isActiveTurn }"
-        :disabled="!canEndTurn"
+        :disabled="!props.isActiveTurn"
         label="END TURN"
       />
     </div>
@@ -665,11 +665,9 @@ onUnmounted(() => {
 
 .place-button-group-opponent {
   height: 100%;
-  display: grid;
-  grid-auto-flow: row;
-  grid-template-columns: repeat(2, 1fr);
-  grid-template-rows: repeat(2, min-content);
-  align-content: center;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
   gap: 2px;
 }
 
