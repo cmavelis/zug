@@ -79,13 +79,24 @@ html {
   font-size: 14px;
 }
 
+/* prevent mobile horizontal scroll */
+html, body {
+  overflow-x: hidden;
+}
+body {
+  position: relative
+}
+/**/
+
 p {
   font-size: 1.15rem;
   font-weight: 500;
 }
 
 body {
-  min-height: 100vh;
+  min-height: 100dvh;
+  margin: 0;
+  overflow: hidden;
   color: var(--color-text);
   background: var(--color-background-two);
   background: linear-gradient(
