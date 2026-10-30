@@ -94,7 +94,9 @@ p {
 }
 
 body {
-  min-height: 100vh;
+  min-height: 100dvh;
+  margin: 0;
+  overflow: hidden;
   color: var(--color-text);
   background: var(--color-background-two);
   background: linear-gradient(
