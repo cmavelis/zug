@@ -1,5 +1,8 @@
 import { PostgresStore } from 'bgio-postgres';
-import { DataTypes, Sequelize } from 'sequelize';
+import { DataTypes, type ModelStatic, Sequelize } from 'sequelize';
+
+// Models are untyped for now: instances are `any` so attribute access compiles.
+type LooseModel = ModelStatic<any>;
 
 const DATABASE_URL: string =
   process.env.DATABASE_PRIVATE_URL || process.env.DATABASE_URL;
@@ -13,9 +16,9 @@ export const db = new PostgresStore(DATABASE_URL, {
   logging: false,
 });
 
-export const Match = db.sequelize.model('Match');
+export const Match = db.sequelize.model('Match') as LooseModel;
 
-export const User = sequelize.define('User', {
+export const User: LooseModel = sequelize.define('User', {
   id: {
     type: DataTypes.UUID,
     primaryKey: true,
@@ -26,7 +29,7 @@ export const User = sequelize.define('User', {
   isGuest: { type: DataTypes.BOOLEAN, allowNull: false, defaultValue: false },
 });
 
-export const UserMatch = sequelize.define('UserMatch', {
+export const UserMatch: LooseModel = sequelize.define('UserMatch', {
   MatchId: {
     type: DataTypes.INTEGER,
     references: {

@@ -85,7 +85,7 @@ const notifyPlayer = async (
 };
 
 // notify players when it's their turn or when match ends
-Match.beforeUpsert(async (created) => {
+Match.addHook('beforeUpsert', async (created: any) => {
   try {
     const { id } = created;
     const oldMatch = await Match.findByPk(id);
@@ -307,7 +307,7 @@ server.router.post(
     await next(ctx);
 
     const body = ctx.body;
-    ctx.response.body.playerCredentials = encodeToken({
+    (ctx.response.body as LobbyAPI.JoinedMatch).playerCredentials = encodeToken({
       credential: body.playerCredentials,
     });
     if (body.playerID) {
@@ -386,7 +386,7 @@ server.router.get(
       let yourTurn = null;
       if (activePlayers) {
         const playerIndex = Object.values(players).findIndex(
-          (player) => player.name === username,
+          (player: { name?: string }) => player.name === username,
         );
         yourTurn = activePlayers[playerIndex] === 'planning';
       }
@@ -439,7 +439,7 @@ server.router.post('/games/:name/:id/poke', koaBody(), async (ctx) => {
   const lastPokeDate = new Date(lastPoke);
   const nowDate = new Date();
 
-  if (!lastPoke || nowDate - lastPokeDate > POKE_TIMEOUT) {
+  if (!lastPoke || nowDate.getTime() - lastPokeDate.getTime() > POKE_TIMEOUT) {
     const discordId = await getDiscordFromClerk(user.clerkId);
     if (discordId) {
       await messageDiscordUser({

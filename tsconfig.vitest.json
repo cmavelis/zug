@@ -4,7 +4,7 @@
   "compilerOptions": {
     "composite": true,
     "esModuleInterop": true,
-    "lib": [],
+    "lib": ["ES2020", "ES2022.Array", "ES2022.String", "DOM", "DOM.Iterable"],
     "types": ["node", "jsdom"]
   }
 }
