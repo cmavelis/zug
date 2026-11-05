@@ -14,7 +14,7 @@ import { type LobbyAPI } from 'boardgame.io/dist/types/src/types';
 import { db, dbInitialized, Match, sequelize, User } from './db';
 import { removeOldMatches } from './db/cleanup';
 import { createClerkClient, verifyToken } from '@clerk/backend';
-import { JwtPayload } from 'jsonwebtoken';
+import { type JwtPayload } from 'jsonwebtoken';
 import { messageDiscordUser } from './discordBot';
 import { generateGuestUsername } from './guestUser';
 
@@ -307,9 +307,11 @@ server.router.post(
     await next(ctx);
 
     const body = ctx.body;
-    (ctx.response.body as LobbyAPI.JoinedMatch).playerCredentials = encodeToken({
-      credential: body.playerCredentials,
-    });
+    (ctx.response.body as LobbyAPI.JoinedMatch).playerCredentials = encodeToken(
+      {
+        credential: body.playerCredentials,
+      },
+    );
     if (body.playerID) {
       const match = await Match.findByPk(matchID);
       const { players } = match;

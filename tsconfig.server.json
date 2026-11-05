@@ -20,6 +20,8 @@
         "./src/*"
       ]
     },
-    "strict": false
+    "strict": false,
+    "composite": true,
+    "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.server.tsbuildinfo"
   }
 }
