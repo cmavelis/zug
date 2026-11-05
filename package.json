@@ -1,6 +1,7 @@
 {
   "name": "simulchess",
   "version": "0.0.0",
+  "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "run-p type-check build-only",
@@ -47,6 +48,7 @@
     "vue-router": "^4.1.5"
   },
   "devDependencies": {
+    "@mdx-js/rollup": "^3.1.1",
     "@rushstack/eslint-patch": "^1.5.1",
     "@tsconfig/node18": "^18.2.2",
     "@types/axios": "^0.14.0",
@@ -61,6 +63,7 @@
     "@types/node": "^18.19.2",
     "@types/qrcode": "^1.5.5",
     "@vitejs/plugin-vue": "^4.5.2",
+    "@vitejs/plugin-vue-jsx": "^5.1.6",
     "@vue/eslint-config-prettier": "^8.0.0",
     "@vue/eslint-config-typescript": "^12.0.0",
     "@vue/test-utils": "^2.4.3",
