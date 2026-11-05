@@ -1,5 +1,7 @@
 import 'dotenv/config';
 import { randomUUID } from 'crypto';
+import { createRequire } from 'module';
+import { fileURLToPath } from 'url';
 import * as Koa from 'koa';
 
 import { decodeToken, encodeToken } from './auth';
@@ -12,7 +14,8 @@ import { JwtPayload } from 'jsonwebtoken';
 import { messageDiscordUser } from './discordBot';
 import { generateGuestUsername } from './guestUser';
 
-// TODO: figure out which process needs this to be commonJS syntax
+const require = createRequire(import.meta.url);
+const __dirname = fileURLToPath(new URL('.', import.meta.url));
 const { Server, Origins } = require('boardgame.io/server');
 const { SimulChess } = require('../src/game/Game');
 const path = require('path');

@@ -14,8 +14,8 @@
     "type-check": "vue-tsc --noEmit -p tsconfig.vitest.json --composite false",
     "type-check-watch": "vue-tsc --noEmit -p tsconfig.vitest.json --composite false -w",
     "lint": "eslint . --ext .vue,.js,.jsx,.cjs,.mjs,.ts,.tsx,.cts,.mts --fix --ignore-path .gitignore",
-    "server:dev": "nodemon server/main.ts --watch server/main.ts --watch src/",
-    "server:prod": "ts-node server/main.ts",
+    "server:dev": "nodemon --exec tsx server/main.ts --watch server/main.ts --watch src/",
+    "server:prod": "tsx server/main.ts",
     "start": "npm run server:prod",
     "cy:open": "cypress open --e2e",
     "cy:run": "cypress run --e2e",
@@ -42,7 +42,7 @@
     "primevue": "^3.44.0",
     "qrcode": "^1.5.3",
     "sequelize": "^6.35.0",
-    "ts-node": "^10.9.1",
+    "tsx": "^4.23.15",
     "vee-validate": "^4.12.3",
     "vue": "^3.5.8",
     "vue-router": "^4.1.5"
@@ -76,11 +76,13 @@
     "npm-run-all": "^4.1.5",
     "prettier": "^3.0.3",
     "start-server-and-test": "^2.0.3",
-    "tsconfig-paths": "^4.1.1",
     "typescript": "^5.2.2",
     "vite": "^5.0.10",
     "vite-svg-loader": "^5.1.0",
     "vitest": "^0.34.6",
     "vue-tsc": "^1.8.25"
+  },
+  "engines": {
+    "node": "24.x"
   }
 }

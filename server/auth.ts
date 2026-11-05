@@ -1,6 +1,6 @@
 import type { MatchTokenPayload } from './types';
 
-const jwt = require('jsonwebtoken');
+import jwt from 'jsonwebtoken';
 
 export const encodeToken = (payload: MatchTokenPayload): string => {
   return jwt.sign(payload, process.env.AUTH_SECRET);
