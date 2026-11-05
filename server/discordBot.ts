@@ -1,4 +1,4 @@
-require('dotenv/config');
+import 'dotenv/config';
 import { Client, Events, GatewayIntentBits } from 'discord.js';
 
 export const getBotClient = async () => {
