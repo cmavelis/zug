@@ -1,0 +1,43 @@
+import {RouterLink} from 'vue-router';
+
+## Overview
+
+- Combine **move** and **push** actions to advance your pieces
+- Your actions happen at the same time as your opponent's. Anticipate to come out ahead!
+- Get your pieces to the opponent's side **4 times** to win!
+
+## 1. Your turn
+
+- On your turn, you must assign an action to each of your pieces
+- There are 4 main actions:
+  - Move straight <span class="pi pi-arrow-up" />
+  - Move diagonal <span class="pi pi-arrow-up-right" />
+  - Push straight <span class="zi zi-arrow-up-flat" />
+  - Push diagonal <span class="zi zi-arrow-up-right-flat" />
+- A **move** will try to move your piece in that direction. If blocked, nothing happens
+- A **push**ing piece won't move, but pushes away pieces in the chosen direction
+
+## 2. Turn resolution
+
+- You and your opponent are deciding on your actions at the same time, in secret!
+- Once you each decide on your actions, and have ended your turn, the actions are **resolved** using a **priority** system
+- Pieces act in **priority** order, indicated by their number
+  - Pieces with a 1 go first, then 2, etc.
+- Actions from two pieces with the same **priority** happen in order of the _action_'s priority. Here is the action priority order:
+  - <span class="pi pi-arrow-up" /> Move straight
+  - <span class="zi zi-arrow-up-flat" /> Push straight
+  - <span class="pi pi-arrow-up-right" /> Move diagonal
+  - <span class="zi zi-arrow-up-right-flat" /> Push diagonal
+  - <span class="pi pi-download" /> Place
+- Use priority to your advantage and to create winning combos!
+
+## 3. Replacing pieces
+
+- When your piece ends the turn off the board or in the scoring zone, it is removed.
+- The **place** <span class="pi pi-download" /> action is used to replacing any missing pieces on your turn, to bring you back up to 4
+- **Placing** a piece on top of another piece will remove both immediately!
+
+## 4. Try it out!
+
+- This will all become clearer after playing through a couple of games. Come back to this page for reference, but go ahead and send me a game invite. Happy to answer any questions :)
+- Or try a tutorial: <RouterLink to="/tutorial/2">(Work in progress)</RouterLink>

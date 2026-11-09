@@ -6,6 +6,8 @@ import { ORDER_PRIORITIES } from '@/game/orders';
 import { coordinatesToArray } from '@/game/common';
 import type { Order } from '@/game/orders';
 
+import Content from './howtoplay/howtoplay.mdx';
+
 type OrdersHere = Exclude<ConfigOrderType, 'attack' | 'place'>;
 
 const orderNames: OrdersHere[] = [
@@ -51,46 +53,12 @@ const placeActionSquares = getValidSquaresForOrder({
 <template>
   <main class="about">
     <h1>How To Play</h1>
-    <RouterLink to="/tutorial/2">Try a tutorial! (Work in progress)</RouterLink>
-    <h2>Basics</h2>
-    <section class="text">
-      <p>
-        The goal of the game is to advance one of your pieces to the opponent's
-        side 4 times. During each turn, both players are creating a list of
-        "actions" that their pieces will execute in the order they were
-        assigned. Each piece must take one action per turn, and each action must
-        only be assigned once. When both players assign all their actions and
-        end their "planning" phase, the game will resolve the actions from both
-        players and generate a new board state. This signals the start of a new
-        turn.
-        <br /><br />
-        During "resolution", the actions from both players are applied
-        step-by-step. During each step, actions will occur in "priority" order
-        (1=highest priority). I've added a "last turn" viewer that you can use
-        to step through how the previous turn was resolved, which should help
-        clarify this process.
-        <br /><br />
-        If a piece is on the opponent's home row at the end of the turn, then it
-        will be scored and removed from play. It may be placed back on the board
-        just like a destroyed piece, by using the "place" action.
-      </p>
-    </section>
+    <Content />
+    <br />
+    <hr />
+    <br />
     <section>
-      <h2>Priority</h2>
-      <p class="text">
-        Priority is the idea of "who goes first" -- in this game, lower numbers
-        happen first. There are two times the concept of priority comes up
-        during a turn: determining the order in which the actions occur, and
-        also when breaking ties during a turn "step".
-        <br /><br />
-        Each piece has a priority value assigned to it, currently from 1-6. The
-        actions you assign will play out for the 1s first, then the 2s, etc. If
-        you and your opponent both have a 2, then the action's priority is used
-        to determine which happens first.
-      </p>
-    </section>
-    <section>
-      <h2>Actions</h2>
+      <h2>Actions Reference</h2>
       <p class="text">
         These are the currently configured actions in the game, showing all
         possible directions you can assign them.
@@ -161,5 +129,20 @@ strong {
   max-width: 800px;
   margin: 0 auto;
   padding-bottom: 1rem;
+}
+ul {
+  font-size: 1.2rem;
+  max-width: 500px;
+  text-align: left;
+  margin: 0 auto;
+}
+.pi,
+.zi,
+strong {
+  color: var(--primary-color);
+}
+
+.pi {
+  padding: 4px;
 }
 </style>

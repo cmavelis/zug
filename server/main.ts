@@ -1,6 +1,12 @@
 import 'dotenv/config';
 import { randomUUID } from 'crypto';
+import { createRequire } from 'module';
+import path from 'path';
 import * as Koa from 'koa';
+import { Server, Origins } from 'boardgame.io/server';
+import serve from 'koa-static';
+import { koaBody } from 'koa-body';
+import cron from 'node-cron';
 
 import { decodeToken, encodeToken } from './auth';
 import { type EnhancedMatch } from './types';
@@ -12,13 +18,10 @@ import { JwtPayload } from 'jsonwebtoken';
 import { messageDiscordUser } from './discordBot';
 import { generateGuestUsername } from './guestUser';
 
-// TODO: figure out which process needs this to be commonJS syntax
-const { Server, Origins } = require('boardgame.io/server');
+// src/game uses lodash named imports, which only work when loaded as CommonJS
+// TODO: switch to lodash-es
+const require = createRequire(import.meta.url);
 const { SimulChess } = require('../src/game/Game');
-const path = require('path');
-const serve = require('koa-static');
-const { koaBody } = require('koa-body');
-const cron = require('node-cron');
 
 const makeMatchURL = ({ matchID }: { matchID: string }) => {
   return `${process.env.HOST_URL}/match/${matchID}`;
@@ -227,7 +230,7 @@ const server = Server({
 });
 
 // Build path relative to this file
-const frontEndAppBuildPath = path.resolve(__dirname, '../dist');
+const frontEndAppBuildPath = path.resolve(import.meta.dirname, '../dist');
 server.app.use(serve(frontEndAppBuildPath));
 
 server.router.post(
