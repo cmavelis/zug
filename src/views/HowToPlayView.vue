@@ -136,9 +136,13 @@ ul {
   text-align: left;
   margin: 0 auto;
 }
-.pi,
-.zi,
+
 strong {
+  color: var(--primary-color);
+}
+
+li > .pi,
+li > .zi {
   color: var(--primary-color);
 }
 

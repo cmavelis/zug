@@ -43,6 +43,7 @@ export const gameSetup = (
     players: Object.fromEntries(
       [0, 1].map((i) => [i, { seenLatestTurn: true }]),
     ),
+    piecesToPlace: setupData.piecesToPlace || {},
   };
 
   // use custom starting board
