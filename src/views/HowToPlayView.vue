@@ -53,7 +53,9 @@ const placeActionSquares = getValidSquaresForOrder({
 <template>
   <main class="about">
     <h1>How To Play</h1>
-    <Content />
+    <section class="md-content">
+      <Content />
+    </section>
     <br />
     <hr />
     <br />
@@ -129,24 +131,5 @@ strong {
   max-width: 800px;
   margin: 0 auto;
   padding-bottom: 1rem;
-}
-ul {
-  font-size: 1.2rem;
-  max-width: 500px;
-  text-align: left;
-  margin: 0 auto;
-}
-
-strong {
-  color: var(--primary-color);
-}
-
-li > .pi,
-li > .zi {
-  color: var(--primary-color);
-}
-
-.pi {
-  padding: 4px;
 }
 </style>

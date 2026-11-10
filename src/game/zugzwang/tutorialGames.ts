@@ -97,12 +97,12 @@ export const fullOneMoveTutorial: ZugGameObject = {
           1: 0,
         },
       },
-      piecesToPlace: { 0: [2], 1: [] },
+      piecesToPlace: { 0: [1], 1: [] },
       initialState: {
         boardNotation: zb`
-         |--|--|--|a3|
-         |--|--|a4|--|
-         |--|a1|--|--|
+         |--|--|--|a2|
+         |--|--|a3|--|
+         |--|a4|--|--|
          |--|--|--|--|
         `,
       },

@@ -1,7 +1,9 @@
 <script setup lang="ts">
 import BoardComponent from '@/components/BoardComponent.vue';
 import { useZugClient } from '@/composables/useZugClient';
-import { oneMoveScoringTutorial } from '@/game/zugzwang/tutorialGames';
+import { fullOneMoveTutorial } from '@/game/zugzwang/tutorialGames';
+import Content from './howtoplay/tutorial-one.md';
+
 import { computed, watch } from 'vue';
 import { useRouter } from 'vue-router';
 
@@ -10,8 +12,8 @@ import { useMatchHistory } from '@/composables/useMatchHistory';
 
 const router = useRouter();
 
-const boardStateOne = useZugClient('0', oneMoveScoringTutorial);
-const boardStateTwo = useZugClient('1', oneMoveScoringTutorial);
+const boardStateOne = useZugClient('0', fullOneMoveTutorial);
+const boardStateTwo = useZugClient('1', fullOneMoveTutorial);
 
 // automatically end turn for empty player 2 slot
 watch(boardStateOne.gameState, (gameState) => {
@@ -25,7 +27,21 @@ watch(boardStateOne.gameState, (gameState) => {
 });
 
 const gameOver = computed(() => boardStateOne.gameState.ctx.gameover);
-
+const scoringText = computed(() => {
+  const score = boardStateOne.gameState.G.score[0];
+  let text = `You scored ${score}.`;
+  switch (score) {
+    case 1:
+      text += ' Can you score another?';
+      break;
+    case 2:
+      text += ' Nicely done!';
+      break;
+    default:
+      text += ' Try again!';
+  }
+  return text;
+});
 const { boardState, isActiveTurn, replayLastTurn } = useMatchHistory({
   gameState: boardStateOne.gameState,
   matchClientOne: boardStateOne,
@@ -33,17 +49,11 @@ const { boardState, isActiveTurn, replayLastTurn } = useMatchHistory({
 </script>
 
 <template>
+  <section class="md-content">
+    <Content></Content>
+  </section>
+  <br />
   <section class="layout">
-    <p>In this tutorial, you have two pieces with different "priority".</p>
-    <p>A piece with a 1 will move before a piece with a 2</p>
-    <p></p>
-    <p v-if="gameOver">
-      Are you able to score a point? Try to combine a push and move action to
-      get the 2 to the back row. The 2 will be removed from the board if you
-      score.
-    </p>
-    <br v-else />
-
     <Button
       @click="replayLastTurn()"
       label="Animate moves"
@@ -65,14 +75,11 @@ const { boardState, isActiveTurn, replayLastTurn } = useMatchHistory({
       :showOrders="boardStateOne.showOrders.value"
       :isActiveTurn="isActiveTurn"
     />
+    <h3 v-if="gameOver">{{ scoringText }}</h3>
   </section>
 </template>
 
 <style scoped>
-p {
-  margin: 0 auto;
-  max-width: min(80vw, 800px);
-}
 .layout {
   text-align: center;
 }
