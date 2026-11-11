@@ -115,3 +115,39 @@ export const fullOneMoveTutorial: ZugGameObject = {
     }
   },
 };
+
+export const blockAndScoreTutorial: ZugGameObject = {
+  ...zugGameDefinition,
+  setup: (argOne, setupData?: GameSetupData) => {
+    const mergedSetupData: GameSetupData = {
+      ...setupData,
+      config: {
+        ...setupData?.config,
+        expectedNumberOrders: {
+          0: 4,
+          1: 4,
+        },
+        expectedNumberPieces: {
+          0: 4,
+          1: 4,
+        },
+      },
+      piecesToPlace: { 0: [], 1: [1, 6] },
+      initialState: {
+        boardNotation: zb`
+         |--|--|a2|a3|
+         |a5|--|--|--|
+         |a4|--|b4|--|
+         |--|--|b2|--|
+        `,
+        // orderNotation: ``
+      },
+    };
+    return gameSetup(argOne, mergedSetupData);
+  },
+  endIf: ({ ctx }) => {
+    if (ctx.turn > 1) {
+      return { winner: 0 };
+    }
+  },
+};
