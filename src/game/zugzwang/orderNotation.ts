@@ -37,11 +37,11 @@ export const validateOrderNotation = (notation: string): boolean =>
   notation.length > 0 && notation.split(',').every((o) => ORDER.test(o));
 
 const OWNER_MAP: { [a: string]: 0 | 1 } = { a: 0, b: 1 };
-const ACTION_MAP = { m: 'move', p: 'push', r: 'place' };
+const ACTION_MAP = { m: 'move', p: 'push' } as const;
 
 type OrderTemplate = {
-  owner: Pick<OrderBase, 'owner'>;
-  toTarget: Pick<OrderBase, 'toTarget'>;
+  owner: OrderBase['owner'];
+  toTarget: OrderBase['toTarget'];
   type: OrderTypes;
   piecePriority: number;
 };
@@ -71,10 +71,10 @@ export const getOrdersFromNotation = (
 
     const toTarget = { x, y };
 
-    let actionType = ACTION_MAP[actionString];
-    if ('mp'.includes(actionString)) {
+    let actionType: OrderTypes = 'place';
+    if (actionString !== 'r') {
       const suffix = isDiagonal(toTarget) ? 'diagonal' : 'straight';
-      actionType += `-${suffix}`;
+      actionType = `${ACTION_MAP[actionString]}-${suffix}`;
     }
 
     return {
