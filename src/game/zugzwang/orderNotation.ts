@@ -55,6 +55,8 @@ export const getOrdersFromNotation = (
     const actionString = order[2] as 'm' | 'p' | 'r';
     const direction = order.slice(3);
 
+    const owner = OWNER_MAP[playerString];
+
     // move/push direction handling
     let x = 0;
     if (direction.includes('E')) {
@@ -69,18 +71,22 @@ export const getOrdersFromNotation = (
       y = 1;
     }
 
-    const toTarget = { x, y };
+    let toTarget = { x, y };
 
     let actionType: OrderTypes = 'place';
     if (actionString !== 'r') {
       const suffix = isDiagonal(toTarget) ? 'diagonal' : 'straight';
       actionType = `${ACTION_MAP[actionString]}-${suffix}`;
+    } else {
+      const placeX = Number(direction) - 1;
+      const placeY = owner * 3;
+      toTarget = { x: placeX, y: placeY };
     }
 
     return {
       type: actionType,
       toTarget,
-      owner: OWNER_MAP[playerString],
+      owner,
       piecePriority: Number(piecePriority),
       //TODO: conditionally change 'place' action details
     };

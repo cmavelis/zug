@@ -39,9 +39,18 @@ const validStrings = [
     [
       {
         type: 'place',
-        toTarget: { x: 0, y: 3 },
+        toTarget: { x: 3, y: 0 },
         owner: 0,
         piecePriority: 3,
+      },
+    ],
+    'b1r2',
+    [
+      {
+        type: 'place',
+        toTarget: { x: 1, y: 3 },
+        owner: 1,
+        piecePriority: 1,
       },
     ],
   ],
