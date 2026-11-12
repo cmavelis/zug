@@ -88,10 +88,8 @@ export const getOrdersFromNotation = (
       toTarget,
       owner,
       piecePriority: Number(piecePriority),
-      //TODO: conditionally change 'place' action details
     };
   });
-  console.log(orders);
   // todo: return this to a function that uses Game state to find the right piece ID from the priority
   return orders;
 };
