@@ -46,6 +46,7 @@ const { boardState, isActiveTurn, replayLastTurn } = useMatchHistory({
   gameState: boardStateOne.gameState,
   matchClientOne: boardStateOne,
 });
+// TODO: optional show solution button
 </script>
 
 <template>
