@@ -7,6 +7,7 @@ import { coordinatesToArray } from '@/game/common';
 import type { Order } from '@/game/orders';
 
 import Content from './howtoplay/howtoplay.mdx';
+import TutorialNav from '@/components/TutorialNav.vue';
 
 type OrdersHere = Exclude<ConfigOrderType, 'attack' | 'place'>;
 
@@ -51,6 +52,7 @@ const placeActionSquares = getValidSquaresForOrder({
 </script>
 
 <template>
+  <TutorialNav />
   <main class="about">
     <h1>How To Play</h1>
     <section class="md-content">

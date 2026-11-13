@@ -1,4 +1,4 @@
-- In this tutorial, you have no opponent and pieces already positioned on the board.
-
-- Use your piece **priority** to score a point. 
-- Remember that you must use all your available moves.
+- In this tutorial, your pieces are already positioned on the board, but you have no opponent.
+- Click a piece or the place button on the side to assign all available actions.
+- Click End Turn when you're ready, and then Animate Turn to see the result
+- Use your piece **priority** to score a point (or two!)

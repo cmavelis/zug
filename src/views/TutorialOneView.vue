@@ -9,6 +9,7 @@ import { useRouter } from 'vue-router';
 
 import Button from 'primevue/button';
 import { useMatchHistory } from '@/composables/useMatchHistory';
+import TutorialNav from '@/components/TutorialNav.vue';
 
 const router = useRouter();
 
@@ -50,6 +51,8 @@ const { boardState, isActiveTurn, replayLastTurn } = useMatchHistory({
 </script>
 
 <template>
+  <TutorialNav />
+  <h1 class="layout">Tutorial 1</h1>
   <section class="md-content">
     <Content></Content>
   </section>

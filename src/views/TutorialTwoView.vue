@@ -2,13 +2,14 @@
 import BoardComponent from '@/components/BoardComponent.vue';
 import { useZugClient } from '@/composables/useZugClient';
 import { blockAndScoreTutorial } from '@/game/zugzwang/tutorialGames';
-import Content from './howtoplay/tutorial-one.md';
+import Content from './howtoplay/tutorial-two.md';
 
 import { computed, watch } from 'vue';
 import { useRouter } from 'vue-router';
 
 import Button from 'primevue/button';
 import { useMatchHistory } from '@/composables/useMatchHistory';
+import TutorialNav from '@/components/TutorialNav.vue';
 
 const router = useRouter();
 
@@ -50,7 +51,9 @@ const { boardState, isActiveTurn, replayLastTurn } = useMatchHistory({
 </script>
 
 <template>
+  <TutorialNav />
   <section class="md-content">
+    <h1 class="layout">Tutorial 2</h1>
     <Content></Content>
   </section>
   <br />
