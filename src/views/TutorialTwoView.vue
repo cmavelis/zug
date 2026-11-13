@@ -10,6 +10,8 @@ import { useRouter } from 'vue-router';
 import Button from 'primevue/button';
 import { useMatchHistory } from '@/composables/useMatchHistory';
 import TutorialNav from '@/components/TutorialNav.vue';
+import { useTutorialSolution } from '@/composables/useTutorialSolution';
+import SolutionContent from '@/views/howtoplay/tutorial-two-solution.md';
 
 const router = useRouter();
 
@@ -48,6 +50,10 @@ const { boardState, isActiveTurn, replayLastTurn } = useMatchHistory({
   gameState: boardStateOne.gameState,
   matchClientOne: boardStateOne,
 });
+const { showSolution, handleShowSolution } = useTutorialSolution(
+  boardStateOne,
+  'a2mSW,a3pSW,a4mS,a5pS',
+);
 </script>
 
 <template>
@@ -69,6 +75,7 @@ const { boardState, isActiveTurn, replayLastTurn } = useMatchHistory({
       :disabled="!gameOver"
       severity="secondary"
     ></Button>
+    <Button @click="handleShowSolution()" label="Show solution"></Button>
     <BoardComponent
       v-if="boardState"
       :client="boardStateOne.client"
@@ -79,6 +86,9 @@ const { boardState, isActiveTurn, replayLastTurn } = useMatchHistory({
       :showOrders="boardStateOne.showOrders.value"
       :isActiveTurn="isActiveTurn"
     />
+    <section v-if="showSolution" class="md-content">
+      <SolutionContent></SolutionContent>
+    </section>
     <h3 v-if="gameOver">{{ scoringText }}</h3>
   </section>
 </template>

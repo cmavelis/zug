@@ -3,6 +3,7 @@ import BoardComponent from '@/components/BoardComponent.vue';
 import { useZugClient } from '@/composables/useZugClient';
 import { fullOneMoveTutorial } from '@/game/zugzwang/tutorialGames';
 import Content from './howtoplay/tutorial-one.md';
+import SolutionContent from './howtoplay/tutorial-one-solution.md';
 
 import { computed, watch } from 'vue';
 import { useRouter } from 'vue-router';
@@ -10,6 +11,7 @@ import { useRouter } from 'vue-router';
 import Button from 'primevue/button';
 import { useMatchHistory } from '@/composables/useMatchHistory';
 import TutorialNav from '@/components/TutorialNav.vue';
+import { useTutorialSolution } from '@/composables/useTutorialSolution';
 
 const router = useRouter();
 
@@ -47,7 +49,10 @@ const { boardState, isActiveTurn, replayLastTurn } = useMatchHistory({
   gameState: boardStateOne.gameState,
   matchClientOne: boardStateOne,
 });
-// TODO: optional show solution button
+const { showSolution, handleShowSolution } = useTutorialSolution(
+  boardStateOne,
+  'a2pSW,a3mS,a4pN,a1r1',
+);
 </script>
 
 <template>
@@ -69,6 +74,7 @@ const { boardState, isActiveTurn, replayLastTurn } = useMatchHistory({
       :disabled="!gameOver"
       severity="secondary"
     ></Button>
+    <Button @click="handleShowSolution()" label="Show solution"></Button>
     <BoardComponent
       v-if="boardState"
       :client="boardStateOne.client"
@@ -79,6 +85,9 @@ const { boardState, isActiveTurn, replayLastTurn } = useMatchHistory({
       :showOrders="boardStateOne.showOrders.value"
       :isActiveTurn="isActiveTurn"
     />
+    <section v-if="showSolution" class="md-content">
+      <SolutionContent></SolutionContent>
+    </section>
     <h3 v-if="gameOver">{{ scoringText }}</h3>
   </section>
 </template>

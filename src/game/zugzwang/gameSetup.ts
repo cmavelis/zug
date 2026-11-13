@@ -67,36 +67,12 @@ export const gameSetup = (
     if (!orderNotation) {
       return initialGame;
     }
-    const ordersToCreate = getOrdersFromNotation(orderNotation);
-    ordersToCreate.forEach((orderTemplate) => {
-      const { owner, toTarget, type, piecePriority } = orderTemplate;
 
-      const sourcePiece = initialGame.pieces.find(
-        (p) => p.owner === owner && p.priority === piecePriority,
-      );
-
-      let sourcePieceId = 0;
-      if (!sourcePiece && type !== 'place') {
-        return;
-      } else if (sourcePiece) {
-        sourcePieceId = sourcePiece.id;
-      }
-
-      const newOrder: Order = {
-        owner,
-        toTarget,
-        type,
-        sourcePieceId,
-        priority: ORDER_PRIORITIES[type],
-      };
-
-      if (newOrder.type == 'place') {
-        newOrder.sourcePieceId = -1;
-        newOrder.newPiecePriority = piecePriority;
-      }
-
-      initialGame.orders[owner].push(newOrder as Order);
+    const newOrders = createOrdersFromString(initialGame, orderNotation);
+    newOrders.forEach((order) => {
+      initialGame.orders[order.owner].push(order);
     });
+
     return initialGame;
   }
 
@@ -175,4 +151,39 @@ export const gameSetup = (
   }
 
   return initialGame;
+};
+
+export const createOrdersFromString = (G: GObject, orderString: string) => {
+  const ordersToCreate = getOrdersFromNotation(orderString);
+  const newOrders: Order[] = ordersToCreate.map((orderTemplate) => {
+    const { owner, toTarget, type, piecePriority } = orderTemplate;
+
+    const sourcePiece = G.pieces.find(
+      (p) => p.owner === owner && p.priority === piecePriority,
+    );
+
+    let sourcePieceId = 0;
+    if (!sourcePiece && type !== 'place') {
+      throw new Error(
+        `Can not find piece for corresponding order: ${orderTemplate}`,
+      );
+    } else if (sourcePiece) {
+      sourcePieceId = sourcePiece.id;
+    }
+
+    const newOrder: Order = {
+      owner,
+      toTarget,
+      type,
+      sourcePieceId,
+      priority: ORDER_PRIORITIES[type],
+    };
+
+    if (newOrder.type == 'place') {
+      newOrder.sourcePieceId = -1;
+      newOrder.newPiecePriority = piecePriority;
+    }
+    return newOrder;
+  });
+  return newOrders;
 };

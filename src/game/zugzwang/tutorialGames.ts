@@ -128,15 +128,15 @@ export const blockAndScoreTutorial: ZugGameObject = {
           1: 4,
         },
       },
-      piecesToPlace: { 0: [], 1: [1, 6] },
+      piecesToPlace: { 0: [], 1: [1, 3] },
       initialState: {
         boardNotation: zb`
          |--|--|a2|a3|
          |a5|--|--|--|
-         |a4|--|b4|--|
+         |a4|--|b5|--|
          |--|--|b2|--|
         `,
-        orderNotation: 'b2pN,b4mNW,b1r1,b6r2',
+        orderNotation: 'b2pN,b5mNW,b1r1,b3r2',
       },
     };
     return gameSetup(argOne, mergedSetupData);
