@@ -21,7 +21,7 @@ watch(boardStateOne.gameState, (gameState) => {
   if (!ctx.activePlayers) {
     return;
   }
-  if (ctx.activePlayers[1] == 'planning') {
+  if (ctx.activePlayers[0] == 'resolution') {
     boardStateTwo.client.moves.endTurn();
   }
 });

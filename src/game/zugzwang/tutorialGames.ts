@@ -30,8 +30,6 @@ export const oneMoveTutorial: ZugGameObject = {
          |--|--|--|--|
          |--|--|--|--|
         `,
-        //  TODO:  add initial orders
-        // orderNotation: '',
       },
     };
     return gameSetup(argOne, mergedSetupData);
@@ -67,8 +65,6 @@ export const oneMoveScoringTutorial: ZugGameObject = {
          |--|--|--|--|
          |--|--|--|--|
         `,
-        //  TODO:  add initial orders
-        // orderNotation: '',
       },
     };
     return gameSetup(argOne, mergedSetupData);
@@ -140,7 +136,7 @@ export const blockAndScoreTutorial: ZugGameObject = {
          |a4|--|b4|--|
          |--|--|b2|--|
         `,
-        // orderNotation: ``
+        orderNotation: 'b2pN,b4mNW,b1r1,b6r2',
       },
     };
     return gameSetup(argOne, mergedSetupData);

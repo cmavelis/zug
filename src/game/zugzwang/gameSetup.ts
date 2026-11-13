@@ -11,6 +11,8 @@ import {
   getPiecesFromNotation,
   validateNotation,
 } from '@/game/zugzwang/boardNotation';
+import { getOrdersFromNotation } from '@/game/zugzwang/orderNotation';
+import { type Order, ORDER_PRIORITIES } from '@/game/orders';
 
 let hostname: any;
 let port: any;
@@ -29,7 +31,7 @@ export const gameSetup = (
   setupData: GameSetupData = { config: {} },
 ): GObject => {
   const board = { x: 4, y: 4 };
-  const initialGame = {
+  const initialGame: GObject = {
     config: {
       board,
       ...DEFAULT_ZUG_CONFIG,
@@ -47,7 +49,7 @@ export const gameSetup = (
   };
 
   // use custom starting board
-  const { boardNotation } = setupData.initialState || {};
+  const { boardNotation, orderNotation } = setupData.initialState || {};
   if (boardNotation) {
     // validate string format
     if (!validateNotation(boardNotation)) {
@@ -62,8 +64,39 @@ export const gameSetup = (
         pieceToCreate: piece,
       }),
     );
-    // TODO: add initial order support
-    // return initialGame + new state
+    if (!orderNotation) {
+      return initialGame;
+    }
+    const ordersToCreate = getOrdersFromNotation(orderNotation);
+    ordersToCreate.forEach((orderTemplate) => {
+      const { owner, toTarget, type, piecePriority } = orderTemplate;
+
+      const sourcePiece = initialGame.pieces.find(
+        (p) => p.owner === owner && p.priority === piecePriority,
+      );
+
+      let sourcePieceId = 0;
+      if (!sourcePiece && type !== 'place') {
+        return;
+      } else if (sourcePiece) {
+        sourcePieceId = sourcePiece.id;
+      }
+
+      const newOrder: Order = {
+        owner,
+        toTarget,
+        type,
+        sourcePieceId,
+        priority: ORDER_PRIORITIES[type],
+      };
+
+      if (newOrder.type == 'place') {
+        newOrder.sourcePieceId = -1;
+        newOrder.newPiecePriority = piecePriority;
+      }
+
+      initialGame.orders[owner].push(newOrder as Order);
+    });
     return initialGame;
   }
 

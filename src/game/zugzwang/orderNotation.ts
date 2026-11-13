@@ -27,7 +27,7 @@
  *
  */
 
-import type { OrderBase, Orders, OrderTypes } from '@/game/orders';
+import type { OrderBase, OrderTypes } from '@/game/orders';
 import { isDiagonal } from '@/game/zugzwang/validators';
 
 const DIR = 'N|NE|E|SE|S|SW|W|NW';
@@ -46,6 +46,10 @@ type OrderTemplate = {
   piecePriority: number;
 };
 
+/**
+ * Converts an order notation string into order template objects
+ * These objects need to be converted into order format using game state data
+ */
 export const getOrdersFromNotation = (
   ordersString: string,
 ): OrderTemplate[] => {
@@ -90,6 +94,5 @@ export const getOrdersFromNotation = (
       piecePriority: Number(piecePriority),
     };
   });
-  // todo: return this to a function that uses Game state to find the right piece ID from the priority
   return orders;
 };
