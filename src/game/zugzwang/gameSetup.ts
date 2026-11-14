@@ -11,6 +11,8 @@ import {
   getPiecesFromNotation,
   validateNotation,
 } from '@/game/zugzwang/boardNotation';
+import { getOrdersFromNotation } from '@/game/zugzwang/orderNotation';
+import { type Order, ORDER_PRIORITIES } from '@/game/orders';
 
 let hostname: any;
 let port: any;
@@ -29,7 +31,7 @@ export const gameSetup = (
   setupData: GameSetupData = { config: {} },
 ): GObject => {
   const board = { x: 4, y: 4 };
-  const initialGame = {
+  const initialGame: GObject = {
     config: {
       board,
       ...DEFAULT_ZUG_CONFIG,
@@ -43,10 +45,11 @@ export const gameSetup = (
     players: Object.fromEntries(
       [0, 1].map((i) => [i, { seenLatestTurn: true }]),
     ),
+    piecesToPlace: setupData.piecesToPlace || {},
   };
 
   // use custom starting board
-  const { boardNotation } = setupData.initialState || {};
+  const { boardNotation, orderNotation } = setupData.initialState || {};
   if (boardNotation) {
     // validate string format
     if (!validateNotation(boardNotation)) {
@@ -61,8 +64,15 @@ export const gameSetup = (
         pieceToCreate: piece,
       }),
     );
-    // TODO: add initial order support
-    // return initialGame + new state
+    if (!orderNotation) {
+      return initialGame;
+    }
+
+    const newOrders = createOrdersFromString(initialGame, orderNotation);
+    newOrders.forEach((order) => {
+      initialGame.orders[order.owner].push(order);
+    });
+
     return initialGame;
   }
 
@@ -141,4 +151,39 @@ export const gameSetup = (
   }
 
   return initialGame;
+};
+
+export const createOrdersFromString = (G: GObject, orderString: string) => {
+  const ordersToCreate = getOrdersFromNotation(orderString);
+  const newOrders: Order[] = ordersToCreate.map((orderTemplate) => {
+    const { owner, toTarget, type, piecePriority } = orderTemplate;
+
+    const sourcePiece = G.pieces.find(
+      (p) => p.owner === owner && p.priority === piecePriority,
+    );
+
+    let sourcePieceId = 0;
+    if (!sourcePiece && type !== 'place') {
+      throw new Error(
+        `Can not find piece for corresponding order: ${orderTemplate}`,
+      );
+    } else if (sourcePiece) {
+      sourcePieceId = sourcePiece.id;
+    }
+
+    const newOrder: Order = {
+      owner,
+      toTarget,
+      type,
+      sourcePieceId,
+      priority: ORDER_PRIORITIES[type],
+    };
+
+    if (newOrder.type == 'place') {
+      newOrder.sourcePieceId = -1;
+      newOrder.newPiecePriority = piecePriority;
+    }
+    return newOrder;
+  });
+  return newOrders;
 };

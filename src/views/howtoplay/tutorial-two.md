@@ -1,0 +1,4 @@
+- This is an example of what a real game might look like several turns in.
+- Your opponent (at the bottom) will try to score this turn!
+- Predict their moves to stop them from scoring.
+- BONUS: Score your own piece on the left side of the board.

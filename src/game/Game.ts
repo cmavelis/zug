@@ -11,9 +11,12 @@ import type { ZugConfig as CommonGameConfig } from '@/game/zugzwang/config';
 import { stripSecrets } from '@/game/common';
 import { gameSetup } from '@/game/zugzwang/gameSetup';
 
+type PiecesToPlace = { [playerID: number]: number[] };
+
 export interface GameSetupData {
   config: Partial<CommonGameConfig>;
   empty?: boolean;
+  piecesToPlace?: PiecesToPlace;
   initialState?: {
     boardNotation?: string;
     orderNotation?: string; // only works in conjunction with custom board setup
@@ -29,7 +32,7 @@ export interface GameState {
   cells: Array<null | number>;
   orders: { [playerID: number]: Orders };
   pieces: Piece[];
-  piecesToPlace?: { [playerID: number]: number[] }; // optional key for back-compat
+  piecesToPlace?: PiecesToPlace; // optional key for back-compat
   players?: {
     // optional key for back-compat
     [playerID: number]: {
