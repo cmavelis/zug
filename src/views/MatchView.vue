@@ -136,9 +136,11 @@ const {
   replayLastTurn,
 } = useMatchHistory({ gameState, route, matchClientOne });
 
-const { assignPlayer, pendingPlayerID, credentialStatus } = useMatchCredentials(
-  { matchID, matchClient: matchClientOne, playerID },
-);
+const { assignPlayer, credentialStatus } = useMatchCredentials({
+  matchID,
+  matchClient: matchClientOne,
+  playerID,
+});
 
 watch([gameStateLoaded, userName], () => {
   if (!gameStateLoaded.value) {
@@ -165,7 +167,7 @@ const canJoin = computed(() => {
   );
   return (
     playerID.value === null &&
-    pendingPlayerID.value === null &&
+    credentialStatus.value === 'idle' &&
     !gameLastTurn.value &&
     openPlayerSlot
   );

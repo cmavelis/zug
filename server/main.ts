@@ -177,16 +177,28 @@ const findOrRegisterClerkUser = async (clerkJwtPayload: JwtPayload) => {
 
 // Resolve the requesting user from an auth header: either a Clerk session
 // token or a guest token issued by /api/guest/login.
-const getUserFromAuthHeader = async (authHeader: string) => {
-  const token = authHeader.replace('Bearer ', '');
+const getUserFromAuthHeader = async (authHeader?: string) => {
+  if (!authHeader) return null;
+  const token = authHeader.replace(/^Bearer /, '');
+  const clerkPayload = await verifyToken(token, verifyOptions).catch(
+    () => null,
+  );
+  if (clerkPayload) return findOrRegisterClerkUser(clerkPayload);
   try {
-    const verifiedToken = await verifyToken(token, verifyOptions);
-    return await findOrRegisterClerkUser(verifiedToken);
-  } catch (error) {
-    console.log(`did error ${error}, use guest token`);
-    const decoded = decodeToken(authHeader);
-    return await User.findByPk(decoded.credential);
+    return await User.findByPk(decodeToken(token).credential);
+  } catch {
+    return null;
   }
+};
+
+// Whether a seat name belongs to this user. User.name is fixed at registration
+// and stays reserved, but clients join using their current Clerk username.
+const isUsersName = async (user, name: string) => {
+  const owner = await User.findOne({ where: { name } });
+  if (owner) return owner.id === user.id;
+  if (!user.clerkId) return false;
+  const clerkUser = await clerkClient.users.getUser(user.clerkId);
+  return clerkUser.username === name;
 };
 
 // (from docs) an optional function that returns player credentials to store in the game metadata and validate against.
@@ -197,9 +209,12 @@ const generateCredentials = async (ctx) => {
   const user = await getUserFromAuthHeader(authHeader);
 
   if (!user) {
-    ctx.status = 401;
-    throw new Error('Invalid authentication token');
+    ctx.throw(401, 'Invalid authentication token');
   }
+  if (!(await isUsersName(user, ctx.request.body.playerName))) {
+    ctx.throw(403, 'playerName does not match the authenticated user');
+  }
+  ctx.state.user = user;
 
   // this will be the playerCredential passed to `join` api middleware
   return randomUUID();
@@ -314,12 +329,8 @@ server.router.post(
     });
     if (body.playerID) {
       const match = await Match.findByPk(matchID);
-      const { players } = match;
-      const player = players[+body.playerID];
-      User.findOne({ where: { name: player.name } }).then((user) => {
-        if (!user) return;
-        user.addMatch(match);
-      });
+      // awaited so the link exists before the client can request credentials
+      await ctx.state.user.addMatch(match).catch(console.error);
     }
   },
 );
@@ -407,17 +418,7 @@ server.router.get(
 // open the match on a different device than the one they joined from.
 server.router.post('/games/:name/:id/credentials', async (ctx) => {
   const matchID = ctx.params.id;
-  const authHeader = ctx.request.headers.authorization;
-  if (!authHeader) {
-    ctx.throw(401, 'authorization header is required');
-  }
-
-  let user;
-  try {
-    user = await getUserFromAuthHeader(authHeader);
-  } catch (error) {
-    console.error('credentials: could not authenticate user', error);
-  }
+  const user = await getUserFromAuthHeader(ctx.request.headers.authorization);
   if (!user) {
     ctx.throw(401, 'Invalid authentication token');
   }
@@ -427,9 +428,17 @@ server.router.post('/games/:name/:id/credentials', async (ctx) => {
     ctx.throw(404, 'Match ' + matchID + ' not found');
   }
 
-  const playerEntry = Object.entries(metadata.players).find(
-    ([, player]) => player.name && player.name === user.name,
-  );
+  // a matching name alone isn't proof: the user must have joined this match
+  if (!(await user.hasMatch(matchID))) {
+    ctx.throw(403, 'User is not a player in this match');
+  }
+  let playerEntry;
+  for (const entry of Object.entries(metadata.players)) {
+    if (entry[1].name && (await isUsersName(user, entry[1].name))) {
+      playerEntry = entry;
+      break;
+    }
+  }
   if (!playerEntry) {
     ctx.throw(403, 'User is not a player in this match');
   }
