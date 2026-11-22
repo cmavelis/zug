@@ -24,11 +24,11 @@ export interface LocalStorageMatch {
   token: string;
 }
 
-const setMatchData = (matchID: string, payload: LocalStorageMatch) => {
+export const setMatchData = (matchID: string, payload: LocalStorageMatch) => {
   localStorage.setItem(matchID, JSON.stringify(payload));
 };
 
-const getMatchData = (matchID: string): LocalStorageMatch | null => {
+export const getMatchData = (matchID: string): LocalStorageMatch | null => {
   const matchData = localStorage.getItem(matchID);
   if (matchData) {
     return JSON.parse(matchData);

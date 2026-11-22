@@ -175,24 +175,26 @@ const findOrRegisterClerkUser = async (clerkJwtPayload: JwtPayload) => {
   return user;
 };
 
+// Resolve the requesting user from an auth header: either a Clerk session
+// token or a guest token issued by /api/guest/login.
+const getUserFromAuthHeader = async (authHeader: string) => {
+  const token = authHeader.replace('Bearer ', '');
+  try {
+    const verifiedToken = await verifyToken(token, verifyOptions);
+    return await findOrRegisterClerkUser(verifiedToken);
+  } catch (error) {
+    console.log(`did error ${error}, use guest token`);
+    const decoded = decodeToken(authHeader);
+    return await User.findByPk(decoded.credential);
+  }
+};
+
 // (from docs) an optional function that returns player credentials to store in the game metadata and validate against.
 // If not specified, the uuid function will be used.
 const generateCredentials = async (ctx) => {
   // user sends clerk session token as auth header
   const authHeader = ctx.request.headers.authorization;
-  const token = authHeader.replace('Bearer ', '');
-  console.log('verifying token', token);
-  let user;
-  try {
-    const verifiedToken = await verifyToken(token, verifyOptions).catch();
-    user = await findOrRegisterClerkUser(verifiedToken);
-  } catch (error) {
-    console.log(`did error ${error}, use guest token`);
-    const decoded = decodeToken(authHeader);
-    console.log({ decoded });
-    user = await User.findByPk(decoded.credential);
-    console.log({ user });
-  }
+  const user = await getUserFromAuthHeader(authHeader);
 
   if (!user) {
     ctx.status = 401;
@@ -400,6 +402,47 @@ server.router.get(
     ctx.body = { matches: matchesResponse };
   },
 );
+
+// Re-issue match credentials to a user who already joined, e.g. when they
+// open the match on a different device than the one they joined from.
+server.router.post('/games/:name/:id/credentials', async (ctx) => {
+  const matchID = ctx.params.id;
+  const authHeader = ctx.request.headers.authorization;
+  if (!authHeader) {
+    ctx.throw(401, 'authorization header is required');
+  }
+
+  let user;
+  try {
+    user = await getUserFromAuthHeader(authHeader);
+  } catch (error) {
+    console.error('credentials: could not authenticate user', error);
+  }
+  if (!user) {
+    ctx.throw(401, 'Invalid authentication token');
+  }
+
+  const { metadata } = await db.fetch(matchID, { metadata: true });
+  if (!metadata) {
+    ctx.throw(404, 'Match ' + matchID + ' not found');
+  }
+
+  const playerEntry = Object.entries(metadata.players).find(
+    ([, player]) => player.name && player.name === user.name,
+  );
+  if (!playerEntry) {
+    ctx.throw(403, 'User is not a player in this match');
+  }
+  const [playerID, player] = playerEntry;
+  if (!player.credentials) {
+    ctx.throw(404, 'No credentials found for player ' + playerID);
+  }
+
+  ctx.body = {
+    playerID,
+    playerCredentials: encodeToken({ credential: player.credentials }),
+  };
+});
 
 server.router.post('/games/:name/:id/poke', koaBody(), async (ctx) => {
   const matchID = ctx.params.id;
