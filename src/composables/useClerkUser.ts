@@ -1,8 +1,9 @@
 import { ref, watch, onMounted } from 'vue';
 import { useClerk } from '@clerk/vue';
 
-const clerkToken = ref('');
 const clerkUsername = ref('');
+// this composable runs in many components, but only needs one listener
+let subscribedClerk: unknown = null;
 
 export function useClerkUser() {
   const clerk = useClerk();
@@ -10,11 +11,12 @@ export function useClerkUser() {
   watch(
     clerk,
     (newClerk) => {
-      if (!newClerk) return;
-      newClerk.addListener(async ({ session }) => {
-        const token = await session?.getToken();
-        if (token) {
-          clerkToken.value = token;
+      if (!newClerk || newClerk === subscribedClerk) return;
+      subscribedClerk = newClerk;
+      newClerk.addListener(({ session }) => {
+        const username = session?.user.username;
+        if (username) {
+          clerkUsername.value = username;
         }
       });
       const username = newClerk.session?.user.username;
@@ -25,8 +27,13 @@ export function useClerkUser() {
     { immediate: true },
   );
 
+  // Clerk tokens expire after 60s, so get one per request rather than storing
+  // it. Clerk caches the token and refreshes it when needed.
+  const getClerkToken = async () =>
+    (await clerk.value?.session?.getToken()) ?? null;
+
   return {
-    clerkToken,
     clerkUsername,
+    getClerkToken,
   };
 }
