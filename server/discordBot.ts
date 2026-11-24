@@ -1,16 +1,22 @@
 import 'dotenv/config';
-import { Client, Events, GatewayIntentBits } from 'discord.js';
+import { Client, Events, GatewayIntentBits, Options } from 'discord.js';
 
-// Shared across sends; holds the in-flight login so concurrent sends reuse it.
 let botClientPromise: Promise<Client> | null = null;
 
 export const getBotClient = async () => {
   if (!botClientPromise) {
-    const botClient = new Client({ intents: [GatewayIntentBits.Guilds] });
+    const botClient = new Client({
+      intents: [GatewayIntentBits.Guilds],
+      // don't include old messages in cache
+      makeCache: Options.cacheWithLimits({
+        ...Options.DefaultMakeCacheSettings,
+        MessageManager: 0,
+      }),
+    });
 
-    // botClient.once(Events.ClientReady, (c: { user: { tag: any } }) => {
-    //   console.log(`Ready! Logged in as ${c.user.tag}`);
-    // });
+    botClient.once(Events.ClientReady, (c: { user: { tag: any } }) => {
+      console.log(`Discord bot ready! Logged in as ${c.user.tag}`);
+    });
 
     botClientPromise = botClient.login(process.env.DISCORD_BOT_TOKEN).then(
       () => botClient,
@@ -37,7 +43,7 @@ export const messageDiscordUser = async ({
     console.debug('Discord message not sent: no user ID provided');
     return;
   }
-  
+
   try {
     const botClient = await getBotClient();
     await botClient.users.send(id, message);
