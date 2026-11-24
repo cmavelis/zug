@@ -17,6 +17,7 @@ import { createClerkClient, verifyToken } from '@clerk/backend';
 import { JwtPayload } from 'jsonwebtoken';
 import { messageDiscordUser } from './discordBot';
 import { generateGuestUsername } from './guestUser';
+import { getPlayersEnteringPlanning } from './notifications';
 
 // src/game uses lodash named imports, which only work when loaded as CommonJS
 // TODO: switch to lodash-es
@@ -112,16 +113,10 @@ Match.beforeUpsert(async (created) => {
     const oldActivePlayers = oldMatch?.state?.ctx.activePlayers;
     const newActivePlayers = created?.state?.ctx.activePlayers;
 
-    if (!(oldActivePlayers && newActivePlayers)) {
-      return;
-    }
-
-    for (const p of [0, 1]) {
-      const oldPhase = oldActivePlayers[p];
-      const newPhase = newActivePlayers[p];
-      if (oldPhase === newPhase) {
-        continue;
-      }
+    for (const p of getPlayersEnteringPlanning(
+      oldActivePlayers,
+      newActivePlayers,
+    )) {
       const player = oldMatch.players[p];
       if (!player.isConnected) {
         const otherPlayer = oldMatch.players[p === 0 ? 1 : 0];

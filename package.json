@@ -7,6 +7,7 @@
     "build": "run-p type-check build-only",
     "preview": "vite preview",
     "test": "vitest --environment jsdom --root src/",
+    "test:server": "vitest run --root server/",
     "build-only": "vite build",
     "build-watch": "vite build --watch",
     "build:dev": "vite build --mode development",
