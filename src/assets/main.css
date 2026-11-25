@@ -78,4 +78,23 @@ button {
   opacity: 0.5;
 }
 
+/*
+ * Pulsing ring drawn with the element's own box-shadow. Prefer this over
+ * .halo-shadow on elements without a stacking context (e.g. .p-button): the
+ * halo's z-index: -1 pseudo-elements escape to the root there, which makes
+ * iOS Safari paint the page background black.
+ */
+@keyframes halo-box {
+  from {
+    box-shadow: 0 0 0 0 rgba(242, 141, 103, 0.7);
+  }
+  to {
+    box-shadow: 0 0 0 12px rgba(242, 141, 103, 0);
+  }
+}
+
+.halo-box {
+  animation: halo-box 1.5s ease-out infinite;
+}
+
 

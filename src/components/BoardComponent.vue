@@ -448,7 +448,7 @@ onUnmounted(() => {
       <Button
         size="small"
         @click="handleEndTurn"
-        :class="{ 'halo-shadow': canEndTurn && props.isActiveTurn }"
+        :class="{ 'halo-box': canEndTurn && props.isActiveTurn }"
         :disabled="!(props.isActiveTurn && canEndTurn)"
         label="END TURN"
       />
