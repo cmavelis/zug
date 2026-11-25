@@ -38,6 +38,7 @@ import { BoardDisplay } from '@/components/BoardDisplay';
 import { useClerkUser } from '@/composables/useClerkUser';
 import { useUser } from '@/composables/useUser';
 import { useMatchHistory } from '@/composables/useMatchHistory';
+import { useMatchCredentials } from '@/composables/useMatchCredentials';
 
 const { clerkUsername } = useClerkUser();
 const { userName } = useUser();
@@ -135,6 +136,12 @@ const {
   replayLastTurn,
 } = useMatchHistory({ gameState, route, matchClientOne });
 
+const { assignPlayer, credentialStatus } = useMatchCredentials({
+  matchID,
+  matchClient: matchClientOne,
+  playerID,
+});
+
 watch([gameStateLoaded, userName], () => {
   if (!gameStateLoaded.value) {
     return;
@@ -145,7 +152,7 @@ watch([gameStateLoaded, userName], () => {
       (player) => player.name && player.name === userName.value,
     );
     if (joinedPlayerID !== undefined && joinedPlayerID >= 0) {
-      playerID.value = joinedPlayerID;
+      assignPlayer(joinedPlayerID);
     }
   }
   // if not deeplink, update the history to last turn
@@ -158,7 +165,12 @@ const canJoin = computed(() => {
   const openPlayerSlot = matchData.value?.some(
     (player) => player.name === undefined,
   );
-  return playerID.value === null && !gameLastTurn.value && openPlayerSlot;
+  return (
+    playerID.value === null &&
+    credentialStatus.value === 'idle' &&
+    !gameLastTurn.value &&
+    openPlayerSlot
+  );
 });
 
 const handleJoin = () => {
@@ -303,7 +315,12 @@ getNotificationSound(store.zugUsername).then((notificationSound) => {
       <MatchInvite :matchID="matchID" />
     </div>
     <div class="game-phase-text">
-      <p v-if="gamePhase === 'spectate'">You are spectating this game</p>
+      <p v-if="credentialStatus === 'loading'">Loading your player...</p>
+      <p v-else-if="credentialStatus === 'failed'" class="info-message">
+        Couldn't verify you as a player in this match, so you're viewing as a
+        spectator. Try reloading.
+      </p>
+      <p v-else-if="gamePhase === 'spectate'">You are spectating this game</p>
       <span v-else-if="gamePhase === 'resolution'" class="info-message">
         <span>Waiting for opponent to finish turn...</span>
         <button @click="handlePoke">poke?</button>
