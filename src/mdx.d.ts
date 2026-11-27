@@ -3,3 +3,4 @@ declare module '*.mdx' {
   const MDXComponent: ComponentType<any>;
   export default MDXComponent;
 }
+declare module '*.md' {}

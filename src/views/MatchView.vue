@@ -449,7 +449,7 @@ getNotificationSound(store.zugUsername).then((notificationSound) => {
   </main>
 </template>
 
-<style>
+<style scoped>
 main {
   padding: 1rem 0;
 }

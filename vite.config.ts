@@ -17,7 +17,7 @@ export default defineConfig((config) => {
       }),
       // 2. Process the compiled JSX using the Vue JSX runtime
       vueJsx({
-        include: [/\.[jt]sx$/, /\.mdx$/],
+        include: [/\.[jt]sx$/, /\.mdx?$/],
       }),
     ],
     resolve: {
