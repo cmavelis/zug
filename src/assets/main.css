@@ -79,7 +79,7 @@ button {
 }
 
 .md-content {
-  > ul,ol {
+  > ul, ol {
     font-size: 1.2rem;
     max-width: 500px;
     text-align: left;
@@ -103,6 +103,7 @@ button {
     margin: 0 auto;
     max-width: min(80vw, 800px);
   }
+}
 /*
  * Pulsing ring drawn with the element's own box-shadow. Prefer this over
  * .halo-shadow on elements without a stacking context (e.g. .p-button): the
